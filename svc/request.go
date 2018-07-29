@@ -3,7 +3,7 @@ package svc
 import (
 	"errors"
 	"fmt"
-	"github.com/davyxu/cellmicro/discovery"
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"

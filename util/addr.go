@@ -1,21 +1,19 @@
 package util
 
 import (
-	"net"
+	"github.com/toolkits/net"
 )
 
 func GetLocalIP() string {
-	addrs, err := net.InterfaceAddrs()
+	ips, err := net.IntranetIP()
 	if err != nil {
 		return ""
 	}
-	for _, address := range addrs {
 
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String()
-			}
-		}
+	// 虚拟机的本地网卡也会在这里列出，默认取第一个
+	for _, ip := range ips {
+		return ip
 	}
+
 	return ""
 }

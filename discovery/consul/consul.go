@@ -1,7 +1,7 @@
 package consulsd
 
 import (
-	"github.com/davyxu/cellmicro/discovery"
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/watch"
 	"sync"

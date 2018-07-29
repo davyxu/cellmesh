@@ -2,8 +2,8 @@ package proto
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmicro"
-	"github.com/davyxu/cellmicro/svc"
+	"github.com/davyxu/cellmesh"
+	"github.com/davyxu/cellmesh/svc"
 	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/codec/json"
 	"reflect"

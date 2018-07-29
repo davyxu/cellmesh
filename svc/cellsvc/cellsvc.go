@@ -2,11 +2,11 @@ package cellsvc
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmicro"
-	"github.com/davyxu/cellmicro/discovery"
-	_ "github.com/davyxu/cellmicro/discovery/consul"
-	"github.com/davyxu/cellmicro/svc"
-	"github.com/davyxu/cellmicro/util"
+	"github.com/davyxu/cellmesh"
+	"github.com/davyxu/cellmesh/discovery"
+	_ "github.com/davyxu/cellmesh/discovery/consul"
+	"github.com/davyxu/cellmesh/svc"
+	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/tcp"

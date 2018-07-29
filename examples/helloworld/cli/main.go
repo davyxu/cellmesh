@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmicro/examples/helloworld/proto"
-	_ "github.com/davyxu/cellmicro/svc/cellsvc"
+	"github.com/davyxu/cellmesh/examples/helloworld/proto"
+	_ "github.com/davyxu/cellmesh/svc/cellsvc"
 )
 
 func main() {

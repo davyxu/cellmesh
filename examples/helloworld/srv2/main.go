@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmicro/examples/helloworld/proto"
-	"github.com/davyxu/cellmicro/svc/cellsvc"
+	"github.com/davyxu/cellmesh/examples/helloworld/proto"
+	"github.com/davyxu/cellmesh/svc/cellsvc"
 )
 
 func Hello(req *proto.HelloREQ, ack *proto.HelloACK) {
