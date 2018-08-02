@@ -11,21 +11,34 @@ import (
 	"sync"
 )
 
+func selectStrategy(svclist []*discovery.ServiceDesc) *discovery.ServiceDesc {
+
+	if len(svclist) == 0 {
+		return nil
+	}
+
+	return svclist[0]
+}
+
 func Request(req interface{}, ackType reflect.Type, callback func(interface{})) error {
 
-	svc, err := discovery.Default.Query("cellmicro.greating")
+	svclist, err := discovery.Default.Query("cellmicro.greating")
 	if err != nil {
 		return err
 	}
 
-	if len(svc) == 0 {
+	svc := selectStrategy(svclist)
+
+	if svc == nil {
 		return errors.New("target not reachable")
 	}
+
+	log.Debugf("Select service, %s", svc.String())
 
 	var waitMsg sync.WaitGroup
 	waitMsg.Add(1)
 
-	p := peer.NewGenericPeer("tcp.Connector", "node", fmt.Sprintf("%s:%d", svc[0].Address, svc[0].Port), nil)
+	p := peer.NewGenericPeer("tcp.Connector", "node", fmt.Sprintf("%s:%d", svc.Address, svc.Port), nil)
 
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 

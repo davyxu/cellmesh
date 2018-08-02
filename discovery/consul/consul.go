@@ -3,7 +3,6 @@ package consulsd
 import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
-	"github.com/hashicorp/consul/watch"
 	"sync"
 )
 
@@ -12,10 +11,20 @@ type consulDiscovery struct {
 
 	config *api.Config
 
-	cache      map[string][]*discovery.ServiceDesc
-	cacheGurad sync.RWMutex
+	cache      sync.Map // map[string][]*discovery.ServiceDesc
+	cacheGuard sync.Mutex
 
-	nameWatcher map[string]*watch.Plan
+	nameWatcher sync.Map //map[string]*watch.Plan
+}
+
+func consulSvcToService(s *api.ServiceEntry) *discovery.ServiceDesc {
+
+	return &discovery.ServiceDesc{
+		Name:    s.Service.Service,
+		ID:      s.Service.ID,
+		Address: s.Service.Address,
+		Port:    s.Service.Port,
+	}
 }
 
 // from github.com/micro/go-micro/registry/consul_registry.go
@@ -35,12 +44,7 @@ func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc, e
 			continue
 		}
 
-		sd := &discovery.ServiceDesc{
-			Name:    s.Service.Service,
-			ID:      s.Service.ID,
-			Address: s.Service.Address,
-			Port:    s.Service.Port,
-		}
+		sd := consulSvcToService(s)
 
 		log.Debugf("  got servcie, %s", sd.String())
 
