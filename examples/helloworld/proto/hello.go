@@ -3,7 +3,7 @@ package proto
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh"
-	"github.com/davyxu/cellmesh/svc"
+	"github.com/davyxu/cellmesh/endpoint"
 	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/codec/json"
 	"reflect"
@@ -22,24 +22,36 @@ func (self *HelloACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 // 客户端请求
 func Hello(req *HelloREQ) (ack *HelloACK, err error) {
-	ack = &HelloACK{}
-	err = svc.Request(req, ack)
+
+	err = endpoint.Request(req, reflect.TypeOf((*HelloACK)(nil)).Elem(), func(response interface{}) {
+
+		ack = response.(*HelloACK)
+	})
+
 	return
 }
 
 // 服务器注册
-func RegisterHelloHandler(s svc.Service, userHandler func(req *HelloREQ, ack *HelloACK)) {
+func RegisterHello(s endpoint.EndPoint, userHandler func(req *HelloREQ, ack *HelloACK)) {
 
-	s.AddHandler("proto.HelloREQ", func(event *svc.Event) {
+	s.AddHandler("proto.HelloREQ", &endpoint.ServiceInfo{
+		RequestType: reflect.TypeOf((*HelloREQ)(nil)).Elem(),
 
-		userHandler(event.Request.(*HelloREQ), event.Response.(*HelloACK))
+		NewResponse: func() interface{} {
+			return &HelloACK{}
+		},
+		Handler: func(event *endpoint.Event) {
 
+			userHandler(event.Request.(*HelloREQ), event.Response.(*HelloACK))
+
+		},
 	})
 }
 
 func init() {
 
-	cellmicro.RegisterRequestPair(&cellnet.MessageMeta{
+	// 底层发送还是需要依赖cellnet
+	cellmesh.RegisterRequestPair(&cellnet.MessageMeta{
 		Type: reflect.TypeOf((*HelloREQ)(nil)).Elem(),
 	}, &cellnet.MessageMeta{
 		Type: reflect.TypeOf((*HelloACK)(nil)).Elem(),

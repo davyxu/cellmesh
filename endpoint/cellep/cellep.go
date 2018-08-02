@@ -1,11 +1,10 @@
-package cellsvc
+package cellep
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/discovery"
 	_ "github.com/davyxu/cellmesh/discovery/consul"
-	"github.com/davyxu/cellmesh/svc"
+	"github.com/davyxu/cellmesh/endpoint"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
@@ -14,25 +13,26 @@ import (
 	_ "github.com/davyxu/cellnet/proc/tcp"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 )
 
-type cellService struct {
-	name          string
-	port          int
-	handlerByName map[string]svc.Handler
+type cellEndPoint struct {
+	name      string
+	port      int
+	svcByName map[reflect.Type]*endpoint.ServiceInfo
 }
 
-func (self *cellService) AddHandler(name string, handler svc.Handler) {
+func (self *cellEndPoint) AddHandler(name string, svc *endpoint.ServiceInfo) {
 
-	self.handlerByName[name] = handler
+	self.svcByName[svc.RequestType] = svc
 }
 
-func (self *cellService) ID() string {
+func (self *cellEndPoint) ID() string {
 	return fmt.Sprintf("%s-%d", self.name, self.port)
 }
 
-func (self *cellService) Start() error {
+func (self *cellEndPoint) Start() error {
 
 	q := cellnet.NewEventQueue()
 
@@ -40,26 +40,20 @@ func (self *cellService) Start() error {
 
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
-		meta := cellnet.MessageMetaByMsg(ev.Message())
-		if meta != nil {
+		msgType := reflect.TypeOf(ev.Message()).Elem()
 
-			msgName := meta.FullName()
+		if svc, ok := self.svcByName[msgType]; ok {
 
-			respMeta := cellmicro.GetResponseMeta(meta)
-
-			if h, ok := self.handlerByName[msgName]; ok {
-
-				e := &svc.Event{
-					Request:  ev.Message(),
-					Response: respMeta.NewType(),
-				}
-
-				h(e)
-
-				ev.Session().Send(e.Response)
+			e := &endpoint.Event{
+				Request:  ev.Message(),
+				Response: svc.NewResponse(),
 			}
 
+			svc.Handler(e)
+
+			ev.Session().Send(e.Response)
 		}
+
 	})
 
 	p.Start()
@@ -79,7 +73,7 @@ func (self *cellService) Start() error {
 
 }
 
-func (self *cellService) Run() error {
+func (self *cellEndPoint) Run() error {
 
 	err := self.Start()
 	if err != nil {
@@ -93,20 +87,20 @@ func (self *cellService) Run() error {
 
 	return self.Stop()
 }
-func (self *cellService) Stop() error {
+func (self *cellEndPoint) Stop() error {
 
 	return discovery.Default.Deregister(self.ID())
 }
 
-func (self *cellService) SetPort(port int) {
+func (self *cellEndPoint) SetPort(port int) {
 	self.port = port
 }
 
-func NewService(name string) svc.Service {
+func NewService(name string) endpoint.EndPoint {
 
-	return &cellService{
-		name:          name,
-		port:          14330,
-		handlerByName: make(map[string]svc.Handler),
+	return &cellEndPoint{
+		name:      name,
+		port:      14330,
+		svcByName: make(map[reflect.Type]*endpoint.ServiceInfo),
 	}
 }

@@ -1,4 +1,4 @@
-package cellmicro
+package cellmesh
 
 import (
 	"github.com/davyxu/cellnet"

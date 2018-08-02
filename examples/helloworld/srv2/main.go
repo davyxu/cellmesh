@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/davyxu/cellmesh/endpoint/cellep"
 	"github.com/davyxu/cellmesh/examples/helloworld/proto"
-	"github.com/davyxu/cellmesh/svc/cellsvc"
 )
 
 func Hello(req *proto.HelloREQ, ack *proto.HelloACK) {
@@ -15,13 +15,13 @@ func Hello(req *proto.HelloREQ, ack *proto.HelloACK) {
 
 func main() {
 
-	s := cellsvc.NewService("cellmicro.greating")
+	s := cellep.NewService("cellmicro.greating")
 
 	s.(interface {
 		SetPort(port int)
 	}).SetPort(14332)
 
-	proto.RegisterHelloHandler(s, Hello)
+	proto.RegisterHello(s, Hello)
 
 	err := s.Run()
 

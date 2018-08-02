@@ -1,4 +1,4 @@
-package svc
+package endpoint
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-func Request(req, ack interface{}) error {
+func Request(req interface{}, ackType reflect.Type, callback func(interface{})) error {
 
 	svc, err := discovery.Default.Query("cellmicro.greating")
 	if err != nil {
@@ -20,14 +20,6 @@ func Request(req, ack interface{}) error {
 
 	if len(svc) == 0 {
 		return errors.New("target not reachable")
-	}
-
-	ackType := reflect.TypeOf(ack)
-
-	if ackType.Kind() == reflect.Ptr {
-		ackType = ackType.Elem()
-	} else {
-		return errors.New("invalid ack type, require ptr")
 	}
 
 	var waitMsg sync.WaitGroup
@@ -39,7 +31,7 @@ func Request(req, ack interface{}) error {
 
 		incomingMsgType := reflect.TypeOf(ev.Message())
 		if incomingMsgType.Elem() == ackType {
-			ack = ev.Message()
+			callback(ev.Message())
 			waitMsg.Done()
 		}
 
