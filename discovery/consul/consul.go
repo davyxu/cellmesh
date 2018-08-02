@@ -15,16 +15,8 @@ type consulDiscovery struct {
 	cacheGuard sync.Mutex
 
 	nameWatcher sync.Map //map[string]*watch.Plan
-}
 
-func consulSvcToService(s *api.ServiceEntry) *discovery.ServiceDesc {
-
-	return &discovery.ServiceDesc{
-		Name:    s.Service.Service,
-		ID:      s.Service.ID,
-		Address: s.Service.Address,
-		Port:    s.Service.Port,
-	}
+	localSvc sync.Map // map[string]
 }
 
 // from github.com/micro/go-micro/registry/consul_registry.go

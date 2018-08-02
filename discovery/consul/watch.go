@@ -47,7 +47,7 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 			plan.Handler = self.onServiceChanged
 			go plan.Run(self.config.Address)
 
-			log.Debugf("Watch '%s' begin", svcName)
+			//log.Debugf("Watch service '%s' begin", svcName)
 
 			self.nameWatcher.Store(svcName, plan)
 		}
@@ -66,11 +66,21 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 
 				plan.Stop()
 
-				log.Debugf("Watch '%s' end", svcName)
 				self.nameWatcher.Delete(svcName)
+
+				//log.Debugf("Watch service '%s' end", svcName)
+
+				self.cacheGuard.Lock()
+				if raw, ok := self.cache.Load(svcName); ok {
+					for _, svc := range raw.([]*discovery.ServiceDesc) {
+						log.Debugf("Remove service '%s'", svc.ID)
+					}
+				}
 
 				// 删除这个名字的所有缓冲的服务
 				self.cache.Delete(svcName)
+
+				self.cacheGuard.Unlock()
 
 				foundOne = true
 
@@ -86,17 +96,6 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 		}
 	}
 
-}
-
-func existsInServiceList(svclist []*discovery.ServiceDesc, id string) bool {
-	for _, svc := range svclist {
-
-		if svc.ID == id {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (self *consulDiscovery) onServiceChanged(u uint64, data interface{}) {
