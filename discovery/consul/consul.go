@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
 	"sync"
+	"time"
 )
 
 type consulDiscovery struct {
@@ -11,46 +12,59 @@ type consulDiscovery struct {
 
 	config *api.Config
 
-	cache      sync.Map // map[string][]*discovery.ServiceDesc
-	cacheGuard sync.Mutex
+	// 与consul的服务保持实时同步
+	cache          sync.Map // map[string][]*discovery.ServiceDesc
+	cacheGuard     sync.Mutex
+	onCacheUpdated func() // 更新回调，内部使用
 
 	nameWatcher sync.Map //map[string]*watch.Plan
+	localSvc    sync.Map // map[string]*localService
 
-	localSvc sync.Map // map[string]
+	useCache bool
+
+	ready bool
 }
 
-// from github.com/micro/go-micro/registry/consul_registry.go
-func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc, err error) {
+// 检查Consul自己挂掉
+func (self *consulDiscovery) consulChecker() {
 
-	log.Debugf("Query service, name: %s", name)
+	self.ready = true
 
-	result, _, err := self.client.Health().Service(name, "", false, nil)
+	for {
 
-	if err != nil {
-		return nil, err
-	}
+		_, _, err := self.client.Health().Service("consul", "", false, nil)
 
-	for _, s := range result {
+		var thisReady bool
 
-		if s.Service.Service != name {
-			continue
+		if err == nil {
+			thisReady = true
 		}
 
-		sd := consulSvcToService(s)
+		switch {
+		case self.ready == true && thisReady == false: // 宕机
+			log.Warnf("Consul is not reachable...")
 
-		log.Debugf("  got servcie, %s", sd.String())
+		case self.ready == false && thisReady == true: // 恢复
+			log.Warnf("Consul is recover, reregister service...")
 
-		ret = append(ret, sd)
+			// 恢复注册，虽然Consul有持久化，但是在宕机期间有注册时，还是需要重新注册
+			self.Recover()
+		}
+
+		if thisReady != self.ready {
+			self.ready = thisReady
+		}
+
+		time.Sleep(time.Second)
+
 	}
-
-	return
-
 }
 
-func newConsulDiscovery() discovery.Discovery {
+func newConsulDiscovery(useCache bool) discovery.Discovery {
 
 	self := &consulDiscovery{
-		config: api.DefaultConfig(),
+		config:   api.DefaultConfig(),
+		useCache: useCache,
 	}
 
 	var err error
@@ -60,11 +74,27 @@ func newConsulDiscovery() discovery.Discovery {
 		panic(err)
 	}
 
+	go self.consulChecker()
+
+	waitFirstUpdate := make(chan struct{})
+
+	self.onCacheUpdated = func() {
+		waitFirstUpdate <- struct{}{}
+	}
+
 	self.startWatch()
+
+	select {
+	// 收到第一次更新
+	case <-waitFirstUpdate:
+		// 等待刷新超时
+	case <-time.After(time.Second):
+	}
+	self.onCacheUpdated = nil
 
 	return self
 }
 
 func init() {
-	discovery.Default = newConsulDiscovery()
+	discovery.Default = newConsulDiscovery(true)
 }

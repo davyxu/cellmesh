@@ -14,35 +14,36 @@ import (
 	"os"
 	"os/signal"
 	"reflect"
+	"sync"
 	"syscall"
 )
 
 type cellEndPoint struct {
-	name      string
-	port      int
-	svcByName map[reflect.Type]*endpoint.ServiceInfo
+	name       string
+	listenPort int
+	svcByName  sync.Map // map[reflect.Type]*endpoint.ServiceInfo
 }
 
 func (self *cellEndPoint) AddHandler(name string, svc *endpoint.ServiceInfo) {
 
-	self.svcByName[svc.RequestType] = svc
+	self.svcByName.Store(svc.RequestType, svc)
 }
 
 func (self *cellEndPoint) ID() string {
-	return fmt.Sprintf("%s-%d", self.name, self.port)
+	return fmt.Sprintf("%s-%d", self.name, self.listenPort)
 }
 
 func (self *cellEndPoint) Start() error {
 
-	q := cellnet.NewEventQueue()
-
-	p := peer.NewGenericPeer("tcp.Acceptor", "node", fmt.Sprintf(":%d", self.port), q)
+	p := peer.NewGenericPeer("tcp.Acceptor", "node", ":0", nil)
 
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
 		msgType := reflect.TypeOf(ev.Message()).Elem()
 
-		if svc, ok := self.svcByName[msgType]; ok {
+		if svcRaw, ok := self.svcByName.Load(msgType); ok {
+
+			svc := svcRaw.(*endpoint.ServiceInfo)
 
 			e := &endpoint.Event{
 				Request:  ev.Message(),
@@ -58,13 +59,13 @@ func (self *cellEndPoint) Start() error {
 
 	p.Start()
 
-	q.StartLoop()
+	self.listenPort = p.(cellnet.TCPAcceptor).ListenPort()
 
-	addrss := util.GetLocalIP()
+	host := util.GetLocalIP()
 
 	sd := &discovery.ServiceDesc{
-		Address: addrss,
-		Port:    self.port,
+		Address: host,
+		Port:    self.listenPort,
 		ID:      self.ID(),
 		Name:    self.name,
 	}
@@ -89,18 +90,13 @@ func (self *cellEndPoint) Run() error {
 }
 func (self *cellEndPoint) Stop() error {
 
-	return discovery.Default.Deregister(self.ID())
-}
-
-func (self *cellEndPoint) SetPort(port int) {
-	self.port = port
+	//return discovery.Default.Deregister(self.ID())
+	return nil
 }
 
 func NewService(name string) endpoint.EndPoint {
 
 	return &cellEndPoint{
-		name:      name,
-		port:      14330,
-		svcByName: make(map[reflect.Type]*endpoint.ServiceInfo),
+		name: name,
 	}
 }

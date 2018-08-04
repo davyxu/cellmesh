@@ -10,7 +10,7 @@ func (self *consulDiscovery) startWatch() {
 
 	plan, err := watch.Parse(map[string]interface{}{"type": "services"})
 	if err != nil {
-		log.Errorln(err)
+		log.Errorln("startWatch:", err)
 		return
 	}
 
@@ -106,35 +106,41 @@ func (self *consulDiscovery) onServiceChanged(u uint64, data interface{}) {
 
 	svcName := svcDetails[0].Service.Service
 
-	var oldList, newList []*discovery.ServiceDesc
+	var newList []*discovery.ServiceDesc
 
 	for _, detail := range svcDetails {
-		newList = append(newList, consulSvcToService(detail))
-	}
-
-	self.cacheGuard.Lock()
-
-	if raw, ok := self.cache.Load(svcName); ok {
-		oldList = raw.([]*discovery.ServiceDesc)
-	}
-
-	for _, oldSvc := range oldList {
-
-		// 在新的列表中没有找到老的id，表示服务被移除
-		if !existsInServiceList(newList, oldSvc.ID) {
-			log.Debugf("Remove service '%s'", oldSvc.ID)
+		if isMeshServiceHealth(detail) {
+			newList = append(newList, consulSvcToService(detail))
 		}
 	}
 
-	for _, newSvc := range newList {
+	//self.cacheGuard.Lock()
 
-		// 在老的列表中没有找到新的id，表示服务新增
-		if !existsInServiceList(oldList, newSvc.ID) {
-			log.Debugf("Add service '%s'", newSvc.ID)
-		}
-	}
+	//var oldList []*discovery.ServiceDesc
+	//if raw, ok := self.cache.Load(svcName); ok {
+	//	oldList = raw.([]*discovery.ServiceDesc)
+	//}
+
+	//for _, oldSvc := range oldList {
+	//
+	//	// 在新的列表中没有找到老的id，表示服务被移除
+	//	if !existsInServiceList(newList, oldSvc.ID) {
+	//		log.Debugf("Remove service '%s'", oldSvc.ID)
+	//	}
+	//}
+	//
+	//for _, newSvc := range newList {
+	//
+	//	// 在老的列表中没有找到新的id，表示服务新增
+	//	if !existsInServiceList(oldList, newSvc.ID) {
+	//		log.Debugf("Add service '%s'", newSvc.ID)
+	//	}
+	//}
 
 	self.cache.Store(svcName, newList)
+	if self.onCacheUpdated != nil {
+		self.onCacheUpdated()
+	}
 
-	self.cacheGuard.Unlock()
+	//self.cacheGuard.Unlock()
 }

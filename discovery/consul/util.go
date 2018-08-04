@@ -5,6 +5,18 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
+// check包括：node的check和service check
+func isMeshServiceHealth(entry *api.ServiceEntry) bool {
+
+	for _, check := range entry.Checks {
+		if check.ServiceID == entry.Service.ID && check.Output == healthWords {
+			return true
+		}
+	}
+
+	return false
+}
+
 func consulSvcToService(s *api.ServiceEntry) *discovery.ServiceDesc {
 
 	return &discovery.ServiceDesc{

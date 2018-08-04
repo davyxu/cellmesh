@@ -2,19 +2,22 @@ package consulsd
 
 import (
 	"context"
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
 	"time"
 )
 
 // 本地服务更新TTL
 type localService struct {
-	ID     string
+	Desc   *discovery.ServiceDesc
 	Cancel context.CancelFunc
 
 	ctx context.Context
 
 	agent *api.Agent
 }
+
+const healthWords = "cellmesh service ready"
 
 func (self *localService) Update() {
 
@@ -29,7 +32,7 @@ func (self *localService) Update() {
 
 			//log.Debugf("UpdateTTL id: %s", self.ID)
 
-			self.agent.UpdateTTL(self.ID, "svc ready", "pass")
+			self.agent.UpdateTTL(self.Desc.ID, healthWords, "pass")
 
 			time.Sleep(ServiceTTL)
 		}
@@ -42,12 +45,12 @@ func (self *localService) Stop() {
 	self.Cancel()
 }
 
-func newLocalService(id string, agent *api.Agent) *localService {
+func newLocalService(svc *discovery.ServiceDesc, agent *api.Agent) *localService {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	self := &localService{
-		ID:     id,
+		Desc:   svc,
 		Cancel: cancel,
 		ctx:    ctx,
 		agent:  agent,
