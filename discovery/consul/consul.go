@@ -42,10 +42,10 @@ func (self *consulDiscovery) consulChecker() {
 
 		switch {
 		case self.ready == true && thisReady == false: // 宕机
-			log.Warnf("Consul is not reachable...")
+			log.Warnf("Consul not reachable...")
 
 		case self.ready == false && thisReady == true: // 恢复
-			log.Warnf("Consul is recover, reregister service...")
+			log.Warnf("Consul recovered, reregistering service...")
 
 			// 恢复注册，虽然Consul有持久化，但是在宕机期间有注册时，还是需要重新注册
 			self.Recover()

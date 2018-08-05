@@ -1,10 +1,10 @@
-package cellep
+package cell
 
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
 	_ "github.com/davyxu/cellmesh/discovery/consul"
-	"github.com/davyxu/cellmesh/endpoint"
+	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
@@ -18,24 +18,24 @@ import (
 	"syscall"
 )
 
-type cellEndPoint struct {
+type cellService struct {
 	name       string
 	listenPort int
-	svcByName  sync.Map // map[reflect.Type]*endpoint.ServiceInfo
+	svcByName  sync.Map // map[reflect.Type]*endpoint.MethodInfo
 }
 
-func (self *cellEndPoint) AddHandler(name string, svc *endpoint.ServiceInfo) {
+func (self *cellService) AddMethod(name string, svc *service.MethodInfo) {
 
 	self.svcByName.Store(svc.RequestType, svc)
 }
 
-func (self *cellEndPoint) ID() string {
+func (self *cellService) ID() string {
 	return fmt.Sprintf("%s-%d", self.name, self.listenPort)
 }
 
-func (self *cellEndPoint) Start() error {
+func (self *cellService) Start() error {
 
-	p := peer.NewGenericPeer("tcp.Acceptor", "node", ":0", nil)
+	p := peer.NewGenericPeer("tcp.Acceptor", "", ":0", nil)
 
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
@@ -43,9 +43,9 @@ func (self *cellEndPoint) Start() error {
 
 		if svcRaw, ok := self.svcByName.Load(msgType); ok {
 
-			svc := svcRaw.(*endpoint.ServiceInfo)
+			svc := svcRaw.(*service.MethodInfo)
 
-			e := &endpoint.Event{
+			e := &service.Event{
 				Request:  ev.Message(),
 				Response: svc.NewResponse(),
 			}
@@ -61,6 +61,8 @@ func (self *cellEndPoint) Start() error {
 
 	self.listenPort = p.(cellnet.TCPAcceptor).ListenPort()
 
+	p.(cellnet.PeerProperty).SetName(fmt.Sprintf(":%d", self.listenPort))
+
 	host := util.GetLocalIP()
 
 	sd := &discovery.ServiceDesc{
@@ -74,7 +76,7 @@ func (self *cellEndPoint) Start() error {
 
 }
 
-func (self *cellEndPoint) Run() error {
+func (self *cellService) Run() error {
 
 	err := self.Start()
 	if err != nil {
@@ -88,15 +90,16 @@ func (self *cellEndPoint) Run() error {
 
 	return self.Stop()
 }
-func (self *cellEndPoint) Stop() error {
-
-	//return discovery.Default.Deregister(self.ID())
-	return nil
+func (self *cellService) Stop() error {
+	return discovery.Default.Deregister(self.ID())
 }
 
-func NewService(name string) endpoint.EndPoint {
+func init() {
 
-	return &cellEndPoint{
-		name: name,
+	service.NewService = func(name string) service.Service {
+
+		return &cellService{
+			name: name,
+		}
 	}
 }

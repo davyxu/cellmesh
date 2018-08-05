@@ -1,4 +1,4 @@
-package endpoint
+package service
 
 import (
 	"github.com/davyxu/golog"

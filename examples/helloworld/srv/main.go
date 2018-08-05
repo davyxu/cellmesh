@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh/endpoint/cellep"
 	"github.com/davyxu/cellmesh/examples/helloworld/proto"
+	"github.com/davyxu/cellmesh/service"
+	_ "github.com/davyxu/cellmesh/service/cell"
 )
 
 func Hello(req *proto.HelloREQ, ack *proto.HelloACK) {
@@ -15,7 +16,7 @@ func Hello(req *proto.HelloREQ, ack *proto.HelloACK) {
 
 func main() {
 
-	s := cellep.NewService("cellmicro.greating")
+	s := service.NewService("cellmicro.greating")
 
 	proto.RegisterHello(s, Hello)
 

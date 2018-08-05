@@ -3,7 +3,7 @@ package proto
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh"
-	"github.com/davyxu/cellmesh/endpoint"
+	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/codec/json"
 	"reflect"
@@ -23,7 +23,7 @@ func (self *HelloACK) String() string { return fmt.Sprintf("%+v", *self) }
 // 客户端请求
 func Hello(req *HelloREQ) (ack *HelloACK, err error) {
 
-	err = endpoint.Request(req, reflect.TypeOf((*HelloACK)(nil)).Elem(), func(response interface{}) {
+	err = service.Request("cellmicro.greating", req, reflect.TypeOf((*HelloACK)(nil)).Elem(), func(response interface{}) {
 
 		ack = response.(*HelloACK)
 	})
@@ -32,15 +32,15 @@ func Hello(req *HelloREQ) (ack *HelloACK, err error) {
 }
 
 // 服务器注册
-func RegisterHello(s endpoint.EndPoint, userHandler func(req *HelloREQ, ack *HelloACK)) {
+func RegisterHello(s service.Service, userHandler func(req *HelloREQ, ack *HelloACK)) {
 
-	s.AddHandler("proto.HelloREQ", &endpoint.ServiceInfo{
+	s.AddMethod("proto.HelloREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*HelloREQ)(nil)).Elem(),
 
 		NewResponse: func() interface{} {
 			return &HelloACK{}
 		},
-		Handler: func(event *endpoint.Event) {
+		Handler: func(event *service.Event) {
 
 			userHandler(event.Request.(*HelloREQ), event.Response.(*HelloACK))
 

@@ -1,4 +1,4 @@
-package endpoint
+package service
 
 import "reflect"
 
@@ -8,16 +8,20 @@ type Event struct {
 	Response interface{}
 }
 
-type ServiceInfo struct {
+type MethodInfo struct {
 	Handler     func(*Event)
 	RequestType reflect.Type
 
 	NewResponse func() interface{}
 }
 
-type EndPoint interface {
-	AddHandler(name string, svc *ServiceInfo)
+type Service interface {
+	AddMethod(name string, svc *MethodInfo)
 
 	// 服务发现注册
 	Run() error
 }
+
+var (
+	NewService func(name string) Service
+)
