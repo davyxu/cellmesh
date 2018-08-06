@@ -2,10 +2,11 @@ package proto
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/codec/json"
+	"github.com/davyxu/cellnet/util"
 	"reflect"
 )
 
@@ -50,10 +51,16 @@ func RegisterHello(s service.Service, userHandler func(req *HelloREQ, ack *Hello
 
 func init() {
 
-	// 底层发送还是需要依赖cellnet
-	cellmesh.RegisterRequestPair(&cellnet.MessageMeta{
-		Type: reflect.TypeOf((*HelloREQ)(nil)).Elem(),
-	}, &cellnet.MessageMeta{
-		Type: reflect.TypeOf((*HelloACK)(nil)).Elem(),
-	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("json"),
+		Type:  reflect.TypeOf((*HelloREQ)(nil)).Elem(),
+		ID:    int(util.StringHash("proto.HelloREQ")),
+	}).SetContext("service", "cellmicro.greating")
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("json"),
+		Type:  reflect.TypeOf((*HelloACK)(nil)).Elem(),
+		ID:    int(util.StringHash("proto.HelloACK")),
+	}).SetContext("service", "cellmicro.greating")
+
 }

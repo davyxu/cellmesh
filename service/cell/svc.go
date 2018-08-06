@@ -11,11 +11,8 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
-	"os"
-	"os/signal"
 	"reflect"
 	"sync"
-	"syscall"
 )
 
 type cellService struct {
@@ -83,10 +80,7 @@ func (self *cellService) Run() error {
 		return err
 	}
 
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-
-	<-ch
+	util.WaitExit()
 
 	return self.Stop()
 }

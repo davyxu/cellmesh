@@ -21,6 +21,10 @@ type cellRequest struct {
 	readyChan chan service.Requestor
 }
 
+func (self *cellRequest) Session() cellnet.Session {
+	return self.conn.Session()
+}
+
 func (self *cellRequest) Request(req interface{}, ackType reflect.Type, callback func(interface{})) error {
 
 	self.conn.Session().Send(req)
