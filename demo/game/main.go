@@ -5,12 +5,12 @@ import (
 	"github.com/davyxu/cellmesh/demo/game/verify"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
-	_ "github.com/davyxu/cellnet/relay"
-
-	_ "github.com/davyxu/cellmesh/service/cell"
+	"github.com/davyxu/cellmesh/svcfx"
 )
 
 func main() {
+
+	svcfx.Init()
 
 	s := service.NewService("demo.game")
 

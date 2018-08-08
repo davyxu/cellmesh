@@ -21,7 +21,3 @@ type Service interface {
 	// 服务发现注册
 	Run() error
 }
-
-var (
-	NewService func(name string) Service
-)

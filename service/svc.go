@@ -1,10 +1,8 @@
-package cell
+package service
 
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
-	_ "github.com/davyxu/cellmesh/discovery/consul"
-	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
@@ -21,7 +19,7 @@ type cellService struct {
 	svcByName  sync.Map // map[reflect.Type]*endpoint.MethodInfo
 }
 
-func (self *cellService) AddMethod(name string, svc *service.MethodInfo) {
+func (self *cellService) AddMethod(name string, svc *MethodInfo) {
 
 	self.svcByName.Store(svc.RequestType, svc)
 }
@@ -30,26 +28,34 @@ func (self *cellService) ID() string {
 	return fmt.Sprintf("%s-%d", self.name, self.listenPort)
 }
 
+type ReplyEvent interface {
+	Reply(msg interface{})
+}
+
 func (self *cellService) Start() error {
 
 	p := peer.NewGenericPeer("tcp.Acceptor", "", ":0", nil)
 
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
-		msgType := reflect.TypeOf(ev.Message()).Elem()
+		switch evData := ev.(type) {
+		case ReplyEvent:
 
-		if svcRaw, ok := self.svcByName.Load(msgType); ok {
+			msgType := reflect.TypeOf(ev.Message()).Elem()
 
-			svc := svcRaw.(*service.MethodInfo)
+			if svcRaw, ok := self.svcByName.Load(msgType); ok {
 
-			e := &service.Event{
-				Request:  ev.Message(),
-				Response: svc.NewResponse(),
+				svc := svcRaw.(*MethodInfo)
+
+				e := &Event{
+					Request:  ev.Message(),
+					Response: svc.NewResponse(),
+				}
+
+				svc.Handler(e)
+
+				evData.Reply(e.Response)
 			}
-
-			svc.Handler(e)
-
-			ev.Session().Send(e.Response)
 		}
 
 	})
@@ -88,12 +94,9 @@ func (self *cellService) Stop() error {
 	return discovery.Default.Deregister(self.ID())
 }
 
-func init() {
+func NewService(name string) Service {
 
-	service.NewService = func(name string) service.Service {
-
-		return &cellService{
-			name: name,
-		}
+	return &cellService{
+		name: name,
 	}
 }

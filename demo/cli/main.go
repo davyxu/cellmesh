@@ -3,23 +3,39 @@ package main
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
-	_ "github.com/davyxu/cellmesh/discovery/consul"
 	"github.com/davyxu/cellmesh/service"
-	_ "github.com/davyxu/cellmesh/service/cell"
-	_ "github.com/davyxu/cellnet/peer/tcp"
+	"github.com/davyxu/cellmesh/svcfx"
+	"reflect"
+	"time"
 )
 
 func main() {
 
-	service.PrepareConnection("demo.agent")
+	svcfx.Init()
 
-	ack, err := proto.Verify("demo.agent", &proto.VerifyREQ{
+	addr, err := service.QueryServiceAddress("demo.agent")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	req := service.NewMsgRequestor(addr, nil)
+	req.Start()
+	for !req.IsReady() {
+
+		time.Sleep(time.Second)
+		req.Stop()
+	}
+
+	err = req.Request(&proto.VerifyREQ{
 		Token: "hello",
+	}, reflect.TypeOf((*proto.VerifyACK)(nil)).Elem(), func(ack interface{}) {
+
+		fmt.Println(ack)
+
 	})
 
 	if err != nil {
 		fmt.Println(err)
-	} else {
-		fmt.Println(ack)
 	}
 }

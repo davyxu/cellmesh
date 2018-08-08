@@ -53,7 +53,7 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 		}
 	}
 
-	foundOne := false
+	var foundSvc string
 
 	for {
 
@@ -66,23 +66,7 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 
 				plan.Stop()
 
-				self.nameWatcher.Delete(svcName)
-
-				//log.Debugf("Watch service '%s' end", svcName)
-
-				self.cacheGuard.Lock()
-				if raw, ok := self.cache.Load(svcName); ok {
-					for _, svc := range raw.([]*discovery.ServiceDesc) {
-						log.Debugf("Remove service '%s'", svc.ID)
-					}
-				}
-
-				// 删除这个名字的所有缓冲的服务
-				self.cache.Delete(svcName)
-
-				self.cacheGuard.Unlock()
-
-				foundOne = true
+				foundSvc = svcName
 
 				// 删除后重新扫描，直到没有发现要删除的为止
 				return false
@@ -91,9 +75,22 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 			return true
 		})
 
-		if !foundOne {
+		if foundSvc == "" {
 			break
 		}
+
+		self.nameWatcher.Delete(foundSvc)
+
+		if raw, ok := self.cache.Load(foundSvc); ok {
+			for _, svc := range raw.([]*discovery.ServiceDesc) {
+				self.OnCacheUpdated("remove", svc)
+			}
+		}
+
+		// 删除这个名字的所有缓冲的服务
+		self.cache.Delete(foundSvc)
+
+		foundSvc = ""
 	}
 
 }
@@ -114,33 +111,27 @@ func (self *consulDiscovery) onServiceChanged(u uint64, data interface{}) {
 		}
 	}
 
-	//self.cacheGuard.Lock()
-
-	//var oldList []*discovery.ServiceDesc
-	//if raw, ok := self.cache.Load(svcName); ok {
-	//	oldList = raw.([]*discovery.ServiceDesc)
-	//}
-
-	//for _, oldSvc := range oldList {
-	//
-	//	// 在新的列表中没有找到老的id，表示服务被移除
-	//	if !existsInServiceList(newList, oldSvc.ID) {
-	//		log.Debugf("Remove service '%s'", oldSvc.ID)
-	//	}
-	//}
-	//
-	//for _, newSvc := range newList {
-	//
-	//	// 在老的列表中没有找到新的id，表示服务新增
-	//	if !existsInServiceList(oldList, newSvc.ID) {
-	//		log.Debugf("Add service '%s'", newSvc.ID)
-	//	}
-	//}
-
-	self.cache.Store(svcName, newList)
-	if self.onCacheUpdated != nil {
-		self.onCacheUpdated()
+	var oldList []*discovery.ServiceDesc
+	if raw, ok := self.cache.Load(svcName); ok {
+		oldList = raw.([]*discovery.ServiceDesc)
 	}
 
-	//self.cacheGuard.Unlock()
+	self.cache.Store(svcName, newList)
+
+	for _, oldSvc := range oldList {
+
+		// 在新的列表中没有找到老的id，表示服务被移除
+		if !existsInServiceList(newList, oldSvc.ID) {
+			self.OnCacheUpdated("remove", oldSvc)
+		}
+	}
+
+	for _, newSvc := range newList {
+
+		// 在老的列表中没有找到新的id，表示服务新增
+		if !existsInServiceList(oldList, newSvc.ID) {
+			self.OnCacheUpdated("add", newSvc)
+		}
+	}
+
 }

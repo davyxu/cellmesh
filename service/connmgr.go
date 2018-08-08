@@ -7,18 +7,23 @@ import (
 	"github.com/davyxu/cellnet"
 	"reflect"
 	"sync"
+	"time"
 )
 
 type Requestor interface {
 	Request(req interface{}, ackType reflect.Type, callback func(interface{})) error
 
 	Session() cellnet.Session
+
+	Start()
+
+	IsReady() bool
+
+	Stop()
 }
 
 var (
 	connByAddr sync.Map
-
-	NewRequestor func(addr string, readyChan chan Requestor) Requestor
 )
 
 func GetSession(addr string) cellnet.Session {
@@ -31,8 +36,12 @@ func GetSession(addr string) cellnet.Session {
 	return nil
 }
 
-func RemoveConnection(addr string) {
-	connByAddr.Delete(addr)
+func GetRequestor(addr string) Requestor {
+	if rawConn, ok := connByAddr.Load(addr); ok {
+		return rawConn.(Requestor)
+	}
+
+	return nil
 }
 
 func QueryServiceAddress(serviceName string) (string, error) {
@@ -50,22 +59,64 @@ func QueryServiceAddress(serviceName string) (string, error) {
 	return fmt.Sprintf("%s:%d", desc.Address, desc.Port), nil
 }
 
-func PrepareConnection(serviceName string) error {
+func connLoop(serviceName string) {
 
-	addr, err := QueryServiceAddress(serviceName)
-	if err != nil {
-		return err
+	for {
+		addr, err := QueryServiceAddress(serviceName)
+
+		if err == nil {
+			readyConn := make(chan string)
+
+			requestor := NewRPCRequestor(addr, readyConn)
+
+			requestor.Start()
+
+			if requestor.IsReady() {
+
+				connByAddr.Store(addr, requestor)
+				log.SetColor("green").Debugln("service ready: ", serviceName)
+
+				// 连接断开
+				<-readyConn
+				connByAddr.Delete(addr)
+
+				log.SetColor("yellow").Debugln("service invalid: ", serviceName)
+			} else {
+
+				requestor.Stop()
+				time.Sleep(time.Second * 3)
+				continue
+			}
+
+			requestor.Stop()
+		}
+
+		discovery.Default.WaitAdded()
+	}
+}
+
+func PrepareConnection(serviceName string) {
+
+	go connLoop(serviceName)
+}
+
+func WaitConnectionReady(serviceName string) {
+
+	for {
+		addr, err := QueryServiceAddress(serviceName)
+
+		if err != nil {
+			continue
+		}
+
+		if rawConn, ok := connByAddr.Load(addr); ok {
+			conn := rawConn.(Requestor)
+
+			if conn.IsReady() {
+				return
+			}
+		}
+
 	}
 
-	readyConn := make(chan Requestor)
-
-	if NewRequestor == nil {
-		panic("requestor package not import")
-	}
-
-	NewRequestor(addr, readyConn)
-
-	connByAddr.Store(addr, <-readyConn)
-
-	return nil
 }

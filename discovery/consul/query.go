@@ -44,3 +44,33 @@ func (self *consulDiscovery) directQuery(name string) (ret []*discovery.ServiceD
 	return
 
 }
+
+func (self *consulDiscovery) WaitAdded() {
+
+	var data []interface{}
+	self.pipe.Pick(&data)
+
+	for _, d := range data {
+
+		if d.(string) == "add" {
+			return
+		}
+	}
+}
+
+func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.ServiceDesc) {
+
+	if self.firstUpdate != nil {
+		self.firstUpdate <- struct{}{}
+	}
+
+	switch eventName {
+	case "add":
+		log.Debugf("Add service '%s'", desc.ID)
+
+	case "remove":
+		log.Debugf("Remove service '%s'", desc.ID)
+	}
+
+	self.pipe.Add(eventName)
+}

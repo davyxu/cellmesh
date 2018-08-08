@@ -2,6 +2,7 @@ package consulsd
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
+	"github.com/davyxu/cellnet/util"
 	"github.com/hashicorp/consul/api"
 	"sync"
 	"time"
@@ -13,9 +14,7 @@ type consulDiscovery struct {
 	config *api.Config
 
 	// 与consul的服务保持实时同步
-	cache          sync.Map // map[string][]*discovery.ServiceDesc
-	cacheGuard     sync.Mutex
-	onCacheUpdated func() // 更新回调，内部使用
+	cache sync.Map // map[string][]*discovery.ServiceDesc
 
 	nameWatcher sync.Map //map[string]*watch.Plan
 	localSvc    sync.Map // map[string]*localService
@@ -23,6 +22,10 @@ type consulDiscovery struct {
 	useCache bool
 
 	ready bool
+
+	firstUpdate chan struct{}
+
+	pipe *util.Pipe
 }
 
 // 检查Consul自己挂掉
@@ -63,8 +66,10 @@ func (self *consulDiscovery) consulChecker() {
 func newConsulDiscovery(useCache bool) discovery.Discovery {
 
 	self := &consulDiscovery{
-		config:   api.DefaultConfig(),
-		useCache: useCache,
+		config:      api.DefaultConfig(),
+		useCache:    useCache,
+		firstUpdate: make(chan struct{}),
+		pipe:        util.NewPipe(),
 	}
 
 	var err error
@@ -74,23 +79,17 @@ func newConsulDiscovery(useCache bool) discovery.Discovery {
 		panic(err)
 	}
 
-	go self.consulChecker()
-
-	waitFirstUpdate := make(chan struct{})
-
-	self.onCacheUpdated = func() {
-		waitFirstUpdate <- struct{}{}
-	}
+	//go self.consulChecker()
 
 	self.startWatch()
 
 	select {
 	// 收到第一次更新
-	case <-waitFirstUpdate:
+	case <-self.firstUpdate:
+		self.firstUpdate = nil
 		// 等待刷新超时
 	case <-time.After(time.Second):
 	}
-	self.onCacheUpdated = nil
 
 	return self
 }

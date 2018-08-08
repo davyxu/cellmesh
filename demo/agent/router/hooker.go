@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
@@ -49,6 +50,19 @@ func (RelayUpMsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent c
 }
 
 func init() {
+
+	relay.SetBroadcaster(func(event *relay.RecvMsgEvent) {
+		for _, sesID := range event.ContextID {
+
+			ses := clientListener.(peer.SessionManager).GetSession(sesID)
+			if ses == nil {
+				continue
+			}
+
+			ses.Send(event.Msg)
+		}
+
+	})
 
 	transmitter := new(tcp.TCPMessageTransmitter)
 	routerHooker := new(RelayUpMsgHooker)
