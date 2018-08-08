@@ -22,14 +22,12 @@ func (self *VerifyREQ) String() string { return fmt.Sprintf("%+v", *self) }
 func (self *VerifyACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 // 客户端请求
-func Verify(svcName string, req *VerifyREQ) (ack *VerifyACK, err error) {
+func Verify(targetProvider interface{}, req *VerifyREQ, callback func(ack *VerifyACK)) error {
 
-	err = service.Request(svcName, req, reflect.TypeOf((*VerifyACK)(nil)).Elem(), func(response interface{}) {
+	return service.Request(targetProvider, req, reflect.TypeOf((*VerifyACK)(nil)).Elem(), func(response interface{}) {
 
-		ack = response.(*VerifyACK)
+		callback(response.(*VerifyACK))
 	})
-
-	return
 }
 
 // 服务器注册

@@ -14,7 +14,7 @@ import (
 type rpcRequest struct {
 	conn cellnet.TCPConnector
 
-	readyChan chan string
+	closeNotify chan string
 }
 
 func (self *rpcRequest) Session() cellnet.Session {
@@ -52,60 +52,20 @@ func (self *rpcRequest) onMessage(ev cellnet.Event) {
 	switch ev.Message().(type) {
 	case *cellnet.SessionConnected: // 已经连接上
 	case *cellnet.SessionClosed:
-		self.readyChan <- "closed"
+		self.closeNotify <- "closed"
 	}
 }
 
-func NewRPCRequestor(addr string, readyChan chan string) Requestor {
+func NewRPCRequestor(addr string, closeNotify chan string) Requestor {
 
 	p := peer.NewGenericPeer("tcp.SyncConnector", addr, addr, nil)
 
 	self := &rpcRequest{
-		conn:      p.(cellnet.TCPConnector),
-		readyChan: readyChan,
+		conn:        p.(cellnet.TCPConnector),
+		closeNotify: closeNotify,
 	}
 
 	proc.BindProcessorHandler(p, "tcp.ltv", self.onMessage)
 
 	return self
 }
-
-/*
-func (self *rpcRequest) Request(req interface{}, ackType reflect.Type, callback func(interface{})) error {
-
-	self.conn.Session().Send(req)
-
-	feedBack := make(chan interface{})
-
-	self.ctxList.Store(ackType, feedBack)
-
-	defer self.ctxList.Delete(ackType)
-
-	select {
-	case ack := <-feedBack:
-		callback(ack)
-
-		return nil
-	case <-time.After(time.Second):
-
-		return errors.New("recv time out")
-	}
-
-}
-func (self *rpcRequest) onMessage(ev cellnet.Event) {
-
-	incomingMsgType := reflect.TypeOf(ev.Message()).Elem()
-
-	if rawFeedback, ok := self.ctxList.Load(incomingMsgType); ok {
-		feedBack := rawFeedback.(chan interface{})
-		feedBack <- ev.Message()
-	}
-
-	switch ev.Message().(type) {
-	case *cellnet.SessionConnected: // 已经连接上
-		self.readyChan <- self
-	case *cellnet.SessionClosed:
-		service.RemoveConnection(ev.Session().Peer().(cellnet.PeerProperty).Address())
-	}
-}
-*/

@@ -36,14 +36,6 @@ func GetSession(addr string) cellnet.Session {
 	return nil
 }
 
-func GetRequestor(addr string) Requestor {
-	if rawConn, ok := connByAddr.Load(addr); ok {
-		return rawConn.(Requestor)
-	}
-
-	return nil
-}
-
 func QueryServiceAddress(serviceName string) (string, error) {
 	descList, err := discovery.Default.Query(serviceName)
 	if err != nil {
@@ -65,9 +57,9 @@ func connLoop(serviceName string) {
 		addr, err := QueryServiceAddress(serviceName)
 
 		if err == nil {
-			readyConn := make(chan string)
+			closeNotify := make(chan string)
 
-			requestor := NewRPCRequestor(addr, readyConn)
+			requestor := NewRPCRequestor(addr, closeNotify)
 
 			requestor.Start()
 
@@ -77,7 +69,7 @@ func connLoop(serviceName string) {
 				log.SetColor("green").Debugln("service ready: ", serviceName)
 
 				// 连接断开
-				<-readyConn
+				<-closeNotify
 				connByAddr.Delete(addr)
 
 				log.SetColor("yellow").Debugln("service invalid: ", serviceName)
@@ -95,28 +87,8 @@ func connLoop(serviceName string) {
 	}
 }
 
+// 异步建立与服务连接
 func PrepareConnection(serviceName string) {
 
 	go connLoop(serviceName)
-}
-
-func WaitConnectionReady(serviceName string) {
-
-	for {
-		addr, err := QueryServiceAddress(serviceName)
-
-		if err != nil {
-			continue
-		}
-
-		if rawConn, ok := connByAddr.Load(addr); ok {
-			conn := rawConn.(Requestor)
-
-			if conn.IsReady() {
-				return
-			}
-		}
-
-	}
-
 }

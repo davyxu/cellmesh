@@ -15,18 +15,29 @@ func selectStrategy(descList []*discovery.ServiceDesc) *discovery.ServiceDesc {
 	return descList[0]
 }
 
-func Request(serviceName string, req interface{}, ackType reflect.Type, callback func(interface{})) error {
+var (
+	ErrInvalidTarget = errors.New("target provider should be 'servicename' or 'Requestor'")
+)
 
-	addr, err := QueryServiceAddress(serviceName)
-	if err != nil {
-		return err
+func Request(targetProvider interface{}, req interface{}, ackType reflect.Type, callback func(interface{})) error {
+
+	var requestor Requestor
+	switch tgt := targetProvider.(type) {
+	case string:
+		addr, err := QueryServiceAddress(tgt)
+		if err != nil {
+			return err
+		}
+
+		if rawConn, ok := connByAddr.Load(addr); ok {
+			requestor = rawConn.(Requestor)
+		}
+
+	case Requestor:
+		requestor = tgt
+	default:
+		panic(ErrInvalidTarget)
 	}
 
-	if rawConn, ok := connByAddr.Load(addr); ok {
-		conn := rawConn.(Requestor)
-
-		return conn.Request(req, ackType, callback)
-	}
-
-	return errors.New("connection not ready")
+	return requestor.Request(req, ackType, callback)
 }

@@ -77,13 +77,13 @@ func (self *msgRequest) onMessage(ev cellnet.Event) {
 	}
 }
 
-func NewMsgRequestor(addr string, readyChan chan string) Requestor {
+func NewMsgRequestor(addr string, closeNotify chan string) Requestor {
 
 	p := peer.NewGenericPeer("tcp.SyncConnector", addr, addr, nil)
 
 	self := &msgRequest{
 		conn:      p.(cellnet.TCPConnector),
-		readyChan: readyChan,
+		readyChan: closeNotify,
 	}
 
 	proc.BindProcessorHandler(p, "tcp.ltv", self.onMessage)

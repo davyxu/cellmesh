@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/svcfx"
-	"reflect"
 	"time"
 )
 
@@ -19,20 +18,19 @@ func main() {
 		return
 	}
 
-	req := service.NewMsgRequestor(addr, nil)
-	req.Start()
-	for !req.IsReady() {
+	requestor := service.NewMsgRequestor(addr, nil)
+	requestor.Start()
+	for !requestor.IsReady() {
 
 		time.Sleep(time.Second)
-		req.Stop()
+		requestor.Stop()
 	}
 
-	err = req.Request(&proto.VerifyREQ{
+	err = proto.Verify(requestor, &proto.VerifyREQ{
 		Token: "hello",
-	}, reflect.TypeOf((*proto.VerifyACK)(nil)).Elem(), func(ack interface{}) {
+	}, func(ack *proto.VerifyACK) {
 
 		fmt.Println(ack)
-
 	})
 
 	if err != nil {
