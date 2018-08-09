@@ -60,10 +60,6 @@ func (self *consulDiscovery) WaitAdded() {
 
 func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.ServiceDesc) {
 
-	if self.firstUpdate != nil {
-		self.firstUpdate <- struct{}{}
-	}
-
 	switch eventName {
 	case "add":
 		log.Debugf("Add service '%s'", desc.ID)

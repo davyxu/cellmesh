@@ -2,7 +2,7 @@ package consulsd
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/cellnet"
 	"github.com/hashicorp/consul/api"
 	"sync"
 	"time"
@@ -23,9 +23,7 @@ type consulDiscovery struct {
 
 	ready bool
 
-	firstUpdate chan struct{}
-
-	pipe *util.Pipe
+	pipe *cellnet.Pipe
 }
 
 // 检查Consul自己挂掉
@@ -66,10 +64,9 @@ func (self *consulDiscovery) consulChecker() {
 func newConsulDiscovery(useCache bool) discovery.Discovery {
 
 	self := &consulDiscovery{
-		config:      api.DefaultConfig(),
-		useCache:    useCache,
-		firstUpdate: make(chan struct{}),
-		pipe:        util.NewPipe(),
+		config:   api.DefaultConfig(),
+		useCache: useCache,
+		pipe:     cellnet.NewPipe(),
 	}
 
 	var err error
@@ -82,14 +79,6 @@ func newConsulDiscovery(useCache bool) discovery.Discovery {
 	//go self.consulChecker()
 
 	self.startWatch()
-
-	select {
-	// 收到第一次更新
-	case <-self.firstUpdate:
-		self.firstUpdate = nil
-		// 等待刷新超时
-	case <-time.After(time.Second):
-	}
 
 	return self
 }
