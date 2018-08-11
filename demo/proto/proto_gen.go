@@ -8,6 +8,16 @@ import (
 	"reflect"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellmesh/service"
+)
+
+// Make compiler import happy
+var (
+	_ service.Service
+	_ cellnet.Peer
+	_ cellnet.Codec
+	_ reflect.Type
+	_ fmt.Formatter
 )
 
 type VerifyREQ struct {
@@ -18,8 +28,34 @@ type VerifyACK struct {
 	Status int32
 }
 
-func (self *VerifyREQ) String() string { return fmt.Sprintf("%+v", *self) }
-func (self *VerifyACK) String() string { return fmt.Sprintf("%+v", *self) }
+type OperateACK struct {
+}
+
+func (self *VerifyREQ) String() string  { return fmt.Sprintf("%+v", *self) }
+func (self *VerifyACK) String() string  { return fmt.Sprintf("%+v", *self) }
+func (self *OperateACK) String() string { return fmt.Sprintf("%+v", *self) }
+
+// RPC client
+func Verify(targetProvider interface{}, req *VerifyREQ, callback func(ack *VerifyACK)) error {
+
+	return service.Request(targetProvider, req, reflect.TypeOf((*VerifyACK)(nil)).Elem(), func(response interface{}) {
+		callback(response.(*VerifyACK))
+	})
+}
+
+// RPC server
+func Register_Verify(s service.Service, userHandler func(req *VerifyREQ, ack *VerifyACK)) {
+
+	s.AddCall("proto.VerifyREQ", &service.MethodInfo{
+		RequestType: reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
+		NewResponse: func() interface{} {
+			return &VerifyACK{}
+		},
+		Handler: func(event *service.Event) {
+			userHandler(event.Request.(*VerifyREQ), event.Response.(*VerifyACK))
+		},
+	})
+}
 
 func init() {
 
@@ -27,10 +63,18 @@ func init() {
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
 		ID:    23773,
-	})
+	}).SetContext("service", "demo.game")
+
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*VerifyACK)(nil)).Elem(),
 		ID:    51140,
-	})
+	}).SetContext("service", "demo.game")
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("binary"),
+		Type:  reflect.TypeOf((*OperateACK)(nil)).Elem(),
+		ID:    767,
+	}).SetContext("service", "demo.game")
+
 }

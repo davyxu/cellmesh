@@ -35,7 +35,7 @@ func Hello(req *HelloREQ) (ack *HelloACK, err error) {
 // 服务器注册
 func RegisterHello(s service.Service, userHandler func(req *HelloREQ, ack *HelloACK)) {
 
-	s.AddMethod("proto.HelloREQ", &service.MethodInfo{
+	s.AddCall("proto.HelloREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*HelloREQ)(nil)).Elem(),
 
 		NewResponse: func() interface{} {

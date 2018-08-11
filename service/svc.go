@@ -19,7 +19,7 @@ type cellService struct {
 	svcByName  sync.Map // map[reflect.Type]*endpoint.MethodInfo
 }
 
-func (self *cellService) AddMethod(name string, svc *MethodInfo) {
+func (self *cellService) AddCall(name string, svc *MethodInfo) {
 
 	self.svcByName.Store(svc.RequestType, svc)
 }

@@ -11,7 +11,19 @@ import (
 	"reflect"	
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/cellmesh/service"
 )
+
+// Make compiler import happy
+var (
+	_ service.Service
+	_ cellnet.Peer
+	_ cellnet.Codec
+	_ reflect.Type
+	_ fmt.Formatter
+)
+
+
 {{range $a, $enumobj := .Enums}}
 type {{.Name}} int32
 const (	{{range .Fields}}
@@ -46,13 +58,38 @@ type {{.Name}} struct{	{{range .Fields}}
 {{range .Structs}}
 func (self *{{.Name}}) String() string { return fmt.Sprintf("%+v",*self) } {{end}}
 
+{{range RPCPair $}}
+// RPC client
+func {{.Name}}(targetProvider interface{}, req *{{.REQ.Name}}, callback func(ack *{{.ACK.Name}})) error {
+
+	return service.Request(targetProvider, req, reflect.TypeOf((*{{.ACK.Name}})(nil)).Elem(), func(response interface{}) {
+		callback(response.(*{{.ACK.Name}}))
+	})
+}
+
+// RPC server
+func Register_{{.Name}}(s service.Service, userHandler func(req *{{.REQ.Name}}, ack *{{.ACK.Name}})) {
+
+	s.AddCall("{{$.PackageName}}.{{.REQ.Name}}", &service.MethodInfo{
+		RequestType: reflect.TypeOf((*{{.REQ.Name}})(nil)).Elem(),
+		NewResponse: func() interface{} {
+			return &{{.ACK.Name}}{}
+		},
+		Handler: func(event *service.Event) {
+			userHandler(event.Request.(*{{.REQ.Name}}), event.Response.(*{{.ACK.Name}}))
+		},
+	})
+}
+{{end}}
+
 func init() {
 	{{range .Structs}} {{ if IsMessage . }}
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("{{StructCodec .}}"),
 		Type:  reflect.TypeOf((*{{.Name}})(nil)).Elem(),
 		ID:    {{StructMsgID .}},
-	}) {{end}} {{end}}
+	}).SetContext("service", "{{StructService .}}")
+	{{end}} {{end}}
 }
 
 `

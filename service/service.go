@@ -16,7 +16,7 @@ type MethodInfo struct {
 }
 
 type Service interface {
-	AddMethod(name string, svc *MethodInfo)
+	AddCall(name string, svc *MethodInfo)
 
 	// 服务发现注册
 	Run() error

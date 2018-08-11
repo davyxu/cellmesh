@@ -1,10 +1,17 @@
-[AutoMsgID Codec:"binary"]
+
+[AutoMsgID Codec:"binary" Service: "demo.game"]
 struct VerifyREQ {
 	Token string
 }
 
 
-[AutoMsgID Codec:"binary"]
+[AutoMsgID Codec:"binary" Service: "demo.game"]
 struct VerifyACK {
 	Status int32
+}
+
+
+[AutoMsgID Codec:"binary" Service: "demo.game"]
+struct OperateACK {
+
 }
