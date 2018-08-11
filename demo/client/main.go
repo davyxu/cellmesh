@@ -8,14 +8,15 @@ import (
 	"time"
 )
 
-func main() {
+func SafeGetServiceAddress(serviceName string) service.Requestor {
 
-	svcfx.Init()
-
-	addr, err := service.QueryServiceAddress("demo.agent")
+RetryDiscovery:
+	addr, err := service.QueryServiceAddress(serviceName)
 	if err != nil {
 		fmt.Println(err)
-		return
+
+		time.Sleep(time.Second * 3)
+		goto RetryDiscovery
 	}
 
 	requestor := service.NewMsgRequestor(addr, nil)
@@ -26,14 +27,45 @@ func main() {
 		requestor.Stop()
 	}
 
-	err = proto.Verify(requestor, &proto.VerifyREQ{
-		Token: "hello",
+	return requestor
+}
+
+func login() (agentAddr service.AddressSource) {
+	loginReq := SafeGetServiceAddress("demo.login")
+
+	proto.Login(loginReq, &proto.LoginREQ{
+		Version:  "1.0",
+		Platform: "demo",
+		UID:      "1234",
+	}, func(ack *proto.LoginACK) {
+
+		agentAddr = &ack.Server
+
+		addr := fmt.Sprintf("%s:%d", agentAddr.GetIP(), agentAddr.GetPort())
+
+		requestor := service.NewMsgRequestor(addr, nil)
+		requestor.Start()
+		for !requestor.IsReady() {
+
+			time.Sleep(time.Second)
+			requestor.Stop()
+		}
+	})
+
+	return
+}
+
+func main() {
+
+	svcfx.Init()
+
+	agentAddr := login()
+
+	proto.Verify(agentAddr, &proto.VerifyREQ{
+		GameToken: "hello",
 	}, func(ack *proto.VerifyACK) {
 
 		fmt.Println(ack)
 	})
 
-	if err != nil {
-		fmt.Println(err)
-	}
 }

@@ -7,7 +7,7 @@ import (
 
 func Verify(req *proto.VerifyREQ, ack *proto.VerifyACK) {
 
-	fmt.Printf("verfiy: %+v \n", req.Token)
+	fmt.Printf("verfiy: %+v \n", req.GameToken)
 
-	ack.Status = 0
+	ack.Result = 0
 }

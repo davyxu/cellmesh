@@ -1,13 +1,41 @@
 
+enum ResultCode
+{
+	NoError = 0
+	GameNotReady
+}
+
+struct ServerInfo{
+    IP      string
+    Port    int32
+}
+
+
+[AutoMsgID Codec:"json" Service: "demo.login"]
+struct LoginREQ {
+    Version string
+	Platform string
+	UID string
+}
+
+
+[AutoMsgID Codec:"json" Service: "demo.login"]
+struct LoginACK {
+	Result ResultCode
+	Server ServerInfo
+	GameToken string
+}
+
+
 [AutoMsgID Codec:"binary" Service: "demo.game"]
 struct VerifyREQ {
-	Token string
+	GameToken string
 }
 
 
 [AutoMsgID Codec:"binary" Service: "demo.game"]
 struct VerifyACK {
-	Status int32
+	Result ResultCode
 }
 
 

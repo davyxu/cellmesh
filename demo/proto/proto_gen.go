@@ -20,20 +20,90 @@ var (
 	_ fmt.Formatter
 )
 
+type ResultCode int32
+
+const (
+	ResultCode_NoError      ResultCode = 0
+	ResultCode_GameNotReady ResultCode = 1
+)
+
+var (
+	ResultCodeMapperValueByName = map[string]int32{
+		"NoError":      0,
+		"GameNotReady": 1,
+	}
+
+	ResultCodeMapperNameByValue = map[int32]string{
+		0: "NoError",
+		1: "GameNotReady",
+	}
+
+	ResultCodeMapperTrailingCommentByValue = map[int32]string{
+		0: "",
+		1: "",
+	}
+)
+
+func (self ResultCode) String() string {
+	return ResultCodeMapperNameByValue[int32(self)]
+}
+
+type ServerInfo struct {
+	IP   string
+	Port int32
+}
+
+type LoginREQ struct {
+	Version  string
+	Platform string
+	UID      string
+}
+
+type LoginACK struct {
+	Result    ResultCode
+	Server    ServerInfo
+	GameToken string
+}
+
 type VerifyREQ struct {
-	Token string
+	GameToken string
 }
 
 type VerifyACK struct {
-	Status int32
+	Result ResultCode
 }
 
 type OperateACK struct {
 }
 
+func (self *ServerInfo) String() string { return fmt.Sprintf("%+v", *self) }
+func (self *LoginREQ) String() string   { return fmt.Sprintf("%+v", *self) }
+func (self *LoginACK) String() string   { return fmt.Sprintf("%+v", *self) }
 func (self *VerifyREQ) String() string  { return fmt.Sprintf("%+v", *self) }
 func (self *VerifyACK) String() string  { return fmt.Sprintf("%+v", *self) }
 func (self *OperateACK) String() string { return fmt.Sprintf("%+v", *self) }
+
+// RPC client
+func Login(targetProvider interface{}, req *LoginREQ, callback func(ack *LoginACK)) error {
+
+	return service.Request(targetProvider, req, reflect.TypeOf((*LoginACK)(nil)).Elem(), func(response interface{}) {
+		callback(response.(*LoginACK))
+	})
+}
+
+// RPC server
+func Register_Login(s service.Service, userHandler func(req *LoginREQ, ack *LoginACK)) {
+
+	s.AddCall("proto.LoginREQ", &service.MethodInfo{
+		RequestType: reflect.TypeOf((*LoginREQ)(nil)).Elem(),
+		NewResponse: func() interface{} {
+			return &LoginACK{}
+		},
+		Handler: func(event *service.Event) {
+			userHandler(event.Request.(*LoginREQ), event.Response.(*LoginACK))
+		},
+	})
+}
 
 // RPC client
 func Verify(targetProvider interface{}, req *VerifyREQ, callback func(ack *VerifyACK)) error {
@@ -58,6 +128,18 @@ func Register_Verify(s service.Service, userHandler func(req *VerifyREQ, ack *Ve
 }
 
 func init() {
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("json"),
+		Type:  reflect.TypeOf((*LoginREQ)(nil)).Elem(),
+		ID:    39009,
+	}).SetContext("service", "demo.login")
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("json"),
+		Type:  reflect.TypeOf((*LoginACK)(nil)).Elem(),
+		ID:    840,
+	}).SetContext("service", "demo.login")
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
