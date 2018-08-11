@@ -1,7 +1,6 @@
 package proto
 
 import (
-	"fmt"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
@@ -9,17 +8,6 @@ import (
 	"github.com/davyxu/cellnet/util"
 	"reflect"
 )
-
-type VerifyREQ struct {
-	Token string
-}
-
-type VerifyACK struct {
-	Status int32
-}
-
-func (self *VerifyREQ) String() string { return fmt.Sprintf("%+v", *self) }
-func (self *VerifyACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 // 客户端请求
 func Verify(targetProvider interface{}, req *VerifyREQ, callback func(ack *VerifyACK)) error {

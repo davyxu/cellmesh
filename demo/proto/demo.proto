@@ -1,0 +1,10 @@
+[AutoMsgID Codec:"binary"]
+struct VerifyREQ {
+	Token string
+}
+
+
+[AutoMsgID Codec:"binary"]
+struct VerifyACK {
+	Status int32
+}
