@@ -7,7 +7,7 @@ import (
 	"github.com/davyxu/cellmesh/svcfx"
 )
 
-func login() (agentAddr service.AddressSource) {
+func login() (agentAddr string) {
 
 	loginReq, err := service.CreateConnection("demo.login", service.NewMsgRequestor)
 	if err != nil {
@@ -15,18 +15,24 @@ func login() (agentAddr service.AddressSource) {
 		return
 	}
 
+	defer loginReq.Stop()
+
 	proto.Login(loginReq, &proto.LoginREQ{
 		Version:  "1.0",
 		Platform: "demo",
 		UID:      "1234",
 	}, func(ack *proto.LoginACK) {
 
-		agentAddr = &ack.Server
+		agentAddr = fmt.Sprintf("%s:%d", ack.Server.GetIP(), ack.Server.GetPort())
 	})
 
-	loginReq.Stop()
-
 	return
+}
+
+func getAgentRequestor(agentAddr string) service.Requestor {
+	waitGameReady := make(chan service.Requestor)
+	go service.KeepConnection(service.NewMsgRequestor, agentAddr, waitGameReady)
+	return <-waitGameReady
 }
 
 func main() {
@@ -35,15 +41,11 @@ func main() {
 
 	agentAddr := login()
 
-	addr := fmt.Sprintf("%s:%d", agentAddr.GetIP(), agentAddr.GetPort())
+	fmt.Println("agent:", agentAddr)
 
-	fmt.Println("agent:", addr)
+	agentReq := getAgentRequestor(agentAddr)
 
-	waitGameReady := make(chan service.Requestor)
-	go service.KeepConnection(service.NewMsgRequestor, addr, waitGameReady)
-	<-waitGameReady
-
-	proto.Verify(agentAddr, &proto.VerifyREQ{
+	proto.Verify(agentReq, &proto.VerifyREQ{
 		GameToken: "hello",
 	}, func(ack *proto.VerifyACK) {
 

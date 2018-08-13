@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"reflect"
@@ -21,23 +20,10 @@ var (
 	ErrInvalidTarget = errors.New("target provider should be 'servicename' or 'Requestor'")
 )
 
-type AddressSource interface {
-	GetIP() string
-	GetPort() int
-}
-
 func Request(targetProvider interface{}, req interface{}, ackType reflect.Type, callback func(interface{})) (err error) {
 
 	var requestor Requestor
 	switch tgt := targetProvider.(type) {
-	case AddressSource: // 地址直连
-
-		addr := fmt.Sprintf("%s:%d", tgt.GetIP(), tgt.GetPort())
-
-		if rawConn, ok := connByAddr.Load(addr); ok {
-			requestor = rawConn.(Requestor)
-		}
-
 	case Requestor:
 		requestor = tgt
 	default:

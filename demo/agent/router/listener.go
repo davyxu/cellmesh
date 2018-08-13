@@ -24,7 +24,7 @@ func Start() {
 	listenPort := clientListener.(cellnet.TCPAcceptor).ListenPort()
 
 	name := fmt.Sprintf("agent-%d", listenPort)
-	clientListener.(cellnet.PeerProperty).SetName(name)
+	clientListener.(cellnet.PeerProperty).SetName("frontend")
 
 	host := util.GetLocalIP()
 

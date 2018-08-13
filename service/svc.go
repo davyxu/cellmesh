@@ -64,7 +64,7 @@ func (self *cellService) Start() error {
 
 	self.listenPort = p.(cellnet.TCPAcceptor).ListenPort()
 
-	p.(cellnet.PeerProperty).SetName(fmt.Sprintf(":%d", self.listenPort))
+	p.(cellnet.PeerProperty).SetName(self.name)
 
 	host := util.GetLocalIP()
 
@@ -74,6 +74,8 @@ func (self *cellService) Start() error {
 		ID:      self.ID(),
 		Name:    self.name,
 	}
+
+	log.SetColor("green").Debugf("service '%s' listen at %s:%d", self.name, host, self.listenPort)
 
 	return discovery.Default.Register(sd)
 

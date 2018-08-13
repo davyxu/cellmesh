@@ -7,9 +7,9 @@ import (
 
 func Login(req *proto.LoginREQ, ack *proto.LoginACK) {
 
-	// TODO DB请求验证登录
+	// TODO 第三方请求验证及信息拉取
 
-	gameList, err := discovery.Default.Query("demo.game")
+	gameList, err := discovery.Default.Query("demo.agent")
 	if err != nil || len(gameList) == 0 {
 		ack.Result = proto.ResultCode_GameNotReady
 		return

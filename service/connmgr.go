@@ -62,7 +62,7 @@ func KeepConnection(reqSpawner func(addr string) Requestor, addr string, onReady
 	if requestor.IsReady() {
 
 		connByAddr.Store(addr, requestor)
-		log.SetColor("green").Debugln("service ready: ", addr)
+		log.SetColor("green").Debugln("add connection: ", addr)
 
 		if onReady != nil {
 			onReady <- requestor
@@ -72,7 +72,7 @@ func KeepConnection(reqSpawner func(addr string) Requestor, addr string, onReady
 		requestor.WaitStop()
 		connByAddr.Delete(addr)
 
-		log.SetColor("yellow").Debugln("service invalid: ", addr)
+		log.SetColor("yellow").Debugln("connection removed: ", addr)
 	} else {
 
 		requestor.Stop()
