@@ -12,7 +12,7 @@ func main() {
 
 	svcfx.Init()
 
-	service.PrepareConnection("demo.game")
+	go service.PrepareConnection("demo.game", service.NewRPCRequestor, nil)
 
 	router.Start()
 

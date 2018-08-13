@@ -13,7 +13,7 @@ import (
 type msgRequest struct {
 	conn cellnet.TCPConnector
 
-	readyChan chan string
+	stop sync.WaitGroup
 
 	ctxList sync.Map
 }
@@ -34,6 +34,11 @@ func (self *msgRequest) IsReady() bool {
 
 func (self *msgRequest) Stop() {
 	self.conn.Stop()
+}
+
+func (self *msgRequest) WaitStop() {
+
+	self.stop.Wait()
 }
 
 func (self *msgRequest) Request(req interface{}, ackType reflect.Type, callback func(interface{})) error {
@@ -70,21 +75,19 @@ func (self *msgRequest) onMessage(ev cellnet.Event) {
 	switch ev.Message().(type) {
 	case *cellnet.SessionConnected: // 已经连接上
 	case *cellnet.SessionClosed:
-		if self.readyChan != nil {
-			self.readyChan <- "closed"
-		}
-
+		self.stop.Done()
 	}
 }
 
-func NewMsgRequestor(addr string, closeNotify chan string) Requestor {
+func NewMsgRequestor(addr string) Requestor {
 
 	p := peer.NewGenericPeer("tcp.SyncConnector", addr, addr, nil)
 
 	self := &msgRequest{
-		conn:      p.(cellnet.TCPConnector),
-		readyChan: closeNotify,
+		conn: p.(cellnet.TCPConnector),
 	}
+
+	self.stop.Add(1)
 
 	proc.BindProcessorHandler(p, "tcp.ltv", self.onMessage)
 

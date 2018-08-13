@@ -28,10 +28,15 @@ type Discovery interface {
 	// 根据服务名查到可用的服务
 	Query(name string) (ret []*ServiceDesc, err error)
 
-	// 提供一个版本号，只有当版本变化时才停止阻塞
-	WaitAdded()
+	RegisterAddNotify() (ret chan struct{})
 }
 
 var (
 	Default Discovery
 )
+
+type UpdateContext struct {
+	Data []interface{}
+
+	addNotify []chan struct{}
+}

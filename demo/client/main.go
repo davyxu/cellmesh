@@ -5,33 +5,15 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/svcfx"
-	"time"
 )
 
-func SafeGetServiceAddress(serviceName string) service.Requestor {
+func login() (agentAddr service.AddressSource) {
 
-RetryDiscovery:
-	addr, err := service.QueryServiceAddress(serviceName)
+	loginReq, err := service.CreateConnection("demo.login", service.NewMsgRequestor)
 	if err != nil {
 		fmt.Println(err)
-
-		time.Sleep(time.Second * 3)
-		goto RetryDiscovery
+		return
 	}
-
-	requestor := service.NewMsgRequestor(addr, nil)
-	requestor.Start()
-	for !requestor.IsReady() {
-
-		time.Sleep(time.Second)
-		requestor.Stop()
-	}
-
-	return requestor
-}
-
-func login() (agentAddr service.AddressSource) {
-	loginReq := SafeGetServiceAddress("demo.login")
 
 	proto.Login(loginReq, &proto.LoginREQ{
 		Version:  "1.0",
@@ -40,17 +22,9 @@ func login() (agentAddr service.AddressSource) {
 	}, func(ack *proto.LoginACK) {
 
 		agentAddr = &ack.Server
-
-		addr := fmt.Sprintf("%s:%d", agentAddr.GetIP(), agentAddr.GetPort())
-
-		requestor := service.NewMsgRequestor(addr, nil)
-		requestor.Start()
-		for !requestor.IsReady() {
-
-			time.Sleep(time.Second)
-			requestor.Stop()
-		}
 	})
+
+	loginReq.Stop()
 
 	return
 }
@@ -60,6 +34,14 @@ func main() {
 	svcfx.Init()
 
 	agentAddr := login()
+
+	addr := fmt.Sprintf("%s:%d", agentAddr.GetIP(), agentAddr.GetPort())
+
+	fmt.Println("agent:", addr)
+
+	waitGameReady := make(chan service.Requestor)
+	go service.KeepConnection(service.NewMsgRequestor, addr, waitGameReady)
+	<-waitGameReady
 
 	proto.Verify(agentAddr, &proto.VerifyREQ{
 		GameToken: "hello",

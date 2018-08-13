@@ -2,7 +2,6 @@ package consulsd
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellnet"
 	"github.com/hashicorp/consul/api"
 	"sync"
 	"time"
@@ -23,7 +22,7 @@ type consulDiscovery struct {
 
 	ready bool
 
-	pipe *cellnet.Pipe
+	addNotify []chan struct{}
 }
 
 // 检查Consul自己挂掉
@@ -66,7 +65,6 @@ func newConsulDiscovery(useCache bool) discovery.Discovery {
 	self := &consulDiscovery{
 		config:   api.DefaultConfig(),
 		useCache: useCache,
-		pipe:     cellnet.NewPipe(),
 	}
 
 	var err error

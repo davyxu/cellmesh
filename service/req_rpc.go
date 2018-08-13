@@ -8,13 +8,14 @@ import (
 	_ "github.com/davyxu/cellnet/proc/tcp"
 	"github.com/davyxu/cellnet/rpc"
 	"reflect"
+	"sync"
 	"time"
 )
 
 type rpcRequest struct {
 	conn cellnet.TCPConnector
 
-	closeNotify chan string
+	stop sync.WaitGroup
 }
 
 func (self *rpcRequest) Session() cellnet.Session {
@@ -52,18 +53,24 @@ func (self *rpcRequest) onMessage(ev cellnet.Event) {
 	switch ev.Message().(type) {
 	case *cellnet.SessionConnected: // 已经连接上
 	case *cellnet.SessionClosed:
-		self.closeNotify <- "closed"
+		self.stop.Done()
 	}
 }
 
-func NewRPCRequestor(addr string, closeNotify chan string) Requestor {
+func (self *rpcRequest) WaitStop() {
+
+	self.stop.Wait()
+}
+
+func NewRPCRequestor(addr string) Requestor {
 
 	p := peer.NewGenericPeer("tcp.SyncConnector", addr, addr, nil)
 
 	self := &rpcRequest{
-		conn:        p.(cellnet.TCPConnector),
-		closeNotify: closeNotify,
+		conn: p.(cellnet.TCPConnector),
 	}
+
+	self.stop.Add(1)
 
 	proc.BindProcessorHandler(p, "tcp.ltv", self.onMessage)
 

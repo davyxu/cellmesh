@@ -45,17 +45,11 @@ func (self *consulDiscovery) directQuery(name string) (ret []*discovery.ServiceD
 
 }
 
-func (self *consulDiscovery) WaitAdded() {
+func (self *consulDiscovery) RegisterAddNotify() (ret chan struct{}) {
 
-	var data []interface{}
-	self.pipe.Pick(&data)
-
-	for _, d := range data {
-
-		if d.(string) == "add" {
-			return
-		}
-	}
+	ret = make(chan struct{})
+	self.addNotify = append(self.addNotify, ret)
+	return
 }
 
 func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.ServiceDesc) {
@@ -64,9 +58,11 @@ func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.Se
 	case "add":
 		log.Debugf("Add service '%s'", desc.ID)
 
+		for _, n := range self.addNotify {
+			n <- struct{}{}
+		}
+
 	case "remove":
 		log.Debugf("Remove service '%s'", desc.ID)
 	}
-
-	self.pipe.Add(eventName)
 }

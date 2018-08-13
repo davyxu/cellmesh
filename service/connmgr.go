@@ -20,6 +20,8 @@ type Requestor interface {
 	IsReady() bool
 
 	Stop()
+
+	WaitStop()
 }
 
 var (
@@ -51,44 +53,64 @@ func QueryServiceAddress(serviceName string) (string, error) {
 	return fmt.Sprintf("%s:%d", desc.Address, desc.Port), nil
 }
 
-func connLoop(serviceName string) {
+// 保持长连接
+func KeepConnection(reqSpawner func(addr string) Requestor, addr string, onReady chan Requestor) {
+	requestor := reqSpawner(addr)
 
+	requestor.Start()
+
+	if requestor.IsReady() {
+
+		connByAddr.Store(addr, requestor)
+		log.SetColor("green").Debugln("service ready: ", addr)
+
+		if onReady != nil {
+			onReady <- requestor
+		}
+
+		// 连接断开
+		requestor.WaitStop()
+		connByAddr.Delete(addr)
+
+		log.SetColor("yellow").Debugln("service invalid: ", addr)
+	} else {
+
+		requestor.Stop()
+		time.Sleep(time.Second * 3)
+	}
+}
+
+// 建立短连接
+func CreateConnection(serviceName string, reqSpawner func(addr string) Requestor) (Requestor, error) {
+
+	addr, err := QueryServiceAddress(serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	requestor := reqSpawner(addr)
+
+	requestor.Start()
+
+	if requestor.IsReady() {
+		return requestor, err
+	}
+
+	return nil, errors.New("fail create connection")
+}
+
+// 异步建立与服务连接
+func PrepareConnection(serviceName string, reqSpawner func(addr string) Requestor, onReady chan Requestor) {
+
+	notify := discovery.Default.RegisterAddNotify()
 	for {
 		addr, err := QueryServiceAddress(serviceName)
 
 		if err == nil {
-			closeNotify := make(chan string)
-
-			requestor := NewRPCRequestor(addr, closeNotify)
-
-			requestor.Start()
-
-			if requestor.IsReady() {
-
-				connByAddr.Store(addr, requestor)
-				log.SetColor("green").Debugln("service ready: ", serviceName)
-
-				// 连接断开
-				<-closeNotify
-				connByAddr.Delete(addr)
-
-				log.SetColor("yellow").Debugln("service invalid: ", serviceName)
-			} else {
-
-				requestor.Stop()
-				time.Sleep(time.Second * 3)
-				continue
-			}
-
-			requestor.Stop()
+			KeepConnection(reqSpawner, addr, onReady)
 		}
 
-		discovery.Default.WaitAdded()
+		<-notify
 	}
-}
 
-// 异步建立与服务连接
-func PrepareConnection(serviceName string) {
-
-	go connLoop(serviceName)
 }
