@@ -12,6 +12,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellmesh/service"
+	{{if HasJsonCodec $}}_ "github.com/davyxu/cellnet/codec/json"{{end}}
 )
 
 // Make compiler import happy

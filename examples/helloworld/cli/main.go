@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	_ "github.com/davyxu/cellmesh/discovery/consul"
 	"github.com/davyxu/cellmesh/examples/helloworld/proto"
 	"github.com/davyxu/cellmesh/service"
 	_ "github.com/davyxu/cellmesh/service/cell"

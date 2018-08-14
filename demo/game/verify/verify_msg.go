@@ -9,5 +9,7 @@ func Verify(req *proto.VerifyREQ, ack *proto.VerifyACK) {
 
 	fmt.Printf("verfiy: %+v \n", req.GameToken)
 
+	//proto.RouterBindUser()
+
 	ack.Result = 0
 }

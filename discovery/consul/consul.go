@@ -19,8 +19,6 @@ type consulDiscovery struct {
 	nameWatcher sync.Map //map[string]*watch.Plan
 	localSvc    sync.Map // map[string]*localService
 
-	useCache bool
-
 	ready bool
 
 	addNotify []chan struct{}
@@ -61,11 +59,10 @@ func (self *consulDiscovery) consulChecker() {
 	}
 }
 
-func newConsulDiscovery(useCache bool) discovery.Discovery {
+func NewDiscovery() discovery.Discovery {
 
 	self := &consulDiscovery{
-		config:   api.DefaultConfig(),
-		useCache: useCache,
+		config: api.DefaultConfig(),
 	}
 
 	var err error
@@ -96,8 +93,4 @@ func newConsulDiscovery(useCache bool) discovery.Discovery {
 	}
 
 	return self
-}
-
-func init() {
-	discovery.Default = newConsulDiscovery(true)
 }

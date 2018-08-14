@@ -9,6 +9,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/cellmesh/service"
+	_ "github.com/davyxu/cellnet/codec/json"
 )
 
 // Make compiler import happy
@@ -73,15 +74,30 @@ type VerifyACK struct {
 	Result ResultCode
 }
 
-type OperateACK struct {
+type ChatREQ struct {
+	Content string
 }
 
-func (self *ServerInfo) String() string { return fmt.Sprintf("%+v", *self) }
-func (self *LoginREQ) String() string   { return fmt.Sprintf("%+v", *self) }
-func (self *LoginACK) String() string   { return fmt.Sprintf("%+v", *self) }
-func (self *VerifyREQ) String() string  { return fmt.Sprintf("%+v", *self) }
-func (self *VerifyACK) String() string  { return fmt.Sprintf("%+v", *self) }
-func (self *OperateACK) String() string { return fmt.Sprintf("%+v", *self) }
+type ChatACK struct {
+	Content string
+}
+
+type RouterBindUserREQ struct {
+	Token int64
+}
+
+type RouterBindUserACK struct {
+}
+
+func (self *ServerInfo) String() string        { return fmt.Sprintf("%+v", *self) }
+func (self *LoginREQ) String() string          { return fmt.Sprintf("%+v", *self) }
+func (self *LoginACK) String() string          { return fmt.Sprintf("%+v", *self) }
+func (self *VerifyREQ) String() string         { return fmt.Sprintf("%+v", *self) }
+func (self *VerifyACK) String() string         { return fmt.Sprintf("%+v", *self) }
+func (self *ChatREQ) String() string           { return fmt.Sprintf("%+v", *self) }
+func (self *ChatACK) String() string           { return fmt.Sprintf("%+v", *self) }
+func (self *RouterBindUserREQ) String() string { return fmt.Sprintf("%+v", *self) }
+func (self *RouterBindUserACK) String() string { return fmt.Sprintf("%+v", *self) }
 
 // RPC client
 func Login(targetProvider interface{}, req *LoginREQ, callback func(ack *LoginACK)) error {
@@ -127,6 +143,50 @@ func Register_Verify(s service.Service, userHandler func(req *VerifyREQ, ack *Ve
 	})
 }
 
+// RPC client
+func Chat(targetProvider interface{}, req *ChatREQ, callback func(ack *ChatACK)) error {
+
+	return service.Request(targetProvider, req, reflect.TypeOf((*ChatACK)(nil)).Elem(), func(response interface{}) {
+		callback(response.(*ChatACK))
+	})
+}
+
+// RPC server
+func Register_Chat(s service.Service, userHandler func(req *ChatREQ, ack *ChatACK)) {
+
+	s.AddCall("proto.ChatREQ", &service.MethodInfo{
+		RequestType: reflect.TypeOf((*ChatREQ)(nil)).Elem(),
+		NewResponse: func() interface{} {
+			return &ChatACK{}
+		},
+		Handler: func(event *service.Event) {
+			userHandler(event.Request.(*ChatREQ), event.Response.(*ChatACK))
+		},
+	})
+}
+
+// RPC client
+func RouterBindUser(targetProvider interface{}, req *RouterBindUserREQ, callback func(ack *RouterBindUserACK)) error {
+
+	return service.Request(targetProvider, req, reflect.TypeOf((*RouterBindUserACK)(nil)).Elem(), func(response interface{}) {
+		callback(response.(*RouterBindUserACK))
+	})
+}
+
+// RPC server
+func Register_RouterBindUser(s service.Service, userHandler func(req *RouterBindUserREQ, ack *RouterBindUserACK)) {
+
+	s.AddCall("proto.RouterBindUserREQ", &service.MethodInfo{
+		RequestType: reflect.TypeOf((*RouterBindUserREQ)(nil)).Elem(),
+		NewResponse: func() interface{} {
+			return &RouterBindUserACK{}
+		},
+		Handler: func(event *service.Event) {
+			userHandler(event.Request.(*RouterBindUserREQ), event.Response.(*RouterBindUserACK))
+		},
+	})
+}
+
 func init() {
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
@@ -155,8 +215,26 @@ func init() {
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
-		Type:  reflect.TypeOf((*OperateACK)(nil)).Elem(),
-		ID:    767,
+		Type:  reflect.TypeOf((*ChatREQ)(nil)).Elem(),
+		ID:    5832,
 	}).SetContext("service", "demo.game")
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("binary"),
+		Type:  reflect.TypeOf((*ChatACK)(nil)).Elem(),
+		ID:    33199,
+	}).SetContext("service", "demo.game")
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("binary"),
+		Type:  reflect.TypeOf((*RouterBindUserREQ)(nil)).Elem(),
+		ID:    34501,
+	}).SetContext("service", "demo.agent")
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("binary"),
+		Type:  reflect.TypeOf((*RouterBindUserACK)(nil)).Elem(),
+		ID:    61868,
+	}).SetContext("service", "demo.agent")
 
 }

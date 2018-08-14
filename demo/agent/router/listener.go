@@ -3,7 +3,6 @@ package router
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
-	_ "github.com/davyxu/cellmesh/discovery/consul"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
@@ -17,7 +16,7 @@ var (
 func Start() {
 	clientListener = peer.NewGenericPeer("tcp.Acceptor", "", ":18000", nil)
 
-	proc.BindProcessorHandler(clientListener, "demo.router", nil)
+	proc.BindProcessorHandler(clientListener, "demo.agent", nil)
 
 	clientListener.Start()
 
@@ -29,10 +28,10 @@ func Start() {
 	host := util.GetLocalIP()
 
 	sd := &discovery.ServiceDesc{
-		Address: host,
-		Port:    listenPort,
-		ID:      name,
-		Name:    "demo.agent",
+		Host: host,
+		Port: listenPort,
+		ID:   name,
+		Name: "demo.agent",
 	}
 
 	discovery.Default.Register(sd)

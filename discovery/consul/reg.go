@@ -27,7 +27,7 @@ func (self *consulDiscovery) Register(svc *discovery.ServiceDesc) error {
 	err := self.client.Agent().ServiceRegister(&api.AgentServiceRegistration{
 		ID:      svc.ID,
 		Name:    svc.Name,
-		Address: svc.Address,
+		Address: svc.Host,
 		Port:    svc.Port,
 		Check:   &checker,
 	})

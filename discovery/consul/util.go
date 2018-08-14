@@ -20,10 +20,10 @@ func isMeshServiceHealth(entry *api.ServiceEntry) bool {
 func consulSvcToService(s *api.ServiceEntry) *discovery.ServiceDesc {
 
 	return &discovery.ServiceDesc{
-		Name:    s.Service.Service,
-		ID:      s.Service.ID,
-		Address: s.Service.Address,
-		Port:    s.Service.Port,
+		Name: s.Service.Service,
+		ID:   s.Service.ID,
+		Host: s.Service.Address,
+		Port: s.Service.Port,
 	}
 }
 

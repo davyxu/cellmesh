@@ -31,9 +31,7 @@ func Request(targetProvider interface{}, req interface{}, ackType reflect.Type, 
 	}
 
 	if requestor != nil {
-
 		err = requestor.Request(req, ackType, callback)
-
 	} else {
 		err = errors.New("target not ready")
 	}

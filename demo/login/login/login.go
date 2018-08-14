@@ -18,7 +18,7 @@ func Login(req *proto.LoginREQ, ack *proto.LoginACK) {
 	// TODO 按照游戏负载选择游戏地址
 	finalDesc := gameList[0]
 
-	ack.Server.IP = finalDesc.Address
+	ack.Server.IP = finalDesc.Host
 	ack.Server.Port = int32(finalDesc.Port)
 
 	// 没有错误

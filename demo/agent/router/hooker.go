@@ -14,6 +14,11 @@ import (
 type RelayUpMsgHooker struct {
 }
 
+/* 网关通过规则
+1. 直接接收，根据消息选择后台服务地址，适用于未绑定用户的消息
+2. 绑定消息，直接获得用户绑定的后台地址转发
+*/
+
 // 从客户端接收到的消息
 func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
@@ -26,18 +31,18 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 		if serviceName, ok := QuerySerivceByMsgType(msgType); ok {
 
 			// TODO 会话绑定，负载均衡
-			addr, err := service.QueryServiceAddress(serviceName)
+			desc, err := service.QueryServiceAddress(serviceName)
 			if err != nil {
 
 				log.Warnln("Get relay service address failed ", err)
 				return
 			}
 
-			ses := service.GetSession(addr)
+			ses := service.GetSession(desc.ID)
 
 			// 服务没有连接
 			if ses == nil {
-				log.Warnf("service '%s' not reachable, addr: %s", serviceName, addr)
+				log.Warnf("service '%s' not reachable, addr: %s", serviceName, desc)
 				return nil
 			}
 
@@ -79,7 +84,7 @@ func init() {
 	transmitter := new(tcp.TCPMessageTransmitter)
 	routerHooker := new(RelayUpMsgHooker)
 
-	proc.RegisterProcessor("demo.router", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("demo.agent", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(transmitter)
 		bundle.SetHooker(routerHooker)

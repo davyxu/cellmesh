@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/util"
+	meshutil "github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/tcp"
@@ -66,13 +66,13 @@ func (self *cellService) Start() error {
 
 	p.(cellnet.PeerProperty).SetName(self.name)
 
-	host := util.GetLocalIP()
+	host := meshutil.GetLocalIP()
 
 	sd := &discovery.ServiceDesc{
-		Address: host,
-		Port:    self.listenPort,
-		ID:      self.ID(),
-		Name:    self.name,
+		Host: host,
+		Port: self.listenPort,
+		ID:   self.ID(),
+		Name: self.name,
 	}
 
 	log.SetColor("green").Debugf("service '%s' listen at %s:%d", self.name, host, self.listenPort)
@@ -88,7 +88,7 @@ func (self *cellService) Run() error {
 		return err
 	}
 
-	util.WaitExit()
+	meshutil.WaitExit()
 
 	return self.Stop()
 }

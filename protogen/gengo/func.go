@@ -50,4 +50,15 @@ func init() {
 
 		return
 	}
+
+	FuncMap["HasJsonCodec"] = func(ctx *gen.Context) bool {
+
+		for _, d := range ctx.Structs() {
+			if d.TagValueString("Codec") == "json" {
+				return true
+			}
+		}
+
+		return true
+	}
 }

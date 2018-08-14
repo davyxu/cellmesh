@@ -40,6 +40,11 @@ struct VerifyACK {
 
 
 [AutoMsgID Codec:"binary" Service: "demo.game"]
-struct OperateACK {
+struct ChatREQ {
+	Content string
+}
 
+[AutoMsgID Codec:"binary" Service: "demo.game"]
+struct ChatACK{
+	Content string
 }

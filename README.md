@@ -55,7 +55,6 @@ Service通过专有协议生成，同时生成传输协议的stub（例如protob
 - 位于同一个Node的A Service调用B Service如何处理?
    这种方式处理逻辑效率较低，底层会提示错误，比不予处理。
 
-
 # TODO
 - [x] 基于Consul的服务发现及Watch机制
 - [x] 网关基本逻辑

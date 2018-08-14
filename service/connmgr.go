@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"reflect"
@@ -38,31 +37,32 @@ func GetSession(addr string) cellnet.Session {
 	return nil
 }
 
-func QueryServiceAddress(serviceName string) (string, error) {
+func QueryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
 	descList, err := discovery.Default.Query(serviceName)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	desc := selectStrategy(descList)
 
 	if desc == nil {
-		return "", errors.New("target not reachable")
+		return nil, errors.New("target not reachable")
 	}
 
-	return fmt.Sprintf("%s:%d", desc.Address, desc.Port), nil
+	return desc, nil
 }
 
 // 保持长连接
-func KeepConnection(reqSpawner func(addr string) Requestor, addr string, onReady chan Requestor) {
-	requestor := reqSpawner(addr)
+func KeepConnection(requestor Requestor, svcid string, onReady chan Requestor) {
 
 	requestor.Start()
 
 	if requestor.IsReady() {
 
-		connByAddr.Store(addr, requestor)
-		log.SetColor("green").Debugln("add connection: ", addr)
+		if svcid != "" {
+			connByAddr.Store(svcid, requestor)
+			log.SetColor("green").Debugln("add connection: ", svcid)
+		}
 
 		if onReady != nil {
 			onReady <- requestor
@@ -70,9 +70,12 @@ func KeepConnection(reqSpawner func(addr string) Requestor, addr string, onReady
 
 		// 连接断开
 		requestor.WaitStop()
-		connByAddr.Delete(addr)
+		if svcid != "" {
+			connByAddr.Delete(svcid)
 
-		log.SetColor("yellow").Debugln("connection removed: ", addr)
+			log.SetColor("yellow").Debugln("connection removed: ", svcid)
+		}
+
 	} else {
 
 		requestor.Stop()
@@ -83,12 +86,12 @@ func KeepConnection(reqSpawner func(addr string) Requestor, addr string, onReady
 // 建立短连接
 func CreateConnection(serviceName string, reqSpawner func(addr string) Requestor) (Requestor, error) {
 
-	addr, err := QueryServiceAddress(serviceName)
+	desc, err := QueryServiceAddress(serviceName)
 	if err != nil {
 		return nil, err
 	}
 
-	requestor := reqSpawner(addr)
+	requestor := reqSpawner(desc.Address())
 
 	requestor.Start()
 
@@ -104,10 +107,10 @@ func PrepareConnection(serviceName string, reqSpawner func(addr string) Requesto
 
 	notify := discovery.Default.RegisterAddNotify()
 	for {
-		addr, err := QueryServiceAddress(serviceName)
+		desc, err := QueryServiceAddress(serviceName)
 
 		if err == nil {
-			KeepConnection(reqSpawner, addr, onReady)
+			KeepConnection(reqSpawner(desc.Address()), desc.ID, onReady)
 		}
 
 		<-notify

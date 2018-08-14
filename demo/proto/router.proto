@@ -1,0 +1,10 @@
+// 在网关上绑定用户到此连接
+[AutoMsgID Codec:"binary" Service: "demo.router"]
+struct RouterBindUserREQ {
+    Token int64	
+}
+
+[AutoMsgID Codec:"binary" Service: "demo.router"]
+struct RouterBindUserACK {
+		
+}
