@@ -23,7 +23,7 @@ func login() (agentAddr string) {
 		UID:      "1234",
 	}, func(ack *proto.LoginACK) {
 
-		agentAddr = fmt.Sprintf("%s:%d", ack.Server.GetIP(), ack.Server.GetPort())
+		agentAddr = fmt.Sprintf("%s:%d", ack.Server.IP, ack.Server.Port)
 	})
 
 	return
