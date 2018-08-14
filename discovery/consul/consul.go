@@ -3,6 +3,7 @@ package consulsd
 import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -77,6 +78,22 @@ func newConsulDiscovery(useCache bool) discovery.Discovery {
 	//go self.consulChecker()
 
 	self.startWatch()
+
+	now := time.Now()
+
+	// 自旋等待cache首次更新
+	for {
+		if _, ok := self.cache.Load("consul"); ok {
+			break
+		}
+
+		runtime.Gosched()
+
+		// 超时退出
+		if time.Now().Sub(now) > time.Second {
+			break
+		}
+	}
 
 	return self
 }
