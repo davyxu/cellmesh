@@ -1,4 +1,4 @@
-package router
+package frontend
 
 import (
 	"github.com/davyxu/cellmesh/service"
@@ -33,7 +33,6 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 			// TODO 会话绑定，负载均衡
 			desc, err := service.QueryServiceAddress(serviceName)
 			if err != nil {
-
 				log.Warnln("Get relay service address failed ", err)
 				return
 			}
@@ -42,7 +41,7 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 
 			// 服务没有连接
 			if ses == nil {
-				log.Warnf("service '%s' not reachable, addr: %s", serviceName, desc)
+				log.Warnf("service '%s' not reachable, svcid: '%s'", serviceName, desc.ID)
 				return nil
 			}
 
@@ -71,7 +70,7 @@ func init() {
 
 		for _, sesID := range event.ContextID {
 
-			ses := clientListener.(peer.SessionManager).GetSession(sesID)
+			ses := frontendListener.(peer.SessionManager).GetSession(sesID)
 			if ses == nil {
 				continue
 			}

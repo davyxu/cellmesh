@@ -3,13 +3,12 @@ package verify
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
+	"github.com/davyxu/cellmesh/service"
 )
 
-func Verify(req *proto.VerifyREQ, ack *proto.VerifyACK) {
+func Verify(ev *service.Event, req *proto.VerifyREQ, ack *proto.VerifyACK) {
 
 	fmt.Printf("verfiy: %+v \n", req.GameToken)
-
-	//proto.RouterBindUser()
 
 	ack.Result = 0
 }

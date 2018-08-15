@@ -1,4 +1,4 @@
-package router
+package frontend
 
 import (
 	"github.com/davyxu/cellnet"

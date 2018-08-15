@@ -69,7 +69,7 @@ func {{.Name}}(targetProvider interface{}, req *{{.REQ.Name}}, callback func(ack
 }
 
 // RPC server
-func Register_{{.Name}}(s service.Service, userHandler func(req *{{.REQ.Name}}, ack *{{.ACK.Name}})) {
+func Serve_{{.Name}}(s service.Service, userHandler func(event *service.Event, req *{{.REQ.Name}}, ack *{{.ACK.Name}})) {
 
 	s.AddCall("{{$.PackageName}}.{{.REQ.Name}}", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*{{.REQ.Name}})(nil)).Elem(),
@@ -77,7 +77,7 @@ func Register_{{.Name}}(s service.Service, userHandler func(req *{{.REQ.Name}}, 
 			return &{{.ACK.Name}}{}
 		},
 		Handler: func(event *service.Event) {
-			userHandler(event.Request.(*{{.REQ.Name}}), event.Response.(*{{.ACK.Name}}))
+			userHandler(event, event.Request.(*{{.REQ.Name}}), event.Response.(*{{.ACK.Name}}))
 		},
 	})
 }

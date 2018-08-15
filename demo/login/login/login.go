@@ -3,9 +3,10 @@ package login
 import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
+	"github.com/davyxu/cellmesh/service"
 )
 
-func Login(req *proto.LoginREQ, ack *proto.LoginACK) {
+func Login(ev *service.Event, req *proto.LoginREQ, ack *proto.LoginACK) {
 
 	// TODO 第三方请求验证及信息拉取
 

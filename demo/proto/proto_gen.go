@@ -82,6 +82,13 @@ type ChatACK struct {
 	Content string
 }
 
+type RegisterBackendREQ struct {
+	SvcID string
+}
+
+type RegisterBackendACK struct {
+}
+
 type RouterBindUserREQ struct {
 	Token int64
 }
@@ -89,15 +96,17 @@ type RouterBindUserREQ struct {
 type RouterBindUserACK struct {
 }
 
-func (self *ServerInfo) String() string        { return fmt.Sprintf("%+v", *self) }
-func (self *LoginREQ) String() string          { return fmt.Sprintf("%+v", *self) }
-func (self *LoginACK) String() string          { return fmt.Sprintf("%+v", *self) }
-func (self *VerifyREQ) String() string         { return fmt.Sprintf("%+v", *self) }
-func (self *VerifyACK) String() string         { return fmt.Sprintf("%+v", *self) }
-func (self *ChatREQ) String() string           { return fmt.Sprintf("%+v", *self) }
-func (self *ChatACK) String() string           { return fmt.Sprintf("%+v", *self) }
-func (self *RouterBindUserREQ) String() string { return fmt.Sprintf("%+v", *self) }
-func (self *RouterBindUserACK) String() string { return fmt.Sprintf("%+v", *self) }
+func (self *ServerInfo) String() string         { return fmt.Sprintf("%+v", *self) }
+func (self *LoginREQ) String() string           { return fmt.Sprintf("%+v", *self) }
+func (self *LoginACK) String() string           { return fmt.Sprintf("%+v", *self) }
+func (self *VerifyREQ) String() string          { return fmt.Sprintf("%+v", *self) }
+func (self *VerifyACK) String() string          { return fmt.Sprintf("%+v", *self) }
+func (self *ChatREQ) String() string            { return fmt.Sprintf("%+v", *self) }
+func (self *ChatACK) String() string            { return fmt.Sprintf("%+v", *self) }
+func (self *RegisterBackendREQ) String() string { return fmt.Sprintf("%+v", *self) }
+func (self *RegisterBackendACK) String() string { return fmt.Sprintf("%+v", *self) }
+func (self *RouterBindUserREQ) String() string  { return fmt.Sprintf("%+v", *self) }
+func (self *RouterBindUserACK) String() string  { return fmt.Sprintf("%+v", *self) }
 
 // RPC client
 func Login(targetProvider interface{}, req *LoginREQ, callback func(ack *LoginACK)) error {
@@ -108,7 +117,7 @@ func Login(targetProvider interface{}, req *LoginREQ, callback func(ack *LoginAC
 }
 
 // RPC server
-func Register_Login(s service.Service, userHandler func(req *LoginREQ, ack *LoginACK)) {
+func Serve_Login(s service.Service, userHandler func(event *service.Event, req *LoginREQ, ack *LoginACK)) {
 
 	s.AddCall("proto.LoginREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*LoginREQ)(nil)).Elem(),
@@ -116,7 +125,7 @@ func Register_Login(s service.Service, userHandler func(req *LoginREQ, ack *Logi
 			return &LoginACK{}
 		},
 		Handler: func(event *service.Event) {
-			userHandler(event.Request.(*LoginREQ), event.Response.(*LoginACK))
+			userHandler(event, event.Request.(*LoginREQ), event.Response.(*LoginACK))
 		},
 	})
 }
@@ -130,7 +139,7 @@ func Verify(targetProvider interface{}, req *VerifyREQ, callback func(ack *Verif
 }
 
 // RPC server
-func Register_Verify(s service.Service, userHandler func(req *VerifyREQ, ack *VerifyACK)) {
+func Serve_Verify(s service.Service, userHandler func(event *service.Event, req *VerifyREQ, ack *VerifyACK)) {
 
 	s.AddCall("proto.VerifyREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
@@ -138,7 +147,7 @@ func Register_Verify(s service.Service, userHandler func(req *VerifyREQ, ack *Ve
 			return &VerifyACK{}
 		},
 		Handler: func(event *service.Event) {
-			userHandler(event.Request.(*VerifyREQ), event.Response.(*VerifyACK))
+			userHandler(event, event.Request.(*VerifyREQ), event.Response.(*VerifyACK))
 		},
 	})
 }
@@ -152,7 +161,7 @@ func Chat(targetProvider interface{}, req *ChatREQ, callback func(ack *ChatACK))
 }
 
 // RPC server
-func Register_Chat(s service.Service, userHandler func(req *ChatREQ, ack *ChatACK)) {
+func Serve_Chat(s service.Service, userHandler func(event *service.Event, req *ChatREQ, ack *ChatACK)) {
 
 	s.AddCall("proto.ChatREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*ChatREQ)(nil)).Elem(),
@@ -160,7 +169,29 @@ func Register_Chat(s service.Service, userHandler func(req *ChatREQ, ack *ChatAC
 			return &ChatACK{}
 		},
 		Handler: func(event *service.Event) {
-			userHandler(event.Request.(*ChatREQ), event.Response.(*ChatACK))
+			userHandler(event, event.Request.(*ChatREQ), event.Response.(*ChatACK))
+		},
+	})
+}
+
+// RPC client
+func RegisterBackend(targetProvider interface{}, req *RegisterBackendREQ, callback func(ack *RegisterBackendACK)) error {
+
+	return service.Request(targetProvider, req, reflect.TypeOf((*RegisterBackendACK)(nil)).Elem(), func(response interface{}) {
+		callback(response.(*RegisterBackendACK))
+	})
+}
+
+// RPC server
+func Serve_RegisterBackend(s service.Service, userHandler func(event *service.Event, req *RegisterBackendREQ, ack *RegisterBackendACK)) {
+
+	s.AddCall("proto.RegisterBackendREQ", &service.MethodInfo{
+		RequestType: reflect.TypeOf((*RegisterBackendREQ)(nil)).Elem(),
+		NewResponse: func() interface{} {
+			return &RegisterBackendACK{}
+		},
+		Handler: func(event *service.Event) {
+			userHandler(event, event.Request.(*RegisterBackendREQ), event.Response.(*RegisterBackendACK))
 		},
 	})
 }
@@ -174,7 +205,7 @@ func RouterBindUser(targetProvider interface{}, req *RouterBindUserREQ, callback
 }
 
 // RPC server
-func Register_RouterBindUser(s service.Service, userHandler func(req *RouterBindUserREQ, ack *RouterBindUserACK)) {
+func Serve_RouterBindUser(s service.Service, userHandler func(event *service.Event, req *RouterBindUserREQ, ack *RouterBindUserACK)) {
 
 	s.AddCall("proto.RouterBindUserREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*RouterBindUserREQ)(nil)).Elem(),
@@ -182,7 +213,7 @@ func Register_RouterBindUser(s service.Service, userHandler func(req *RouterBind
 			return &RouterBindUserACK{}
 		},
 		Handler: func(event *service.Event) {
-			userHandler(event.Request.(*RouterBindUserREQ), event.Response.(*RouterBindUserACK))
+			userHandler(event, event.Request.(*RouterBindUserREQ), event.Response.(*RouterBindUserACK))
 		},
 	})
 }
@@ -227,14 +258,26 @@ func init() {
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
+		Type:  reflect.TypeOf((*RegisterBackendREQ)(nil)).Elem(),
+		ID:    25493,
+	}).SetContext("service", "demo.router")
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("binary"),
+		Type:  reflect.TypeOf((*RegisterBackendACK)(nil)).Elem(),
+		ID:    52860,
+	}).SetContext("service", "demo.router")
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*RouterBindUserREQ)(nil)).Elem(),
 		ID:    34501,
-	}).SetContext("service", "demo.agent")
+	}).SetContext("service", "demo.router")
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*RouterBindUserACK)(nil)).Elem(),
 		ID:    61868,
-	}).SetContext("service", "demo.agent")
+	}).SetContext("service", "demo.router")
 
 }

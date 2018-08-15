@@ -4,17 +4,21 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/svcfx"
+	"github.com/davyxu/golog"
 	"os"
 	"strings"
 )
+
+var log = golog.New("main")
 
 func login() (agentAddr string) {
 
 	loginReq, err := service.CreateConnection("demo.login", service.NewMsgRequestor)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorln(err)
 		return
 	}
 
@@ -26,7 +30,12 @@ func login() (agentAddr string) {
 		UID:      "1234",
 	}, func(ack *proto.LoginACK) {
 
-		agentAddr = fmt.Sprintf("%s:%d", ack.Server.IP, ack.Server.Port)
+		if ack.Result == proto.ResultCode_NoError {
+			agentAddr = fmt.Sprintf("%s:%d", ack.Server.IP, ack.Server.Port)
+		} else {
+			panic(ack.Result.String())
+		}
+
 	})
 
 	return
@@ -34,7 +43,11 @@ func login() (agentAddr string) {
 
 func getAgentRequestor(agentAddr string) service.Requestor {
 	waitGameReady := make(chan service.Requestor)
-	go service.KeepConnection(service.NewMsgRequestor(agentAddr), "", waitGameReady)
+	go service.KeepConnection(service.NewMsgRequestor(agentAddr), nil, func(_ *discovery.ServiceDesc, requestor service.Requestor) {
+
+		waitGameReady <- requestor
+	})
+
 	return <-waitGameReady
 }
 

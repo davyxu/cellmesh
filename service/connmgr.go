@@ -27,11 +27,10 @@ var (
 	connByAddr sync.Map
 )
 
-func GetSession(addr string) cellnet.Session {
-	if rawConn, ok := connByAddr.Load(addr); ok {
-		conn := rawConn.(Requestor)
+func GetSession(svcid string) cellnet.Session {
 
-		return conn.Session()
+	if raw, ok := connByAddr.Load(svcid); ok {
+		return raw.(cellnet.Session)
 	}
 
 	return nil
@@ -53,27 +52,27 @@ func QueryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
 }
 
 // 保持长连接
-func KeepConnection(requestor Requestor, svcid string, onReady chan Requestor) {
+func KeepConnection(requestor Requestor, desc *discovery.ServiceDesc, onReady func(*discovery.ServiceDesc, Requestor)) {
 
 	requestor.Start()
 
 	if requestor.IsReady() {
 
-		if svcid != "" {
-			connByAddr.Store(svcid, requestor)
-			log.SetColor("green").Debugln("add connection: ", svcid)
+		if desc != nil {
+			connByAddr.Store(desc.ID, requestor.Session())
+			log.SetColor("green").Debugln("add connection: ", desc.ID)
 		}
 
 		if onReady != nil {
-			onReady <- requestor
+			onReady(desc, requestor)
 		}
 
 		// 连接断开
 		requestor.WaitStop()
-		if svcid != "" {
-			connByAddr.Delete(svcid)
+		if desc != nil {
+			connByAddr.Delete(desc.ID)
 
-			log.SetColor("yellow").Debugln("connection removed: ", svcid)
+			log.SetColor("yellow").Debugln("connection removed: ", desc.ID)
 		}
 
 	} else {
@@ -103,14 +102,14 @@ func CreateConnection(serviceName string, reqSpawner func(addr string) Requestor
 }
 
 // 异步建立与服务连接
-func PrepareConnection(serviceName string, reqSpawner func(addr string) Requestor, onReady chan Requestor) {
+func PrepareConnection(serviceName string, reqSpawner func(addr string) Requestor, onReady func(*discovery.ServiceDesc, Requestor)) {
 
 	notify := discovery.Default.RegisterAddNotify()
 	for {
 		desc, err := QueryServiceAddress(serviceName)
 
 		if err == nil {
-			KeepConnection(reqSpawner(desc.Address()), desc.ID, onReady)
+			KeepConnection(reqSpawner(desc.Address()), desc, onReady)
 		}
 
 		<-notify

@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/davyxu/cellmesh/broker"
 	"github.com/davyxu/cellmesh/discovery"
 	meshutil "github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
@@ -32,6 +33,10 @@ type ReplyEvent interface {
 	Reply(msg interface{})
 }
 
+type SessionClosedACK struct {
+	Session cellnet.Session
+}
+
 func (self *cellService) Start() error {
 
 	p := peer.NewGenericPeer("tcp.Acceptor", "", ":0", nil)
@@ -50,11 +55,19 @@ func (self *cellService) Start() error {
 				e := &Event{
 					Request:  ev.Message(),
 					Response: svc.NewResponse(),
+					Session:  ev.Session(),
 				}
 
 				svc.Handler(e)
 
 				evData.Reply(e.Response)
+			}
+		default:
+			switch ev.Message().(type) {
+			case *cellnet.SessionClosed:
+				broker.Publish("SessionClosed", &SessionClosedACK{
+					Session: ev.Session(),
+				})
 			}
 		}
 

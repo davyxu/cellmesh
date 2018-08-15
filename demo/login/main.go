@@ -6,7 +6,10 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/svcfx"
+	"github.com/davyxu/golog"
 )
+
+var log = golog.New("main")
 
 func main() {
 
@@ -14,7 +17,7 @@ func main() {
 
 	s := service.NewService("demo.login")
 
-	proto.Register_Login(s, login.Login)
+	proto.Serve_Login(s, login.Login)
 
 	err := s.Run()
 
