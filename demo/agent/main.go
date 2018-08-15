@@ -5,9 +5,10 @@ import (
 	"github.com/davyxu/cellmesh/demo/agent/frontend"
 	"github.com/davyxu/cellmesh/demo/proto"
 	_ "github.com/davyxu/cellmesh/demo/proto" // 进入协议
-	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellmesh/service/cellsvc"
 	"github.com/davyxu/cellmesh/svcfx"
+	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/golog"
 )
 
@@ -17,14 +18,17 @@ func main() {
 
 	svcfx.Init()
 
-	// 网关主动连接后台的服务器，因为后台服务是"服务"
-	go service.PrepareConnection("demo.game", service.NewRPCRequestor, func(desc *discovery.ServiceDesc, requestor service.Requestor) {
+	dis := service.NewDispatcher()
 
-	})
+	s := cellsvc.NewService("demo.router")
+	s.SetDispatcher(dis)
+	proto.Serve_RouterBindUser(dis, backend.RouterBindUser)
+	s.Start()
 
-	s := service.NewService("demo.router")
-	proto.Serve_RouterBindUser(s, backend.RouterBindUser)
-	go s.Run()
+	frontend.Start()
 
-	frontend.Run()
+	util.WaitExit()
+
+	frontend.Stop()
+	s.Stop()
 }

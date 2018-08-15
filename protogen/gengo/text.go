@@ -69,9 +69,9 @@ func {{.Name}}(targetProvider interface{}, req *{{.REQ.Name}}, callback func(ack
 }
 
 // RPC server
-func Serve_{{.Name}}(s service.Service, userHandler func(event *service.Event, req *{{.REQ.Name}}, ack *{{.ACK.Name}})) {
+func Serve_{{.Name}}(dis *service.Dispatcher, userHandler func(event *service.Event, req *{{.REQ.Name}}, ack *{{.ACK.Name}})) {
 
-	s.AddCall("{{$.PackageName}}.{{.REQ.Name}}", &service.MethodInfo{
+	dis.AddCall("{{$.PackageName}}.{{.REQ.Name}}", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*{{.REQ.Name}})(nil)).Elem(),
 		NewResponse: func() interface{} {
 			return &{{.ACK.Name}}{}

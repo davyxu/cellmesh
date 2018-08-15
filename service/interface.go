@@ -7,9 +7,12 @@ import (
 
 type Event struct {
 	Session cellnet.Session
+
 	Request interface{}
 
 	Response interface{}
+
+	ContextID []int64
 }
 
 type MethodInfo struct {
@@ -20,10 +23,14 @@ type MethodInfo struct {
 }
 
 type Service interface {
-	AddCall(name string, svc *MethodInfo)
+	SetDispatcher(dis *Dispatcher)
 
 	// 服务发现注册
-	Run() error
+	Start()
 
-	ID() string
+	Stop()
+}
+
+type ReplyEvent interface {
+	Reply(msg interface{})
 }

@@ -13,16 +13,8 @@ var (
 	frontendListener cellnet.Peer
 )
 
-func Run() {
-	start()
-
-	util.WaitExit()
-
-	stop()
-}
-
-func start() {
-	frontendListener = peer.NewGenericPeer("tcp.Acceptor", "", ":18000", nil)
+func Start() {
+	frontendListener = peer.NewGenericPeer("tcp.Acceptor", "demo.agent", ":18000", nil)
 
 	proc.BindProcessorHandler(frontendListener, "demo.agent", nil)
 
@@ -45,7 +37,7 @@ func start() {
 	discovery.Default.Register(sd)
 }
 
-func stop() {
+func Stop() {
 
 	if frontendListener != nil {
 		frontendListener.Stop()

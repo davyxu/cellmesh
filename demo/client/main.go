@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
-	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/svcfx"
 	"github.com/davyxu/golog"
@@ -42,11 +41,9 @@ func login() (agentAddr string) {
 }
 
 func getAgentRequestor(agentAddr string) service.Requestor {
-	waitGameReady := make(chan service.Requestor)
-	go service.KeepConnection(service.NewMsgRequestor(agentAddr), nil, func(_ *discovery.ServiceDesc, requestor service.Requestor) {
 
-		waitGameReady <- requestor
-	})
+	waitGameReady := make(chan service.Requestor)
+	go service.KeepConnection(service.NewMsgRequestor(agentAddr), "", waitGameReady)
 
 	return <-waitGameReady
 }

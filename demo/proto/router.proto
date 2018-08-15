@@ -1,16 +1,14 @@
-// 在网关上注册后端连接
-[AutoMsgID Codec:"binary" Service: "demo.router"]
-struct RegisterBackendREQ {
-    SvcID string
-}
-
-[AutoMsgID Codec:"binary" Service: "demo.router"]
-struct RegisterBackendACK {
-		
-}
-
-
 // 在网关上绑定用户到此连接
+[AutoMsgID Codec:"binary"]
+struct ServiceIdentifyACK {
+    SvcName string
+	SvcID string
+	Host string
+	Port int32
+}
+
+
+
 [AutoMsgID Codec:"binary" Service: "demo.router"]
 struct RouterBindUserREQ {
     Token int64	

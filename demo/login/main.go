@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"github.com/davyxu/cellmesh/demo/login/login"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellmesh/service/cellsvc"
 	"github.com/davyxu/cellmesh/svcfx"
+	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/golog"
 )
 
@@ -15,13 +16,16 @@ func main() {
 
 	svcfx.Init()
 
-	s := service.NewService("demo.login")
+	dis := service.NewDispatcher()
 
-	proto.Serve_Login(s, login.Login)
+	s := cellsvc.NewService("demo.login")
+	s.SetDispatcher(dis)
 
-	err := s.Run()
+	proto.Serve_Login(dis, login.Login)
 
-	if err != nil {
-		fmt.Println(err)
-	}
+	s.Start()
+
+	util.WaitExit()
+
+	s.Stop()
 }

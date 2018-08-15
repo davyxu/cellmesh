@@ -82,11 +82,11 @@ type ChatACK struct {
 	Content string
 }
 
-type RegisterBackendREQ struct {
-	SvcID string
-}
-
-type RegisterBackendACK struct {
+type ServiceIdentifyACK struct {
+	SvcName string
+	SvcID   string
+	Host    string
+	Port    int32
 }
 
 type RouterBindUserREQ struct {
@@ -103,8 +103,7 @@ func (self *VerifyREQ) String() string          { return fmt.Sprintf("%+v", *sel
 func (self *VerifyACK) String() string          { return fmt.Sprintf("%+v", *self) }
 func (self *ChatREQ) String() string            { return fmt.Sprintf("%+v", *self) }
 func (self *ChatACK) String() string            { return fmt.Sprintf("%+v", *self) }
-func (self *RegisterBackendREQ) String() string { return fmt.Sprintf("%+v", *self) }
-func (self *RegisterBackendACK) String() string { return fmt.Sprintf("%+v", *self) }
+func (self *ServiceIdentifyACK) String() string { return fmt.Sprintf("%+v", *self) }
 func (self *RouterBindUserREQ) String() string  { return fmt.Sprintf("%+v", *self) }
 func (self *RouterBindUserACK) String() string  { return fmt.Sprintf("%+v", *self) }
 
@@ -117,9 +116,9 @@ func Login(targetProvider interface{}, req *LoginREQ, callback func(ack *LoginAC
 }
 
 // RPC server
-func Serve_Login(s service.Service, userHandler func(event *service.Event, req *LoginREQ, ack *LoginACK)) {
+func Serve_Login(dis *service.Dispatcher, userHandler func(event *service.Event, req *LoginREQ, ack *LoginACK)) {
 
-	s.AddCall("proto.LoginREQ", &service.MethodInfo{
+	dis.AddCall("proto.LoginREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*LoginREQ)(nil)).Elem(),
 		NewResponse: func() interface{} {
 			return &LoginACK{}
@@ -139,9 +138,9 @@ func Verify(targetProvider interface{}, req *VerifyREQ, callback func(ack *Verif
 }
 
 // RPC server
-func Serve_Verify(s service.Service, userHandler func(event *service.Event, req *VerifyREQ, ack *VerifyACK)) {
+func Serve_Verify(dis *service.Dispatcher, userHandler func(event *service.Event, req *VerifyREQ, ack *VerifyACK)) {
 
-	s.AddCall("proto.VerifyREQ", &service.MethodInfo{
+	dis.AddCall("proto.VerifyREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
 		NewResponse: func() interface{} {
 			return &VerifyACK{}
@@ -161,37 +160,15 @@ func Chat(targetProvider interface{}, req *ChatREQ, callback func(ack *ChatACK))
 }
 
 // RPC server
-func Serve_Chat(s service.Service, userHandler func(event *service.Event, req *ChatREQ, ack *ChatACK)) {
+func Serve_Chat(dis *service.Dispatcher, userHandler func(event *service.Event, req *ChatREQ, ack *ChatACK)) {
 
-	s.AddCall("proto.ChatREQ", &service.MethodInfo{
+	dis.AddCall("proto.ChatREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*ChatREQ)(nil)).Elem(),
 		NewResponse: func() interface{} {
 			return &ChatACK{}
 		},
 		Handler: func(event *service.Event) {
 			userHandler(event, event.Request.(*ChatREQ), event.Response.(*ChatACK))
-		},
-	})
-}
-
-// RPC client
-func RegisterBackend(targetProvider interface{}, req *RegisterBackendREQ, callback func(ack *RegisterBackendACK)) error {
-
-	return service.Request(targetProvider, req, reflect.TypeOf((*RegisterBackendACK)(nil)).Elem(), func(response interface{}) {
-		callback(response.(*RegisterBackendACK))
-	})
-}
-
-// RPC server
-func Serve_RegisterBackend(s service.Service, userHandler func(event *service.Event, req *RegisterBackendREQ, ack *RegisterBackendACK)) {
-
-	s.AddCall("proto.RegisterBackendREQ", &service.MethodInfo{
-		RequestType: reflect.TypeOf((*RegisterBackendREQ)(nil)).Elem(),
-		NewResponse: func() interface{} {
-			return &RegisterBackendACK{}
-		},
-		Handler: func(event *service.Event) {
-			userHandler(event, event.Request.(*RegisterBackendREQ), event.Response.(*RegisterBackendACK))
 		},
 	})
 }
@@ -205,9 +182,9 @@ func RouterBindUser(targetProvider interface{}, req *RouterBindUserREQ, callback
 }
 
 // RPC server
-func Serve_RouterBindUser(s service.Service, userHandler func(event *service.Event, req *RouterBindUserREQ, ack *RouterBindUserACK)) {
+func Serve_RouterBindUser(dis *service.Dispatcher, userHandler func(event *service.Event, req *RouterBindUserREQ, ack *RouterBindUserACK)) {
 
-	s.AddCall("proto.RouterBindUserREQ", &service.MethodInfo{
+	dis.AddCall("proto.RouterBindUserREQ", &service.MethodInfo{
 		RequestType: reflect.TypeOf((*RouterBindUserREQ)(nil)).Elem(),
 		NewResponse: func() interface{} {
 			return &RouterBindUserACK{}
@@ -258,15 +235,9 @@ func init() {
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
-		Type:  reflect.TypeOf((*RegisterBackendREQ)(nil)).Elem(),
-		ID:    25493,
-	}).SetContext("service", "demo.router")
-
-	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec: codec.MustGetCodec("binary"),
-		Type:  reflect.TypeOf((*RegisterBackendACK)(nil)).Elem(),
-		ID:    52860,
-	}).SetContext("service", "demo.router")
+		Type:  reflect.TypeOf((*ServiceIdentifyACK)(nil)).Elem(),
+		ID:    49180,
+	}).SetContext("service", "")
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),

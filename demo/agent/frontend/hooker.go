@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
@@ -30,23 +31,14 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 
 		if serviceName, ok := QuerySerivceByMsgType(msgType); ok {
 
-			// TODO 会话绑定，负载均衡
-			desc, err := service.QueryServiceAddress(serviceName)
-			if err != nil {
-				log.Warnln("Get relay service address failed ", err)
-				return
-			}
+			service.VisitConn(func(ses cellnet.Session, desc *discovery.ServiceDesc) {
 
-			ses := service.GetSession(desc.ID)
+				if desc.Name == serviceName {
+					// 透传消息
+					relay.Relay(ses, incomingMsg, inputEvent.Session().ID())
+				}
 
-			// 服务没有连接
-			if ses == nil {
-				log.Warnf("service '%s' not reachable, svcid: '%s'", serviceName, desc.ID)
-				return nil
-			}
-
-			// 透传消息
-			relay.Relay(ses, incomingMsg, inputEvent.Session().ID())
+			})
 
 		} else {
 

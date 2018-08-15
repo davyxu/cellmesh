@@ -24,16 +24,55 @@ type Requestor interface {
 }
 
 var (
-	connByAddr sync.Map
+	connBySvcID        = map[string]cellnet.Session{}
+	connBySvcNameGuard sync.RWMutex
 )
 
-func GetSession(svcid string) cellnet.Session {
+func AddConn(ses cellnet.Session, desc *discovery.ServiceDesc) {
 
-	if raw, ok := connByAddr.Load(svcid); ok {
-		return raw.(cellnet.Session)
+	connBySvcNameGuard.Lock()
+	ses.(cellnet.ContextSet).SetContext("desc", desc)
+	connBySvcID[desc.ID] = ses
+	connBySvcNameGuard.Unlock()
+
+	log.SetColor("green").Debugln("add connection: ", desc.ID)
+}
+
+func GetConn(svcid string) (ret *discovery.ServiceDesc) {
+	connBySvcNameGuard.RLock()
+	defer connBySvcNameGuard.RUnlock()
+
+	if ses, ok := connBySvcID[svcid]; ok {
+
+		ses.(cellnet.ContextSet).GetContext("desc", &ret)
 	}
 
-	return nil
+	return
+}
+
+func RemoveConn(ses cellnet.Session) {
+	var desc *discovery.ServiceDesc
+	if ses.(cellnet.ContextSet).GetContext("desc", &desc) {
+		connBySvcNameGuard.Lock()
+		delete(connBySvcID, desc.ID)
+		connBySvcNameGuard.Unlock()
+
+		log.SetColor("yellow").Debugln("connection removed: ", desc.ID)
+	}
+}
+
+func VisitConn(callback func(ses cellnet.Session, desc *discovery.ServiceDesc)) {
+	connBySvcNameGuard.RLock()
+
+	for _, ses := range connBySvcID {
+
+		var desc *discovery.ServiceDesc
+		if ses.(cellnet.ContextSet).GetContext("desc", &desc) {
+			callback(ses, desc)
+		}
+	}
+
+	connBySvcNameGuard.RUnlock()
 }
 
 func QueryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
@@ -49,37 +88,6 @@ func QueryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
 	}
 
 	return desc, nil
-}
-
-// 保持长连接
-func KeepConnection(requestor Requestor, desc *discovery.ServiceDesc, onReady func(*discovery.ServiceDesc, Requestor)) {
-
-	requestor.Start()
-
-	if requestor.IsReady() {
-
-		if desc != nil {
-			connByAddr.Store(desc.ID, requestor.Session())
-			log.SetColor("green").Debugln("add connection: ", desc.ID)
-		}
-
-		if onReady != nil {
-			onReady(desc, requestor)
-		}
-
-		// 连接断开
-		requestor.WaitStop()
-		if desc != nil {
-			connByAddr.Delete(desc.ID)
-
-			log.SetColor("yellow").Debugln("connection removed: ", desc.ID)
-		}
-
-	} else {
-
-		requestor.Stop()
-		time.Sleep(time.Second * 3)
-	}
 }
 
 // 建立短连接
@@ -101,18 +109,46 @@ func CreateConnection(serviceName string, reqSpawner func(addr string) Requestor
 	return nil, errors.New("fail create connection")
 }
 
-// 异步建立与服务连接
-func PrepareConnection(serviceName string, reqSpawner func(addr string) Requestor, onReady func(*discovery.ServiceDesc, Requestor)) {
+//// 异步建立与服务连接
+//func PrepareConnection(serviceName string, reqSpawner func(addr string) Requestor, onReady func(*discovery.ServiceDesc, Requestor)) {
+//
+//	notify := discovery.Default.RegisterAddNotify()
+//	for {
+//		desc, err := QueryServiceAddress(serviceName)
+//
+//		if err == nil {
+//			KeepConnection(reqSpawner(desc.Address()), desc, onReady)
+//		}
+//
+//		<-notify
+//	}
+//
+//}
 
-	notify := discovery.Default.RegisterAddNotify()
-	for {
-		desc, err := QueryServiceAddress(serviceName)
+// 保持长连接
+func KeepConnection(requestor Requestor, svcid string, onReady chan Requestor) {
 
-		if err == nil {
-			KeepConnection(reqSpawner(desc.Address()), desc, onReady)
+	requestor.Start()
+
+	if requestor.IsReady() {
+
+		if svcid != "" {
+			log.SetColor("green").Debugln("add connection: ", svcid)
 		}
 
-		<-notify
-	}
+		if onReady != nil {
+			onReady <- requestor
+		}
 
+		// 连接断开
+		requestor.WaitStop()
+		if svcid != "" {
+			log.SetColor("yellow").Debugln("connection removed: ", svcid)
+		}
+
+	} else {
+
+		requestor.Stop()
+		time.Sleep(time.Second * 3)
+	}
 }
