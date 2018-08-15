@@ -4,7 +4,9 @@ import (
 	"errors"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/rpc"
 	"reflect"
+	"time"
 )
 
 func selectStrategy(descList []*discovery.ServiceDesc) *discovery.ServiceDesc {
@@ -26,6 +28,20 @@ func Request(targetProvider interface{}, req interface{}, ackType reflect.Type, 
 	switch tgt := targetProvider.(type) {
 	case Requestor:
 		requestor = tgt
+	case cellnet.Session:
+		log.Debugln(1)
+		ack, err := rpc.CallSync(tgt, req, time.Second*5)
+		if err != nil {
+			log.Debugln(2)
+			return err
+		}
+
+		log.Debugln(3)
+
+		callback(ack)
+		log.Debugln(4)
+		return nil
+
 	default:
 		panic(ErrInvalidTarget)
 	}

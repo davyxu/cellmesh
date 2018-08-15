@@ -21,7 +21,8 @@ type consulDiscovery struct {
 
 	ready bool
 
-	addNotify []chan struct{}
+	addNotify    []chan struct{}
+	removeNotify []chan struct{}
 }
 
 // 检查Consul自己挂掉
@@ -76,7 +77,7 @@ func NewDiscovery() discovery.Discovery {
 
 	self.startWatch()
 
-	now := time.Now()
+	start := time.Now()
 
 	// 自旋等待cache首次更新
 	for {
@@ -87,7 +88,7 @@ func NewDiscovery() discovery.Discovery {
 		runtime.Gosched()
 
 		// 超时退出
-		if time.Now().Sub(now) > time.Second {
+		if time.Now().Sub(start) > time.Second {
 			break
 		}
 	}

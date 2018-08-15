@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/relay"
 	"reflect"
@@ -16,7 +17,7 @@ func (self *Dispatcher) AddCall(name string, svc *MethodInfo) {
 	self.svcByName.Store(svc.RequestType, svc)
 }
 
-func (self *Dispatcher) Invoke(ev cellnet.Event) {
+func (self *Dispatcher) Invoke(ev cellnet.Event, sd *discovery.ServiceDesc) {
 
 	msgType := reflect.TypeOf(ev.Message()).Elem()
 
@@ -27,6 +28,7 @@ func (self *Dispatcher) Invoke(ev cellnet.Event) {
 		e := &Event{
 			Request: ev.Message(),
 			Session: ev.Session(),
+			SD:      sd,
 		}
 
 		if relayEvent, ok := ev.(*relay.RecvMsgEvent); ok {

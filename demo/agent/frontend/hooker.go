@@ -74,11 +74,12 @@ func init() {
 
 	transmitter := new(tcp.TCPMessageTransmitter)
 	routerHooker := new(RelayUpMsgHooker)
+	msgLogger := new(tcp.MsgHooker)
 
 	proc.RegisterProcessor("demo.agent", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(transmitter)
-		bundle.SetHooker(routerHooker)
+		bundle.SetHooker(proc.NewMultiHooker(msgLogger, routerHooker))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 }

@@ -30,17 +30,17 @@ type connector interface {
 	IsReady() bool
 }
 
-func (self *conService) connFlow(desc *discovery.ServiceDesc) {
+func (self *conService) connFlow(sd *discovery.ServiceDesc) {
 
-	if _, ok := self.descMap.Load(desc.Address()); ok {
+	if _, ok := self.descMap.Load(sd.Address()); ok {
 		return
 	}
 
-	self.descMap.Store(desc.Address(), desc)
+	self.descMap.Store(sd.Address(), sd)
 
 	var stop sync.WaitGroup
 
-	p := peer.NewGenericPeer("tcp.SyncConnector", self.svcName, desc.Address(), nil)
+	p := peer.NewGenericPeer("tcp.SyncConnector", self.svcName, sd.Address(), nil)
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
@@ -57,7 +57,7 @@ func (self *conService) connFlow(desc *discovery.ServiceDesc) {
 		}
 
 		if self.dis != nil {
-			self.dis.Invoke(ev)
+			self.dis.Invoke(ev, sd)
 		}
 	})
 
@@ -69,15 +69,15 @@ func (self *conService) connFlow(desc *discovery.ServiceDesc) {
 
 	if conn.IsReady() {
 
-		if desc != nil {
+		if sd != nil {
 
-			service.AddConn(conn.Session(), desc)
+			service.AddConn(conn.Session(), sd)
 		}
 
 		// 连接断开
 		stop.Wait()
 
-		if desc != nil {
+		if sd != nil {
 			service.RemoveConn(conn.Session())
 		}
 
@@ -87,11 +87,11 @@ func (self *conService) connFlow(desc *discovery.ServiceDesc) {
 		time.Sleep(time.Second * 3)
 	}
 
-	self.descMap.Delete(desc.Address())
+	self.descMap.Delete(sd.Address())
 }
 
 func (self *conService) loop() {
-	notify := discovery.Default.RegisterAddNotify()
+	notify := discovery.Default.RegisterNotify("add")
 	for {
 
 		descList, err := discovery.Default.Query(self.svcName)
@@ -105,6 +105,7 @@ func (self *conService) loop() {
 
 		}
 
+		// TODO 关闭及删除signal
 		<-notify
 	}
 }

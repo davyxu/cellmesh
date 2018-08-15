@@ -45,11 +45,39 @@ func (self *consulDiscovery) directQuery(name string) (ret []*discovery.ServiceD
 
 }
 
-func (self *consulDiscovery) RegisterAddNotify() (ret chan struct{}) {
+func (self *consulDiscovery) RegisterNotify(mode string) (ret chan struct{}) {
 
 	ret = make(chan struct{})
-	self.addNotify = append(self.addNotify, ret)
+
+	switch mode {
+	case "add":
+		self.addNotify = append(self.addNotify, ret)
+	case "remove":
+		self.removeNotify = append(self.removeNotify, ret)
+	}
+
 	return
+}
+
+func (self *consulDiscovery) DeregisterNotify(mode string, c chan struct{}) {
+
+	switch mode {
+	case "add":
+		for index, n := range self.addNotify {
+			if n == c {
+				self.addNotify = append(self.addNotify[:index], self.addNotify[index+1:]...)
+				break
+			}
+		}
+	case "remove":
+		for index, n := range self.removeNotify {
+			if n == c {
+				self.removeNotify = append(self.removeNotify[:index], self.removeNotify[index+1:]...)
+				break
+			}
+		}
+	}
+
 }
 
 func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.ServiceDesc) {

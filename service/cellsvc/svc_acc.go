@@ -54,7 +54,10 @@ func (self *accService) Start() {
 		}
 
 		if self.dis != nil {
-			self.dis.Invoke(ev)
+
+			sd := service.GetSDBySession(ev.Session())
+
+			self.dis.Invoke(ev, sd)
 		}
 	})
 

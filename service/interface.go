@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"reflect"
 )
@@ -13,6 +14,8 @@ type Event struct {
 	Response interface{}
 
 	ContextID []int64
+
+	SD *discovery.ServiceDesc
 }
 
 type MethodInfo struct {

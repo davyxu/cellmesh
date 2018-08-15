@@ -38,16 +38,31 @@ func AddConn(ses cellnet.Session, desc *discovery.ServiceDesc) {
 	log.SetColor("green").Debugln("add connection: ", desc.ID)
 }
 
-func GetConn(svcid string) (ret *discovery.ServiceDesc) {
+func GetSDBySession(ses cellnet.Session) (ret *discovery.ServiceDesc) {
+
+	connBySvcNameGuard.RLock()
+	defer connBySvcNameGuard.RUnlock()
+
+	for _, libses := range connBySvcID {
+		if libses == ses {
+			ses.(cellnet.ContextSet).GetContext("desc", &ret)
+			break
+		}
+	}
+
+	return
+}
+
+func GetConn(svcid string) cellnet.Session {
 	connBySvcNameGuard.RLock()
 	defer connBySvcNameGuard.RUnlock()
 
 	if ses, ok := connBySvcID[svcid]; ok {
 
-		ses.(cellnet.ContextSet).GetContext("desc", &ret)
+		return ses
 	}
 
-	return
+	return nil
 }
 
 func RemoveConn(ses cellnet.Session) {
@@ -84,7 +99,7 @@ func QueryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
 	desc := selectStrategy(descList)
 
 	if desc == nil {
-		return nil, errors.New("target not reachable")
+		return nil, errors.New("target not reachable:" + serviceName)
 	}
 
 	return desc, nil
@@ -93,37 +108,31 @@ func QueryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
 // 建立短连接
 func CreateConnection(serviceName string, reqSpawner func(addr string) Requestor) (Requestor, error) {
 
-	desc, err := QueryServiceAddress(serviceName)
-	if err != nil {
-		return nil, err
+	notify := discovery.Default.RegisterNotify("add")
+	for {
+
+		desc, err := QueryServiceAddress(serviceName)
+
+		if err == nil {
+
+			requestor := reqSpawner(desc.Address())
+
+			requestor.Start()
+
+			if requestor.IsReady() {
+				return requestor, err
+			}
+
+			requestor.Stop()
+		}
+
+		<-notify
 	}
 
-	requestor := reqSpawner(desc.Address())
+	discovery.Default.DeregisterNotify("add", notify)
 
-	requestor.Start()
-
-	if requestor.IsReady() {
-		return requestor, err
-	}
-
-	return nil, errors.New("fail create connection")
+	return nil, nil
 }
-
-//// 异步建立与服务连接
-//func PrepareConnection(serviceName string, reqSpawner func(addr string) Requestor, onReady func(*discovery.ServiceDesc, Requestor)) {
-//
-//	notify := discovery.Default.RegisterAddNotify()
-//	for {
-//		desc, err := QueryServiceAddress(serviceName)
-//
-//		if err == nil {
-//			KeepConnection(reqSpawner(desc.Address()), desc, onReady)
-//		}
-//
-//		<-notify
-//	}
-//
-//}
 
 // 保持长连接
 func KeepConnection(requestor Requestor, svcid string, onReady chan Requestor) {

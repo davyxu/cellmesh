@@ -1,4 +1,4 @@
-// 在网关上绑定用户到此连接
+// 通知进程主服务
 [AutoMsgID Codec:"binary"]
 struct ServiceIdentifyACK {
     SvcName string

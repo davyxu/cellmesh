@@ -72,6 +72,10 @@ func main() {
 
 	agentAddr := login()
 
+	if agentAddr == "" {
+		return
+	}
+
 	fmt.Println("agent:", agentAddr)
 
 	agentReq := getAgentRequestor(agentAddr)
@@ -83,15 +87,15 @@ func main() {
 		fmt.Println(ack)
 	})
 
-	ReadConsole(func(s string) {
-
-		proto.Chat(agentReq, &proto.ChatREQ{
-			Content: s,
-		}, func(ack *proto.ChatACK) {
-
-			fmt.Println(ack)
-		})
-
-	})
+	//ReadConsole(func(s string) {
+	//
+	//	proto.Chat(agentReq, &proto.ChatREQ{
+	//		Content: s,
+	//	}, func(ack *proto.ChatACK) {
+	//
+	//		fmt.Println(ack)
+	//	})
+	//
+	//})
 
 }
