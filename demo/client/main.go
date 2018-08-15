@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/svcfx"
+	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
 	"os"
 	"strings"
@@ -40,10 +41,10 @@ func login() (agentAddr string) {
 	return
 }
 
-func getAgentRequestor(agentAddr string) service.Requestor {
+func getAgentRequestor(agentAddr string) cellnet.Session {
 
-	waitGameReady := make(chan service.Requestor)
-	go service.KeepConnection(service.NewMsgRequestor(agentAddr), "", waitGameReady)
+	waitGameReady := make(chan cellnet.Session)
+	go service.KeepConnection(agentAddr, agentAddr, waitGameReady)
 
 	return <-waitGameReady
 }

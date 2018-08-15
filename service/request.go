@@ -29,17 +29,15 @@ func Request(targetProvider interface{}, req interface{}, ackType reflect.Type, 
 	case Requestor:
 		requestor = tgt
 	case cellnet.Session:
-		log.Debugln(1)
-		ack, err := rpc.CallSync(tgt, req, time.Second*5)
+
+		ack, err := rpc.CallSync(tgt, req, time.Second*3)
 		if err != nil {
-			log.Debugln(2)
+			log.Errorln(err)
 			return err
 		}
 
-		log.Debugln(3)
-
 		callback(ack)
-		log.Debugln(4)
+
 		return nil
 
 	default:

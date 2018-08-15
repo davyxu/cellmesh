@@ -4,9 +4,10 @@ import (
 	"errors"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/proc"
 	"reflect"
 	"sync"
-	"time"
 )
 
 type Requestor interface {
@@ -134,30 +135,42 @@ func CreateConnection(serviceName string, reqSpawner func(addr string) Requestor
 	return nil, nil
 }
 
+type connector interface {
+	cellnet.TCPConnector
+	IsReady() bool
+}
+
 // 保持长连接
-func KeepConnection(requestor Requestor, svcid string, onReady chan Requestor) {
+func KeepConnection(svcid, addr string, onReady chan cellnet.Session) {
 
-	requestor.Start()
+	var stop sync.WaitGroup
 
-	if requestor.IsReady() {
+	p := peer.NewGenericPeer("tcp.SyncConnector", svcid, addr, nil)
+	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
-		if svcid != "" {
-			log.SetColor("green").Debugln("add connection: ", svcid)
+		switch ev.Message().(type) {
+		case *cellnet.SessionClosed:
+			stop.Done()
 		}
+	})
+
+	stop.Add(1)
+
+	p.Start()
+
+	conn := p.(connector)
+
+	if conn.IsReady() {
 
 		if onReady != nil {
-			onReady <- requestor
+			onReady <- conn.Session()
 		}
 
 		// 连接断开
-		requestor.WaitStop()
-		if svcid != "" {
-			log.SetColor("yellow").Debugln("connection removed: ", svcid)
-		}
+		stop.Wait()
 
 	} else {
 
-		requestor.Stop()
-		time.Sleep(time.Second * 3)
+		p.Stop()
 	}
 }
