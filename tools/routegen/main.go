@@ -7,6 +7,7 @@ import (
 	agentmodel "github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/consul"
+	"github.com/davyxu/golog"
 	"github.com/davyxu/protoplus/model"
 	"github.com/davyxu/protoplus/util"
 	"os"
@@ -49,6 +50,8 @@ func main() {
 	flag.Parse()
 
 	discovery.Default = consulsd.NewDiscovery()
+
+	golog.SetLevelByString("consul", "info")
 
 	dset := new(model.DescriptorSet)
 

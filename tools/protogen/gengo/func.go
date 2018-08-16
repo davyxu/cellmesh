@@ -4,6 +4,7 @@ import (
 	"github.com/ahmetb/go-linq"
 	"github.com/davyxu/protoplus/gen"
 	"github.com/davyxu/protoplus/model"
+	"sort"
 	"strings"
 	"text/template"
 )
@@ -36,7 +37,22 @@ func init() {
 			return d.TagValueString("Service")
 		}, func(d *model.Descriptor) interface{} {
 			return d
+		}).SortT(func(a, b linq.Group) bool {
+
+			asvc := a.Key.(string)
+			bsvc := b.Key.(string)
+
+			return asvc < bsvc
 		}).ToSlice(&ret)
+
+		for _, g := range ret {
+			sort.Slice(g.Group, func(i, j int) bool {
+				a := g.Group[i].(*model.Descriptor)
+				b := g.Group[j].(*model.Descriptor)
+
+				return a.Name < b.Name
+			})
+		}
 
 		return
 	}

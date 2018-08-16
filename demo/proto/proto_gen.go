@@ -123,17 +123,17 @@ func GetRPCPair(req interface{}) reflect.Type {
 	return nil
 }
 
+// game
+var (
+	Handle_Game_ChatREQ   = func(ev service.Event, req *ChatREQ) { panic("'ChatREQ' not handled") }
+	Handle_Game_VerifyREQ = func(ev service.Event, req *VerifyREQ) { panic("'VerifyREQ' not handled") }
+	Handle_Game_Default   = func(ev service.Event) {}
+)
+
 // login
 var (
 	Handle_Login_LoginREQ = func(ev service.Event, req *LoginREQ) { panic("'LoginREQ' not handled") }
 	Handle_Login_Default  = func(ev service.Event) {}
-)
-
-// game
-var (
-	Handle_Game_VerifyREQ = func(ev service.Event, req *VerifyREQ) { panic("'VerifyREQ' not handled") }
-	Handle_Game_ChatREQ   = func(ev service.Event, req *ChatREQ) { panic("'ChatREQ' not handled") }
-	Handle_Game_Default   = func(ev service.Event) {}
 )
 
 // router
@@ -145,13 +145,15 @@ var (
 func GetDispatcher(svcName string) service.DispatcherFunc {
 
 	switch svcName {
-	case "router":
+	case "game":
 		return func(ev service.Event) {
 			switch req := ev.Message().(type) {
-			case *RouterBindUserREQ:
-				Handle_Router_RouterBindUserREQ(ev, req)
+			case *ChatREQ:
+				Handle_Game_ChatREQ(ev, req)
+			case *VerifyREQ:
+				Handle_Game_VerifyREQ(ev, req)
 			default:
-				Handle_Router_Default(ev)
+				Handle_Game_Default(ev)
 			}
 		}
 	case "login":
@@ -163,15 +165,13 @@ func GetDispatcher(svcName string) service.DispatcherFunc {
 				Handle_Login_Default(ev)
 			}
 		}
-	case "game":
+	case "router":
 		return func(ev service.Event) {
 			switch req := ev.Message().(type) {
-			case *VerifyREQ:
-				Handle_Game_VerifyREQ(ev, req)
-			case *ChatREQ:
-				Handle_Game_ChatREQ(ev, req)
+			case *RouterBindUserREQ:
+				Handle_Router_RouterBindUserREQ(ev, req)
 			default:
-				Handle_Game_Default(ev)
+				Handle_Router_Default(ev)
 			}
 		}
 	}
