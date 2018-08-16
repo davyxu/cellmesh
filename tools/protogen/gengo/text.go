@@ -70,20 +70,23 @@ func GetRPCPair(req interface{}) reflect.Type {
 }
 
 {{range ServiceGroup $}}
-// {{.Key}}
+// {{$svcName := .Key}}{{$svcName}}
 var ( {{range .Group}}
-	Handler_{{.Name}} = func(ev service.Event, req *{{.Name}}){ panic("'{{.Name}}' not handled") } {{end}}
+	Handle_{{ExportSymbolName $svcName}}_{{.Name}} = func(ev service.Event, req *{{.Name}}){ panic("'{{.Name}}' not handled") } {{end}}
+	Handle_{{ExportSymbolName $svcName}}_Default = func(ev service.Event){ }
 )
 {{end}}
 
 func GetDispatcher(svcName string) service.DispatcherFunc {
 
 	switch svcName { {{range ServiceGroup $}}
-	case "{{.Key}}":
+	case "{{$svcName := .Key}}{{$svcName}}":
 		return func(ev service.Event) {
 			switch req := ev.Message().(type) { {{range .Group}}
 			case *{{.Name}}:
-				Handler_{{.Name}}(ev, req) {{end}}
+				Handle_{{ExportSymbolName $svcName}}_{{.Name}}(ev, req) {{end}}
+			default:
+				Handle_{{ExportSymbolName $svcName}}_Default(ev)
 			}
 		} {{end}}
 	} 
@@ -97,7 +100,7 @@ func init() {
 		Codec: codec.MustGetCodec("{{StructCodec .}}"),
 		Type:  reflect.TypeOf((*{{.Name}})(nil)).Elem(),
 		ID:    {{StructMsgID .}},
-	}).SetContext("service", "{{StructService .}}")
+	})
 	{{end}} {{end}}
 }
 

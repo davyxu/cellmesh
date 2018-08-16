@@ -1,0 +1,52 @@
+package backend
+
+import (
+	"github.com/davyxu/cellmesh/demo/agent/model"
+	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellnet"
+)
+
+func bindClientToBackend(backendSes cellnet.Session, clientSesID int64) {
+
+	clientSes := model.GetClientSession(clientSesID)
+	if clientSes == nil {
+		return
+	}
+
+	sd := service.GetSessionSD(backendSes)
+	if sd == nil {
+		log.Errorln("backend sd not found")
+		return
+	}
+
+	u := model.CreateUser(clientSes)
+	u.AddBackend(sd.Name, backendSes)
+}
+
+// 恢复后台连接
+func recoverBackend(backendSes cellnet.Session, svcName string) {
+
+	model.VisitUser(func(u *model.User) bool {
+		u.SetBackend(svcName, backendSes)
+
+		return true
+	})
+
+}
+
+// 移除玩家对应的后台连接
+func removeBackend(backendSes cellnet.Session) {
+
+	sd := service.GetSessionSD(backendSes)
+	if sd == nil {
+		log.Errorln("backend sd not found")
+		return
+	}
+
+	model.VisitUser(func(u *model.User) bool {
+		u.SetBackend(sd.Name, nil)
+
+		return true
+	})
+
+}

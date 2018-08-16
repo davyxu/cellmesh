@@ -1,10 +1,10 @@
 package cellsvc
 
 import (
-	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellmesh/svcfx/model"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
@@ -49,7 +49,7 @@ func (self *conService) connFlow(sd *discovery.ServiceDesc) {
 			port := p.(cellnet.TCPConnector).Port()
 			ev.Session().Send(proto.ServiceIdentifyACK{
 				SvcName: self.svcName,
-				SvcID:   fmt.Sprintf("%s-%d", self.svcName, port),
+				SvcID:   fxmodel.GetSvcID(self.svcName),
 				Port:    int32(port),
 			})
 

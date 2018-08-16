@@ -1,13 +1,24 @@
 package backend
 
 import (
-	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellnet"
 )
 
 func init() {
-	proto.Handler_RouterBindUserREQ = func(event service.Event, req *proto.RouterBindUserREQ) {
-		model.BindClientToBackend(event.Session(), req.ID)
+	proto.Handle_Router_RouterBindUserREQ = func(event service.Event, req *proto.RouterBindUserREQ) {
+		bindClientToBackend(event.Session(), req.ID)
+	}
+
+	proto.Handle_Router_Default = func(ev service.Event) {
+
+		switch msg := ev.Message().(type) {
+		case *proto.ServiceIdentifyACK:
+			recoverBackend(ev.Session(), msg.SvcName)
+		case *cellnet.SessionClosed:
+			removeBackend(ev.Session())
+		}
+
 	}
 }

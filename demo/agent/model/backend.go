@@ -1,31 +1,34 @@
 package model
 
 import (
-	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/peer"
 )
 
-func BindClientToBackend(backendSes cellnet.Session, clientSesID int64) {
+func CreateUser(clientSes cellnet.Session) *User {
 
-	clientSes := GetClient(clientSesID)
-	if clientSes == nil {
-		return
-	}
+	u := NewUser()
 
-	sd := service.GetSessionSD(backendSes)
-	if sd == nil {
-		log.Errorln("backend sd not found")
-		return
-	}
-
-	clientSes.(cellnet.ContextSet).SetContext("route_"+sd.Name, backendSes)
+	clientSes.(cellnet.ContextSet).SetContext("user", u)
+	return u
 }
 
-func GetClientBackendSession(clientSes cellnet.Session, svcName string) cellnet.Session {
+func GetUser(clientSes cellnet.Session) *User {
 
-	if raw, ok := clientSes.(cellnet.ContextSet).GetContext("route_" + svcName); ok {
-		return raw.(cellnet.Session)
+	if raw, ok := clientSes.(cellnet.ContextSet).GetContext("user"); ok {
+		return raw.(*User)
 	}
 
 	return nil
+}
+
+func VisitUser(callback func(*User) bool) {
+	FrontendListener.(peer.SessionManager).VisitSession(func(clientSes cellnet.Session) bool {
+
+		if u := GetUser(clientSes); u != nil {
+			return callback(u)
+		}
+
+		return true
+	})
 }

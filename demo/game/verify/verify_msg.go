@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	proto.Handler_VerifyREQ = func(ev service.Event, req *proto.VerifyREQ) {
+	proto.Handle_Game_VerifyREQ = func(ev service.Event, req *proto.VerifyREQ) {
 
 		fmt.Printf("verfiy: %+v \n", req.GameToken)
 

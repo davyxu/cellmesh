@@ -16,8 +16,8 @@ func main() {
 
 	svcfx.Init()
 
-	r := cellsvc.NewConnService("demo.game", "demo.router")
-	r.SetDispatcher(proto.GetDispatcher("demo.game"))
+	r := cellsvc.NewConnService("game", "router")
+	r.SetDispatcher(proto.GetDispatcher("game"))
 	r.Start()
 
 	util.WaitExit()

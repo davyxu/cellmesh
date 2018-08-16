@@ -20,11 +20,11 @@ func main() {
 
 	routerule.Download()
 
-	s := cellsvc.NewService("demo.router")
-	s.SetDispatcher(proto.GetDispatcher("demo.router"))
+	s := cellsvc.NewService("router")
+	s.SetDispatcher(proto.GetDispatcher("router"))
 	s.Start()
 
-	frontend.Start()
+	frontend.Start(":18000")
 
 	util.WaitExit()
 

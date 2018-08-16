@@ -123,46 +123,55 @@ func GetRPCPair(req interface{}) reflect.Type {
 	return nil
 }
 
-// demo.router
+// login
 var (
-	Handler_RouterBindUserREQ = func(ev service.Event, req *RouterBindUserREQ) { panic("'RouterBindUserREQ' not handled") }
+	Handle_Login_LoginREQ = func(ev service.Event, req *LoginREQ) { panic("'LoginREQ' not handled") }
+	Handle_Login_Default  = func(ev service.Event) {}
 )
 
-// demo.login
+// game
 var (
-	Handler_LoginREQ = func(ev service.Event, req *LoginREQ) { panic("'LoginREQ' not handled") }
+	Handle_Game_VerifyREQ = func(ev service.Event, req *VerifyREQ) { panic("'VerifyREQ' not handled") }
+	Handle_Game_ChatREQ   = func(ev service.Event, req *ChatREQ) { panic("'ChatREQ' not handled") }
+	Handle_Game_Default   = func(ev service.Event) {}
 )
 
-// demo.game
+// router
 var (
-	Handler_VerifyREQ = func(ev service.Event, req *VerifyREQ) { panic("'VerifyREQ' not handled") }
-	Handler_ChatREQ   = func(ev service.Event, req *ChatREQ) { panic("'ChatREQ' not handled") }
+	Handle_Router_RouterBindUserREQ = func(ev service.Event, req *RouterBindUserREQ) { panic("'RouterBindUserREQ' not handled") }
+	Handle_Router_Default           = func(ev service.Event) {}
 )
 
 func GetDispatcher(svcName string) service.DispatcherFunc {
 
 	switch svcName {
-	case "demo.login":
-		return func(ev service.Event) {
-			switch req := ev.Message().(type) {
-			case *LoginREQ:
-				Handler_LoginREQ(ev, req)
-			}
-		}
-	case "demo.game":
-		return func(ev service.Event) {
-			switch req := ev.Message().(type) {
-			case *VerifyREQ:
-				Handler_VerifyREQ(ev, req)
-			case *ChatREQ:
-				Handler_ChatREQ(ev, req)
-			}
-		}
-	case "demo.router":
+	case "router":
 		return func(ev service.Event) {
 			switch req := ev.Message().(type) {
 			case *RouterBindUserREQ:
-				Handler_RouterBindUserREQ(ev, req)
+				Handle_Router_RouterBindUserREQ(ev, req)
+			default:
+				Handle_Router_Default(ev)
+			}
+		}
+	case "login":
+		return func(ev service.Event) {
+			switch req := ev.Message().(type) {
+			case *LoginREQ:
+				Handle_Login_LoginREQ(ev, req)
+			default:
+				Handle_Login_Default(ev)
+			}
+		}
+	case "game":
+		return func(ev service.Event) {
+			switch req := ev.Message().(type) {
+			case *VerifyREQ:
+				Handle_Game_VerifyREQ(ev, req)
+			case *ChatREQ:
+				Handle_Game_ChatREQ(ev, req)
+			default:
+				Handle_Game_Default(ev)
 			}
 		}
 	}
@@ -176,54 +185,54 @@ func init() {
 		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*LoginREQ)(nil)).Elem(),
 		ID:    39009,
-	}).SetContext("service", "demo.login")
+	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*LoginACK)(nil)).Elem(),
 		ID:    840,
-	}).SetContext("service", "")
+	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
 		ID:    23773,
-	}).SetContext("service", "demo.game")
+	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*VerifyACK)(nil)).Elem(),
 		ID:    51140,
-	}).SetContext("service", "")
+	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatREQ)(nil)).Elem(),
 		ID:    5832,
-	}).SetContext("service", "demo.game")
+	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatACK)(nil)).Elem(),
 		ID:    33199,
-	}).SetContext("service", "")
+	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ServiceIdentifyACK)(nil)).Elem(),
 		ID:    49180,
-	}).SetContext("service", "")
+	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*RouterBindUserREQ)(nil)).Elem(),
 		ID:    34501,
-	}).SetContext("service", "demo.router")
+	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*RouterBindUserACK)(nil)).Elem(),
 		ID:    61868,
-	}).SetContext("service", "")
+	})
 
 }

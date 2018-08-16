@@ -16,7 +16,7 @@ var log = golog.New("main")
 
 func login() (agentAddr string) {
 
-	loginReq, err := service.CreateConnection("demo.login")
+	loginReq, err := service.CreateConnection("login")
 	if err != nil {
 		log.Errorln(err)
 		return

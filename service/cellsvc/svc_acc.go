@@ -1,10 +1,10 @@
 package cellsvc
 
 import (
-	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellmesh/svcfx/model"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
@@ -18,10 +18,6 @@ type accService struct {
 	dis     service.DispatcherFunc
 
 	listener cellnet.GenericPeer
-}
-
-func (self *accService) ID() string {
-	return fmt.Sprintf("%s-%d", self.svcName, self.listener.(cellnet.TCPAcceptor).Port())
 }
 
 func (self *accService) SetDispatcher(dis service.DispatcherFunc) {
@@ -67,17 +63,17 @@ func (self *accService) Start() {
 	sd := &discovery.ServiceDesc{
 		Host: host,
 		Port: self.listener.(cellnet.TCPAcceptor).Port(),
-		ID:   self.ID(),
+		ID:   fxmodel.GetSvcID(self.svcName),
 		Name: self.svcName,
 	}
 
-	log.SetColor("green").Debugf("service '%s' listen at %s:%d", self.svcName, host, sd.Port)
+	log.SetColor("green").Debugf("service '%s' listen at %s:%d", sd.ID, host, sd.Port)
 
 	discovery.Default.Register(sd)
 }
 
 func (self *accService) Stop() {
-	discovery.Default.Deregister(self.ID())
+	discovery.Default.Deregister(fxmodel.GetSvcID(self.svcName))
 }
 
 func NewService(svcName string) service.Service {

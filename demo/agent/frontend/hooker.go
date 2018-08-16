@@ -49,12 +49,18 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 
 			case "auth":
 
-				backendSes := model.GetClientBackendSession(inputEvent.Session(), rule.SvcName)
+				u := model.GetUser(inputEvent.Session())
 
-				if backendSes != nil {
-					relay.Relay(backendSes, incomingMsg, inputEvent.Session().ID())
-				} else {
-					log.Warnf("Route target not found, msg: '%s' mode: 'auth'", msgType.Name())
+				if u != nil {
+
+					backendSes := u.GetBackend(rule.SvcName)
+
+					if backendSes != nil {
+						relay.Relay(backendSes, incomingMsg, inputEvent.Session().ID())
+					} else {
+						log.Warnf("Route target not found, msg: '%s' mode: 'auth'", msgType.Name())
+					}
+
 				}
 
 			}
@@ -95,7 +101,7 @@ func init() {
 	routerHooker := new(RelayUpMsgHooker)
 	msgLogger := new(tcp.MsgHooker)
 
-	proc.RegisterProcessor("demo.agent", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("agent.frontend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(transmitter)
 		bundle.SetHooker(proc.NewMultiHooker(msgLogger, routerHooker))

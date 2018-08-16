@@ -8,7 +8,7 @@ import (
 
 func init() {
 
-	proto.Handler_ChatREQ = func(ev service.Event, req *proto.ChatREQ) {
+	proto.Handle_Game_ChatREQ = func(ev service.Event, req *proto.ChatREQ) {
 		fmt.Printf("chat: %+v \n", req.Content)
 		ev.Reply(&proto.ChatACK{
 			Content: req.Content,

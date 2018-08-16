@@ -3,7 +3,7 @@ package model
 import "sync"
 
 const (
-	ConfigPath = "agent/route"
+	ConfigPath = "RouteRule"
 )
 
 type RouteRule struct {

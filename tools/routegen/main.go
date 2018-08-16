@@ -35,7 +35,7 @@ func GenRouteTable(dset *model.DescriptorSet) (ret *agentmodel.RouteTable) {
 // 上传路由表到consul KV
 func UploadRouteTable(tab *agentmodel.RouteTable) error {
 
-	data, err := json.Marshal(tab)
+	data, err := json.MarshalIndent(tab, "", "\t")
 
 	if err != nil {
 		return err

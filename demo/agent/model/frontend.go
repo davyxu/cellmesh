@@ -9,7 +9,7 @@ var (
 	FrontendListener cellnet.Peer
 )
 
-func GetClient(sesid int64) cellnet.Session {
+func GetClientSession(sesid int64) cellnet.Session {
 
 	return FrontendListener.(peer.SessionManager).GetSession(sesid)
 }

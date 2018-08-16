@@ -7,12 +7,12 @@ import (
 )
 
 func init() {
-	proto.Handler_LoginREQ = func(ev service.Event, req *proto.LoginREQ) {
+	proto.Handle_Login_LoginREQ = func(ev service.Event, req *proto.LoginREQ) {
 		// TODO 第三方请求验证及信息拉取
 
 		var ack proto.LoginACK
 
-		gameList, err := discovery.Default.Query("demo.agent")
+		gameList, err := discovery.Default.Query("agent")
 		if err != nil || len(gameList) == 0 {
 
 			ack.Result = proto.ResultCode_GameNotReady
