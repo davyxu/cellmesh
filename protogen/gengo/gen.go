@@ -15,7 +15,7 @@ func GenGo(ctx *gen.Context) error {
 		FormatGoCode()
 
 	if gen.Error() != nil {
-		fmt.Println(string(gen.Data()))
+		fmt.Println(string(gen.Code()))
 		return gen.Error()
 	}
 

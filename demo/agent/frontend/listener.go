@@ -20,7 +20,7 @@ func Start() {
 
 	frontendListener.Start()
 
-	listenPort := frontendListener.(cellnet.TCPAcceptor).ListenPort()
+	listenPort := frontendListener.(cellnet.TCPAcceptor).Port()
 
 	name := fmt.Sprintf("agent-%d", listenPort)
 	frontendListener.(cellnet.PeerProperty).SetName("frontend")

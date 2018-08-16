@@ -59,29 +59,37 @@ type {{.Name}} struct{	{{range .Fields}}
 {{range .Structs}}
 func (self *{{.Name}}) String() string { return fmt.Sprintf("%+v",*self) } {{end}}
 
-{{range RPCPair $}}
-// RPC client
-func {{.Name}}(targetProvider interface{}, req *{{.REQ.Name}}, callback func(ack *{{.ACK.Name}})) error {
+func GetRPCPair(req interface{}) reflect.Type {
 
-	return service.Request(targetProvider, req, reflect.TypeOf((*{{.ACK.Name}})(nil)).Elem(), func(response interface{}) {
-		callback(response.(*{{.ACK.Name}}))
-	})
+	switch req.(type) { {{range RPCPair $}}
+	case *{{.REQ.Name}}:
+		return reflect.TypeOf((*{{.ACK.Name}})(nil)).Elem() {{end}}
+	}
+
+	return nil
 }
 
-// RPC server
-func Serve_{{.Name}}(dis *service.Dispatcher, userHandler func(event *service.Event, req *{{.REQ.Name}}, ack *{{.ACK.Name}})) {
-
-	dis.AddCall("{{$.PackageName}}.{{.REQ.Name}}", &service.MethodInfo{
-		RequestType: reflect.TypeOf((*{{.REQ.Name}})(nil)).Elem(),
-		NewResponse: func() interface{} {
-			return &{{.ACK.Name}}{}
-		},
-		Handler: func(event *service.Event) {
-			userHandler(event, event.Request.(*{{.REQ.Name}}), event.Response.(*{{.ACK.Name}}))
-		},
-	})
-}
+{{range ServiceGroup $}}
+// {{.Key}}
+var ( {{range .Group}}
+	Handler_{{.Name}} = func(ev service.Event, req *{{.Name}}){ panic("'{{.Name}}' not handled") } {{end}}
+)
 {{end}}
+
+func GetDispatcher(svcName string) service.DispatcherFunc {
+
+	switch svcName { {{range ServiceGroup $}}
+	case "{{.Key}}":
+		return func(ev service.Event) {
+			switch req := ev.Message().(type) { {{range .Group}}
+			case *{{.Name}}:
+				Handler_{{.Name}}(ev, req) {{end}}
+			}
+		} {{end}}
+	} 
+
+	return nil
+}
 
 func init() {
 	{{range .Structs}} {{ if IsMessage . }}

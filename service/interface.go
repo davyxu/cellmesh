@@ -1,39 +1,28 @@
 package service
 
 import (
-	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
-	"reflect"
 )
 
-type Event struct {
-	Session cellnet.Session
+type Event interface {
+	// 事件对应的会话
+	Session() cellnet.Session
 
-	Request interface{}
+	// 事件携带的消息
+	Message() interface{}
 
-	Response interface{}
+	GetContextID() int64
 
-	ContextID []int64
-
-	SD *discovery.ServiceDesc
+	Reply(msg interface{})
 }
 
-type MethodInfo struct {
-	Handler     func(*Event)
-	RequestType reflect.Type
-
-	NewResponse func() interface{}
-}
+type DispatcherFunc func(Event)
 
 type Service interface {
-	SetDispatcher(dis *Dispatcher)
+	SetDispatcher(dis DispatcherFunc)
 
 	// 服务发现注册
 	Start()
 
 	Stop()
-}
-
-type ReplyEvent interface {
-	Reply(msg interface{})
 }

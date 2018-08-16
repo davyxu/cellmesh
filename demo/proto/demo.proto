@@ -19,7 +19,7 @@ struct LoginREQ {
 }
 
 
-[AutoMsgID Codec:"json" Service: "demo.login"]
+[AutoMsgID Codec:"json"]
 struct LoginACK {
 	Result ResultCode
 	Server ServerInfo
@@ -33,7 +33,7 @@ struct VerifyREQ {
 }
 
 
-[AutoMsgID Codec:"binary" Service: "demo.game"]
+[AutoMsgID Codec:"binary"]
 struct VerifyACK {
 	Result ResultCode
 }
@@ -44,7 +44,7 @@ struct ChatREQ {
 	Content string
 }
 
-[AutoMsgID Codec:"binary" Service: "demo.game"]
+[AutoMsgID Codec:"binary"]
 struct ChatACK{
 	Content string
 }

@@ -1,6 +1,7 @@
 package gengo
 
 import (
+	"github.com/ahmetb/go-linq"
 	"github.com/davyxu/protoplus/gen"
 	"github.com/davyxu/protoplus/model"
 	"strings"
@@ -25,6 +26,19 @@ func init() {
 
 	FuncMap["StructService"] = func(d *model.Descriptor) string {
 		return d.TagValueString("Service")
+	}
+
+	FuncMap["ServiceGroup"] = func(ctx *gen.Context) (ret []linq.Group) {
+
+		linq.From(ctx.Structs()).WhereT(func(d *model.Descriptor) bool {
+			return d.TagValueString("Service") != ""
+		}).GroupByT(func(d *model.Descriptor) interface{} {
+			return d.TagValueString("Service")
+		}, func(d *model.Descriptor) interface{} {
+			return d
+		}).ToSlice(&ret)
+
+		return
 	}
 
 	FuncMap["RPCPair"] = func(ctx *gen.Context) (ret []*RPCPair) {

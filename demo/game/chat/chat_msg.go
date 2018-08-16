@@ -6,9 +6,12 @@ import (
 	"github.com/davyxu/cellmesh/service"
 )
 
-func Chat(ev *service.Event, req *proto.ChatREQ, ack *proto.ChatACK) {
+func init() {
 
-	fmt.Printf("chat: %+v \n", req.Content)
-
-	ack.Content = req.Content
+	proto.Handler_ChatREQ = func(ev service.Event, req *proto.ChatREQ) {
+		fmt.Printf("chat: %+v \n", req.Content)
+		ev.Reply(&proto.ChatACK{
+			Content: req.Content,
+		})
+	}
 }

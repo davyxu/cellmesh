@@ -41,7 +41,7 @@ func RegisterHello(s service.Service, userHandler func(req *HelloREQ, ack *Hello
 		NewResponse: func() interface{} {
 			return &HelloACK{}
 		},
-		Handler: func(event *service.Event) {
+		Handler: func(event *service.svcEvent) {
 
 			userHandler(event.Request.(*HelloREQ), event.Response.(*HelloACK))
 

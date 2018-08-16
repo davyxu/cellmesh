@@ -1,6 +1,7 @@
 package cellsvc
 
 import (
+	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
@@ -12,17 +13,21 @@ import (
 )
 
 type conService struct {
-	svcName string
-	dis     *service.Dispatcher
+	svcName       string
+	port          int
+	targetSvcName string
+	dis           service.DispatcherFunc
 
 	descMap sync.Map
-
-	mainSD *discovery.ServiceDesc
 }
 
-func (self *conService) SetDispatcher(dis *service.Dispatcher) {
+func (self *conService) SetDispatcher(dis service.DispatcherFunc) {
 
 	self.dis = dis
+}
+
+func (self *conService) ID() string {
+	return fmt.Sprintf("%s-%d", self.svcName, self.port)
 }
 
 type connector interface {
@@ -46,10 +51,9 @@ func (self *conService) connFlow(sd *discovery.ServiceDesc) {
 		switch ev.Message().(type) {
 		case *cellnet.SessionConnected:
 			ev.Session().Send(proto.ServiceIdentifyACK{
-				SvcName: self.mainSD.Name,
-				SvcID:   self.mainSD.ID,
-				Host:    self.mainSD.Host,
-				Port:    int32(self.mainSD.Port),
+				SvcName: self.svcName,
+				SvcID:   self.ID(),
+				Port:    int32(self.port),
 			})
 
 		case *cellnet.SessionClosed:
@@ -57,13 +61,17 @@ func (self *conService) connFlow(sd *discovery.ServiceDesc) {
 		}
 
 		if self.dis != nil {
-			self.dis.Invoke(ev, sd)
+			self.dis(&svcEvent{
+				Event: ev,
+			})
 		}
 	})
 
 	stop.Add(1)
 
 	p.Start()
+
+	self.port = p.(cellnet.TCPConnector).Port()
 
 	conn := p.(connector)
 
@@ -94,7 +102,7 @@ func (self *conService) loop() {
 	notify := discovery.Default.RegisterNotify("add")
 	for {
 
-		descList, err := discovery.Default.Query(self.svcName)
+		descList, err := discovery.Default.Query(self.targetSvcName)
 		if err == nil && len(descList) > 0 {
 
 			// 保持服务发现中的所有连接
@@ -119,10 +127,10 @@ func (self *conService) Stop() {
 
 }
 
-func NewConnService(svcName string, mainSD *discovery.ServiceDesc) service.Service {
+func NewConnService(svcName, targetSvcName string) service.Service {
 
 	return &conService{
-		svcName: svcName,
-		mainSD:  mainSD,
+		svcName:       svcName,
+		targetSvcName: targetSvcName,
 	}
 }

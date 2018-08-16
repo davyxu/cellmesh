@@ -1,11 +1,9 @@
 package main
 
 import (
-	"github.com/davyxu/cellmesh/demo/game/chat"
-	"github.com/davyxu/cellmesh/demo/game/verify"
+	_ "github.com/davyxu/cellmesh/demo/game/chat"
+	_ "github.com/davyxu/cellmesh/demo/game/verify"
 	"github.com/davyxu/cellmesh/demo/proto"
-	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/service/cellsvc"
 	"github.com/davyxu/cellmesh/svcfx"
 	"github.com/davyxu/cellmesh/util"
@@ -18,23 +16,11 @@ func main() {
 
 	svcfx.Init()
 
-	dis := service.NewDispatcher()
-	proto.Serve_Verify(dis, verify.Verify)
-	proto.Serve_Chat(dis, chat.Chat)
-
-	s := cellsvc.NewService("demo.game")
-	s.SetDispatcher(dis)
-	s.Start()
-	sd := s.(interface {
-		GetSD() *discovery.ServiceDesc
-	}).GetSD()
-
-	r := cellsvc.NewConnService("demo.router", sd)
-	r.SetDispatcher(dis)
+	r := cellsvc.NewConnService("demo.game", "demo.router")
+	r.SetDispatcher(proto.GetDispatcher("demo.game"))
 	r.Start()
 
 	util.WaitExit()
 
 	r.Stop()
-	s.Stop()
 }

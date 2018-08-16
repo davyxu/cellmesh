@@ -6,7 +6,8 @@ import (
 	"github.com/davyxu/cellmesh/service"
 )
 
-func RouterBindUser(ev *service.Event, req *proto.RouterBindUserREQ, ack *proto.RouterBindUserACK) {
-
-	fmt.Println("bind user", req.Token)
+func init() {
+	proto.Handler_RouterBindUserREQ = func(event service.Event, req *proto.RouterBindUserREQ) {
+		fmt.Println("bind user", req.Token)
+	}
 }

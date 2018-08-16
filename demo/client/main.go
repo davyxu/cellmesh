@@ -16,19 +16,20 @@ var log = golog.New("main")
 
 func login() (agentAddr string) {
 
-	loginReq, err := service.CreateConnection("demo.login", service.NewMsgRequestor)
+	loginReq, err := service.CreateConnection("demo.login")
 	if err != nil {
 		log.Errorln(err)
 		return
 	}
 
-	defer loginReq.Stop()
+	// TODO 短连接请求完毕关闭
 
-	proto.Login(loginReq, &proto.LoginREQ{
+	service.RemoteCall(loginReq, &proto.LoginREQ{
 		Version:  "1.0",
 		Platform: "demo",
 		UID:      "1234",
-	}, func(ack *proto.LoginACK) {
+	}, func(raw interface{}) {
+		ack := raw.(*proto.LoginACK)
 
 		if ack.Result == proto.ResultCode_NoError {
 			agentAddr = fmt.Sprintf("%s:%d", ack.Server.IP, ack.Server.Port)
@@ -69,6 +70,8 @@ func ReadConsole(callback func(string)) {
 
 func main() {
 
+	service.RPCPairQueryFunc = proto.GetRPCPair
+
 	svcfx.Init()
 
 	agentAddr := login()
@@ -81,9 +84,10 @@ func main() {
 
 	agentReq := getAgentRequestor(agentAddr)
 
-	proto.Verify(agentReq, &proto.VerifyREQ{
+	service.RemoteCall(agentReq, &proto.VerifyREQ{
 		GameToken: "verify",
-	}, func(ack *proto.VerifyACK) {
+	}, func(raw interface{}) {
+		ack := raw.(*proto.VerifyACK)
 
 		fmt.Println(ack)
 	})

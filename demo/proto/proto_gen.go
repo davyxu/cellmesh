@@ -107,92 +107,67 @@ func (self *ServiceIdentifyACK) String() string { return fmt.Sprintf("%+v", *sel
 func (self *RouterBindUserREQ) String() string  { return fmt.Sprintf("%+v", *self) }
 func (self *RouterBindUserACK) String() string  { return fmt.Sprintf("%+v", *self) }
 
-// RPC client
-func Login(targetProvider interface{}, req *LoginREQ, callback func(ack *LoginACK)) error {
+func GetRPCPair(req interface{}) reflect.Type {
 
-	return service.Request(targetProvider, req, reflect.TypeOf((*LoginACK)(nil)).Elem(), func(response interface{}) {
-		callback(response.(*LoginACK))
-	})
+	switch req.(type) {
+	case *LoginREQ:
+		return reflect.TypeOf((*LoginACK)(nil)).Elem()
+	case *VerifyREQ:
+		return reflect.TypeOf((*VerifyACK)(nil)).Elem()
+	case *ChatREQ:
+		return reflect.TypeOf((*ChatACK)(nil)).Elem()
+	case *RouterBindUserREQ:
+		return reflect.TypeOf((*RouterBindUserACK)(nil)).Elem()
+	}
+
+	return nil
 }
 
-// RPC server
-func Serve_Login(dis *service.Dispatcher, userHandler func(event *service.Event, req *LoginREQ, ack *LoginACK)) {
+// demo.login
+var (
+	Handler_LoginREQ = func(ev service.Event, req *LoginREQ) { panic("'LoginREQ' not handled") }
+)
 
-	dis.AddCall("proto.LoginREQ", &service.MethodInfo{
-		RequestType: reflect.TypeOf((*LoginREQ)(nil)).Elem(),
-		NewResponse: func() interface{} {
-			return &LoginACK{}
-		},
-		Handler: func(event *service.Event) {
-			userHandler(event, event.Request.(*LoginREQ), event.Response.(*LoginACK))
-		},
-	})
-}
+// demo.game
+var (
+	Handler_VerifyREQ = func(ev service.Event, req *VerifyREQ) { panic("'VerifyREQ' not handled") }
+	Handler_ChatREQ   = func(ev service.Event, req *ChatREQ) { panic("'ChatREQ' not handled") }
+)
 
-// RPC client
-func Verify(targetProvider interface{}, req *VerifyREQ, callback func(ack *VerifyACK)) error {
+// demo.router
+var (
+	Handler_RouterBindUserREQ = func(ev service.Event, req *RouterBindUserREQ) { panic("'RouterBindUserREQ' not handled") }
+)
 
-	return service.Request(targetProvider, req, reflect.TypeOf((*VerifyACK)(nil)).Elem(), func(response interface{}) {
-		callback(response.(*VerifyACK))
-	})
-}
+func GetDispatcher(svcName string) service.DispatcherFunc {
 
-// RPC server
-func Serve_Verify(dis *service.Dispatcher, userHandler func(event *service.Event, req *VerifyREQ, ack *VerifyACK)) {
+	switch svcName {
+	case "demo.login":
+		return func(ev service.Event) {
+			switch req := ev.Message().(type) {
+			case *LoginREQ:
+				Handler_LoginREQ(ev, req)
+			}
+		}
+	case "demo.game":
+		return func(ev service.Event) {
+			switch req := ev.Message().(type) {
+			case *VerifyREQ:
+				Handler_VerifyREQ(ev, req)
+			case *ChatREQ:
+				Handler_ChatREQ(ev, req)
+			}
+		}
+	case "demo.router":
+		return func(ev service.Event) {
+			switch req := ev.Message().(type) {
+			case *RouterBindUserREQ:
+				Handler_RouterBindUserREQ(ev, req)
+			}
+		}
+	}
 
-	dis.AddCall("proto.VerifyREQ", &service.MethodInfo{
-		RequestType: reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
-		NewResponse: func() interface{} {
-			return &VerifyACK{}
-		},
-		Handler: func(event *service.Event) {
-			userHandler(event, event.Request.(*VerifyREQ), event.Response.(*VerifyACK))
-		},
-	})
-}
-
-// RPC client
-func Chat(targetProvider interface{}, req *ChatREQ, callback func(ack *ChatACK)) error {
-
-	return service.Request(targetProvider, req, reflect.TypeOf((*ChatACK)(nil)).Elem(), func(response interface{}) {
-		callback(response.(*ChatACK))
-	})
-}
-
-// RPC server
-func Serve_Chat(dis *service.Dispatcher, userHandler func(event *service.Event, req *ChatREQ, ack *ChatACK)) {
-
-	dis.AddCall("proto.ChatREQ", &service.MethodInfo{
-		RequestType: reflect.TypeOf((*ChatREQ)(nil)).Elem(),
-		NewResponse: func() interface{} {
-			return &ChatACK{}
-		},
-		Handler: func(event *service.Event) {
-			userHandler(event, event.Request.(*ChatREQ), event.Response.(*ChatACK))
-		},
-	})
-}
-
-// RPC client
-func RouterBindUser(targetProvider interface{}, req *RouterBindUserREQ, callback func(ack *RouterBindUserACK)) error {
-
-	return service.Request(targetProvider, req, reflect.TypeOf((*RouterBindUserACK)(nil)).Elem(), func(response interface{}) {
-		callback(response.(*RouterBindUserACK))
-	})
-}
-
-// RPC server
-func Serve_RouterBindUser(dis *service.Dispatcher, userHandler func(event *service.Event, req *RouterBindUserREQ, ack *RouterBindUserACK)) {
-
-	dis.AddCall("proto.RouterBindUserREQ", &service.MethodInfo{
-		RequestType: reflect.TypeOf((*RouterBindUserREQ)(nil)).Elem(),
-		NewResponse: func() interface{} {
-			return &RouterBindUserACK{}
-		},
-		Handler: func(event *service.Event) {
-			userHandler(event, event.Request.(*RouterBindUserREQ), event.Response.(*RouterBindUserACK))
-		},
-	})
+	return nil
 }
 
 func init() {
@@ -207,7 +182,7 @@ func init() {
 		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*LoginACK)(nil)).Elem(),
 		ID:    840,
-	}).SetContext("service", "demo.login")
+	}).SetContext("service", "")
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
@@ -219,7 +194,7 @@ func init() {
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*VerifyACK)(nil)).Elem(),
 		ID:    51140,
-	}).SetContext("service", "demo.game")
+	}).SetContext("service", "")
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
@@ -231,7 +206,7 @@ func init() {
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatACK)(nil)).Elem(),
 		ID:    33199,
-	}).SetContext("service", "demo.game")
+	}).SetContext("service", "")
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
@@ -249,6 +224,6 @@ func init() {
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*RouterBindUserACK)(nil)).Elem(),
 		ID:    61868,
-	}).SetContext("service", "demo.router")
+	}).SetContext("service", "")
 
 }

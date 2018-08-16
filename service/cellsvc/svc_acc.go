@@ -14,18 +14,18 @@ import (
 )
 
 type accService struct {
-	svcName    string
-	listenPort int
-	dis        *service.Dispatcher
+	svcName string
+	port    int
+	dis     service.DispatcherFunc
 
 	sd *discovery.ServiceDesc
 }
 
 func (self *accService) ID() string {
-	return fmt.Sprintf("%s-%d", self.svcName, self.listenPort)
+	return fmt.Sprintf("%s-%d", self.svcName, self.port)
 }
 
-func (self *accService) SetDispatcher(dis *service.Dispatcher) {
+func (self *accService) SetDispatcher(dis service.DispatcherFunc) {
 
 	self.dis = dis
 }
@@ -55,26 +55,26 @@ func (self *accService) Start() {
 
 		if self.dis != nil {
 
-			sd := service.GetSDBySession(ev.Session())
-
-			self.dis.Invoke(ev, sd)
+			self.dis(&svcEvent{
+				Event: ev,
+			})
 		}
 	})
 
 	p.Start()
 
-	self.listenPort = p.(cellnet.TCPAcceptor).ListenPort()
+	self.port = p.(cellnet.TCPAcceptor).Port()
 
 	host := meshutil.GetLocalIP()
 
 	self.sd = &discovery.ServiceDesc{
 		Host: host,
-		Port: self.listenPort,
+		Port: self.port,
 		ID:   self.ID(),
 		Name: self.svcName,
 	}
 
-	log.SetColor("green").Debugf("service '%s' listen at %s:%d", self.svcName, host, self.listenPort)
+	log.SetColor("green").Debugf("service '%s' listen at %s:%d", self.svcName, host, self.port)
 
 	discovery.Default.Register(self.sd)
 }
