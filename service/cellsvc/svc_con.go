@@ -14,7 +14,6 @@ import (
 
 type conService struct {
 	svcName       string
-	port          int
 	targetSvcName string
 	dis           service.DispatcherFunc
 
@@ -24,10 +23,6 @@ type conService struct {
 func (self *conService) SetDispatcher(dis service.DispatcherFunc) {
 
 	self.dis = dis
-}
-
-func (self *conService) ID() string {
-	return fmt.Sprintf("%s-%d", self.svcName, self.port)
 }
 
 type connector interface {
@@ -50,10 +45,12 @@ func (self *conService) connFlow(sd *discovery.ServiceDesc) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionConnected:
+
+			port := p.(cellnet.TCPConnector).Port()
 			ev.Session().Send(proto.ServiceIdentifyACK{
 				SvcName: self.svcName,
-				SvcID:   self.ID(),
-				Port:    int32(self.port),
+				SvcID:   fmt.Sprintf("%s-%d", self.svcName, port),
+				Port:    int32(port),
 			})
 
 		case *cellnet.SessionClosed:
@@ -70,8 +67,6 @@ func (self *conService) connFlow(sd *discovery.ServiceDesc) {
 	stop.Add(1)
 
 	p.Start()
-
-	self.port = p.(cellnet.TCPConnector).Port()
 
 	conn := p.(connector)
 

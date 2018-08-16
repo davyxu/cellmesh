@@ -27,7 +27,7 @@ struct LoginACK {
 }
 
 
-[AutoMsgID Codec:"binary" Service: "demo.game"]
+[AutoMsgID Codec:"binary" Service: "demo.game" RouteRule: "pass"]
 struct VerifyREQ {
 	GameToken string
 }
@@ -39,7 +39,7 @@ struct VerifyACK {
 }
 
 
-[AutoMsgID Codec:"binary" Service: "demo.game"]
+[AutoMsgID Codec:"binary" Service: "demo.game" RouteRule: "auth"]
 struct ChatREQ {
 	Content string
 }

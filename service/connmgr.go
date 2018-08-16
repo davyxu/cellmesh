@@ -34,9 +34,20 @@ func GetConn(svcid string) cellnet.Session {
 	return nil
 }
 
+func GetSessionSD(ses cellnet.Session) *discovery.ServiceDesc {
+
+	if raw, ok := ses.(cellnet.ContextSet).GetContext("desc"); ok {
+		return raw.(*discovery.ServiceDesc)
+	}
+
+	return nil
+}
+
 func RemoveConn(ses cellnet.Session) {
-	var desc *discovery.ServiceDesc
-	if ses.(cellnet.ContextSet).GetContext("desc", &desc) {
+	if raw, ok := ses.(cellnet.ContextSet).GetContext("desc"); ok {
+
+		desc := raw.(*discovery.ServiceDesc)
+
 		connBySvcNameGuard.Lock()
 		delete(connBySvcID, desc.ID)
 		connBySvcNameGuard.Unlock()
@@ -50,10 +61,9 @@ func VisitConn(callback func(ses cellnet.Session, desc *discovery.ServiceDesc)) 
 
 	for _, ses := range connBySvcID {
 
-		var desc *discovery.ServiceDesc
-		if ses.(cellnet.ContextSet).GetContext("desc", &desc) {
-			callback(ses, desc)
-		}
+		sd := GetSessionSD(ses)
+
+		callback(ses, sd)
 	}
 
 	connBySvcNameGuard.RUnlock()

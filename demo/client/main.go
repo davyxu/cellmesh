@@ -92,15 +92,16 @@ func main() {
 		fmt.Println(ack)
 	})
 
-	//ReadConsole(func(s string) {
-	//
-	//	proto.Chat(agentReq, &proto.ChatREQ{
-	//		Content: s,
-	//	}, func(ack *proto.ChatACK) {
-	//
-	//		fmt.Println(ack)
-	//	})
-	//
-	//})
+	ReadConsole(func(s string) {
+
+		service.RemoteCall(agentReq, &proto.ChatREQ{
+			Content: s,
+		}, func(raw interface{}) {
+			ack := raw.(*proto.ChatACK)
+
+			fmt.Println(ack)
+		})
+
+	})
 
 }

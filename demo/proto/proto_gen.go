@@ -90,7 +90,7 @@ type ServiceIdentifyACK struct {
 }
 
 type RouterBindUserREQ struct {
-	Token int64
+	ID int64
 }
 
 type RouterBindUserACK struct {
@@ -123,6 +123,11 @@ func GetRPCPair(req interface{}) reflect.Type {
 	return nil
 }
 
+// demo.router
+var (
+	Handler_RouterBindUserREQ = func(ev service.Event, req *RouterBindUserREQ) { panic("'RouterBindUserREQ' not handled") }
+)
+
 // demo.login
 var (
 	Handler_LoginREQ = func(ev service.Event, req *LoginREQ) { panic("'LoginREQ' not handled") }
@@ -132,11 +137,6 @@ var (
 var (
 	Handler_VerifyREQ = func(ev service.Event, req *VerifyREQ) { panic("'VerifyREQ' not handled") }
 	Handler_ChatREQ   = func(ev service.Event, req *ChatREQ) { panic("'ChatREQ' not handled") }
-)
-
-// demo.router
-var (
-	Handler_RouterBindUserREQ = func(ev service.Event, req *RouterBindUserREQ) { panic("'RouterBindUserREQ' not handled") }
 )
 
 func GetDispatcher(svcName string) service.DispatcherFunc {

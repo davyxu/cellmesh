@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
-	meshutil "github.com/davyxu/cellmesh/util"
+	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/tcp"
@@ -15,14 +15,13 @@ import (
 
 type accService struct {
 	svcName string
-	port    int
 	dis     service.DispatcherFunc
 
-	sd *discovery.ServiceDesc
+	listener cellnet.GenericPeer
 }
 
 func (self *accService) ID() string {
-	return fmt.Sprintf("%s-%d", self.svcName, self.port)
+	return fmt.Sprintf("%s-%d", self.svcName, self.listener.(cellnet.TCPAcceptor).Port())
 }
 
 func (self *accService) SetDispatcher(dis service.DispatcherFunc) {
@@ -32,9 +31,9 @@ func (self *accService) SetDispatcher(dis service.DispatcherFunc) {
 
 func (self *accService) Start() {
 
-	p := peer.NewGenericPeer("tcp.Acceptor", self.svcName, ":0", nil)
+	self.listener = peer.NewGenericPeer("tcp.Acceptor", self.svcName, ":0", nil)
 
-	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(self.listener, "tcp.ltv", func(ev cellnet.Event) {
 
 		switch msg := ev.Message().(type) {
 		case *proto.ServiceIdentifyACK:
@@ -61,26 +60,20 @@ func (self *accService) Start() {
 		}
 	})
 
-	p.Start()
+	self.listener.Start()
 
-	self.port = p.(cellnet.TCPAcceptor).Port()
+	host := util.GetLocalIP()
 
-	host := meshutil.GetLocalIP()
-
-	self.sd = &discovery.ServiceDesc{
+	sd := &discovery.ServiceDesc{
 		Host: host,
-		Port: self.port,
+		Port: self.listener.(cellnet.TCPAcceptor).Port(),
 		ID:   self.ID(),
 		Name: self.svcName,
 	}
 
-	log.SetColor("green").Debugf("service '%s' listen at %s:%d", self.svcName, host, self.port)
+	log.SetColor("green").Debugf("service '%s' listen at %s:%d", self.svcName, host, sd.Port)
 
-	discovery.Default.Register(self.sd)
-}
-
-func (self *accService) GetSD() *discovery.ServiceDesc {
-	return self.sd
+	discovery.Default.Register(sd)
 }
 
 func (self *accService) Stop() {

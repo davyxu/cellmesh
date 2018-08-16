@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/davyxu/cellmesh/protogen/gengo"
+	"github.com/davyxu/cellmesh/tools/protogen/gengo"
 	"github.com/davyxu/protoplus/gen"
 	"github.com/davyxu/protoplus/model"
 	_ "github.com/davyxu/protoplus/msgidutil"
@@ -42,6 +42,6 @@ func main() {
 	return
 
 OnError:
-	fmt.Println("Generate error: ", err)
+	fmt.Println(err)
 	os.Exit(1)
 }

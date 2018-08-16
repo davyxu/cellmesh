@@ -11,7 +11,7 @@ struct ServiceIdentifyACK {
 
 [AutoMsgID Codec:"binary" Service: "demo.router"]
 struct RouterBindUserREQ {
-    Token int64	
+    ID int64	
 }
 
 [AutoMsgID Codec:"binary"]

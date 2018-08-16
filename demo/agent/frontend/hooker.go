@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
@@ -18,6 +19,9 @@ type RelayUpMsgHooker struct {
 /* 网关通过规则
 1. 直接接收，根据消息选择后台服务地址，适用于未绑定用户的消息
 2. 绑定消息，直接获得用户绑定的后台地址转发
+
+
+消息名-> 服务(进程) -> Session
 */
 
 // 从客户端接收到的消息
@@ -29,16 +33,31 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 	default:
 		msgType := reflect.TypeOf(incomingMsg).Elem()
 
-		if serviceName, ok := QuerySerivceByMsgType(msgType); ok {
+		// 确定消息所在的服务
+		if rule := model.GetTargetService(msgType.Name()); rule != nil {
 
-			service.VisitConn(func(ses cellnet.Session, desc *discovery.ServiceDesc) {
+			switch rule.Mode {
+			case "pass":
+				// TODO 挑选一台
+				service.VisitConn(func(ses cellnet.Session, desc *discovery.ServiceDesc) {
 
-				if desc.Name == serviceName {
-					// 透传消息
-					relay.Relay(ses, incomingMsg, inputEvent.Session().ID())
+					if desc.Name == rule.SvcName {
+						// 透传消息
+						relay.Relay(ses, incomingMsg, inputEvent.Session().ID())
+					}
+				})
+
+			case "auth":
+
+				backendSes := model.GetClientBackendSession(inputEvent.Session(), rule.SvcName)
+
+				if backendSes != nil {
+					relay.Relay(backendSes, incomingMsg, inputEvent.Session().ID())
+				} else {
+					log.Warnf("Route target not found, msg: '%s' mode: 'auth'", msgType.Name())
 				}
 
-			})
+			}
 
 		} else {
 
@@ -62,7 +81,7 @@ func init() {
 
 		for _, sesID := range event.ContextID {
 
-			ses := frontendListener.(peer.SessionManager).GetSession(sesID)
+			ses := model.FrontendListener.(peer.SessionManager).GetSession(sesID)
 			if ses == nil {
 				continue
 			}

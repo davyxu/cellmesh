@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"fmt"
+	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
@@ -9,21 +10,17 @@ import (
 	"github.com/davyxu/cellnet/proc"
 )
 
-var (
-	frontendListener cellnet.Peer
-)
-
 func Start() {
-	frontendListener = peer.NewGenericPeer("tcp.Acceptor", "demo.agent", ":18000", nil)
+	model.FrontendListener = peer.NewGenericPeer("tcp.Acceptor", "demo.agent", ":18000", nil)
 
-	proc.BindProcessorHandler(frontendListener, "demo.agent", nil)
+	proc.BindProcessorHandler(model.FrontendListener, "demo.agent", nil)
 
-	frontendListener.Start()
+	model.FrontendListener.Start()
 
-	listenPort := frontendListener.(cellnet.TCPAcceptor).Port()
+	listenPort := model.FrontendListener.(cellnet.TCPAcceptor).Port()
 
 	name := fmt.Sprintf("agent-%d", listenPort)
-	frontendListener.(cellnet.PeerProperty).SetName("frontend")
+	model.FrontendListener.(cellnet.PeerProperty).SetName("frontend")
 
 	host := util.GetLocalIP()
 
@@ -39,10 +36,10 @@ func Start() {
 
 func Stop() {
 
-	if frontendListener != nil {
-		frontendListener.Stop()
+	if model.FrontendListener != nil {
+		model.FrontendListener.Stop()
 
-		svcid := frontendListener.(cellnet.PeerProperty).Name()
+		svcid := model.FrontendListener.(cellnet.PeerProperty).Name()
 
 		discovery.Default.Deregister(svcid)
 	}
