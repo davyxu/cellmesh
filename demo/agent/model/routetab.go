@@ -3,46 +3,53 @@ package model
 import "sync"
 
 const (
-	ConfigPath = "RouteRule"
+	ConfigPath = "config/agent/route_rule"
 )
 
+// 路由规则
 type RouteRule struct {
 	MsgName string
 	SvcName string
 	Mode    string // auth: 需要授权 pass: 可通过
 }
 
+// 路由表，包含多条路由规则
 type RouteTable struct {
 	Rule []*RouteRule
 }
 
 var (
-	ruleByMsgType      = map[string]*RouteRule{}
-	ruleByMsgTypeGuard sync.RWMutex
+	// 消息名映射路由规则
+	ruleByMsgName      = map[string]*RouteRule{}
+	ruleByMsgNameGuard sync.RWMutex
 )
 
+// 消息名取路由规则
 func GetTargetService(msgName string) *RouteRule {
 
-	ruleByMsgTypeGuard.RLock()
-	defer ruleByMsgTypeGuard.RUnlock()
+	ruleByMsgNameGuard.RLock()
+	defer ruleByMsgNameGuard.RUnlock()
 
-	if rule, ok := ruleByMsgType[msgName]; ok {
+	if rule, ok := ruleByMsgName[msgName]; ok {
 		return rule
 	}
 
 	return nil
 }
+
+// 清除所有规则
 func ClearRule() {
 
-	ruleByMsgTypeGuard.Lock()
-	ruleByMsgType = map[string]*RouteRule{}
-	ruleByMsgTypeGuard.Unlock()
+	ruleByMsgNameGuard.Lock()
+	ruleByMsgName = map[string]*RouteRule{}
+	ruleByMsgNameGuard.Unlock()
 }
 
+// 添加路由规则
 func AddRouteRule(rule *RouteRule) {
 	log.Debugf("Add route rule: %+v", *rule)
 
-	ruleByMsgTypeGuard.Lock()
-	ruleByMsgType[rule.MsgName] = rule
-	ruleByMsgTypeGuard.Unlock()
+	ruleByMsgNameGuard.Lock()
+	ruleByMsgName[rule.MsgName] = rule
+	ruleByMsgNameGuard.Unlock()
 }

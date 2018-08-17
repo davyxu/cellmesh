@@ -16,7 +16,7 @@ func (self *consulDiscovery) GetValue(key string) ([]byte, error) {
 
 	kvPair, _, err := self.client.KV().Get(key, nil)
 
-	if err != nil {
+	if err != nil || kvPair == nil {
 		return nil, err
 	}
 

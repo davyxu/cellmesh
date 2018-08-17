@@ -5,14 +5,16 @@ import (
 )
 
 type Event interface {
-	// 事件对应的会话
+	// 给来源会话(网关,服务)发消息
 	Session() cellnet.Session
 
 	// 事件携带的消息
 	Message() interface{}
 
+	// 网关透传输出,如客户端在网关的SessionID
 	GetContextID() int64
 
+	// 回复客户端
 	Reply(msg interface{})
 }
 

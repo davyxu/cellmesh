@@ -8,6 +8,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
+	"time"
 )
 
 const (
@@ -19,8 +20,17 @@ func Start(add string) {
 
 	proc.BindProcessorHandler(model.FrontendListener, "agent.frontend", nil)
 
+	socketOpt := model.FrontendListener.(cellnet.TCPSocketOption)
+
+	// 无延迟设置缓冲
+	socketOpt.SetSocketBuffer(2048, 2048, true)
+
+	// 40秒无读，20秒无写断开
+	socketOpt.SetSocketDeadline(time.Second*40, time.Second*20)
+
 	model.FrontendListener.Start()
 
+	// 保存端口
 	listenPort := model.FrontendListener.(cellnet.TCPAcceptor).Port()
 
 	model.FrontendListener.(cellnet.PeerProperty).SetName("frontend")
@@ -30,10 +40,11 @@ func Start(add string) {
 	sd := &discovery.ServiceDesc{
 		Host: host,
 		Port: listenPort,
-		ID:   fxmodel.GetSvcID(agentSvcName),
+		ID:   fxmodel.GetSvcID(agentSvcName), //由名称和idtail组成svcid
 		Name: agentSvcName,
 	}
 
+	// 服务发现注册服务
 	discovery.Default.Register(sd)
 }
 

@@ -14,6 +14,8 @@ go build -v -o ${RouteGen} github.com/davyxu/cellmesh/tools/routegen
 
 cd ${CURRDIR}
 
+echo "Generating proto..."
 ${CellMeshProtoGen} -package=proto -cmgo_out=proto_gen.go `source ./protolist.sh`
 
+echo "Uploading route table..."
 ${RouteGen} `source ./protolist.sh`

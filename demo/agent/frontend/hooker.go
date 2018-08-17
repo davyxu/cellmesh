@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"github.com/davyxu/cellmesh/demo/agent/model"
+	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
@@ -30,6 +31,17 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 	switch incomingMsg := inputEvent.Message().(type) {
 	case *cellnet.SessionAccepted:
 	case *cellnet.SessionClosed:
+
+		// 通知后台客户端关闭
+		u := model.GetUser(inputEvent.Session())
+		if u != nil {
+			for _, backend := range u.Targets {
+				backend.Session.Send(proto.ClientClosedACK{
+					ID: inputEvent.Session().ID(),
+				})
+			}
+		}
+
 	default:
 		msgType := reflect.TypeOf(incomingMsg).Elem()
 
@@ -101,6 +113,7 @@ func init() {
 	routerHooker := new(RelayUpMsgHooker)
 	msgLogger := new(tcp.MsgHooker)
 
+	// 前端的processor
 	proc.RegisterProcessor("agent.frontend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(transmitter)

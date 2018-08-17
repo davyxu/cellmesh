@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
+// 将客户端连接绑定到后台服务
 func bindClientToBackend(backendSes cellnet.Session, clientSesID int64) {
 
 	clientSes := model.GetClientSession(clientSesID)

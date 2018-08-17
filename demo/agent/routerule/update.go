@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 )
 
+// 用Consul KV下载路由规则
 func Download() error {
 
 	log.Debugf("Download route rule from discovery...")

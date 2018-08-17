@@ -39,8 +39,6 @@ func (self *accService) Start() {
 				service.AddConn(ev.Session(), &discovery.ServiceDesc{
 					ID:   msg.SvcID,
 					Name: msg.SvcName,
-					Host: msg.Host,
-					Port: int(msg.Port),
 				})
 			}
 

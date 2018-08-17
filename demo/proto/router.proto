@@ -1,20 +1,18 @@
-// 通知进程主服务
+// backend -> agent 连接服务
 [AutoMsgID Codec:"binary"]
 struct ServiceIdentifyACK {
     SvcName string
-	SvcID string
-	Host string
-	Port int32
+	SvcID string	
 }
 
-
-
+// backend ->agent 将用户绑定到后台连接
 [AutoMsgID Codec:"binary" Service: "router"]
-struct RouterBindUserREQ {
+struct RouterBindUserACK {
     ID int64	
 }
 
+// agent -> backend 客户端断开
 [AutoMsgID Codec:"binary"]
-struct RouterBindUserACK {
-		
+struct ClientClosedACK {
+    ID int64	
 }

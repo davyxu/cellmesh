@@ -7,8 +7,8 @@ import (
 )
 
 func init() {
-	proto.Handle_Router_RouterBindUserREQ = func(event service.Event, req *proto.RouterBindUserREQ) {
-		bindClientToBackend(event.Session(), req.ID)
+	proto.Handle_Router_RouterBindUserACK = func(event service.Event, msg *proto.RouterBindUserACK) {
+		bindClientToBackend(event.Session(), msg.ID)
 	}
 
 	proto.Handle_Router_Default = func(ev service.Event) {

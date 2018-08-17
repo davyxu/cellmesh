@@ -85,15 +85,14 @@ type ChatACK struct {
 type ServiceIdentifyACK struct {
 	SvcName string
 	SvcID   string
-	Host    string
-	Port    int32
-}
-
-type RouterBindUserREQ struct {
-	ID int64
 }
 
 type RouterBindUserACK struct {
+	ID int64
+}
+
+type ClientClosedACK struct {
+	ID int64
 }
 
 func (self *ServerInfo) String() string         { return fmt.Sprintf("%+v", *self) }
@@ -104,8 +103,8 @@ func (self *VerifyACK) String() string          { return fmt.Sprintf("%+v", *sel
 func (self *ChatREQ) String() string            { return fmt.Sprintf("%+v", *self) }
 func (self *ChatACK) String() string            { return fmt.Sprintf("%+v", *self) }
 func (self *ServiceIdentifyACK) String() string { return fmt.Sprintf("%+v", *self) }
-func (self *RouterBindUserREQ) String() string  { return fmt.Sprintf("%+v", *self) }
 func (self *RouterBindUserACK) String() string  { return fmt.Sprintf("%+v", *self) }
+func (self *ClientClosedACK) String() string    { return fmt.Sprintf("%+v", *self) }
 
 func GetRPCPair(req interface{}) reflect.Type {
 
@@ -116,8 +115,6 @@ func GetRPCPair(req interface{}) reflect.Type {
 		return reflect.TypeOf((*VerifyACK)(nil)).Elem()
 	case *ChatREQ:
 		return reflect.TypeOf((*ChatACK)(nil)).Elem()
-	case *RouterBindUserREQ:
-		return reflect.TypeOf((*RouterBindUserACK)(nil)).Elem()
 	}
 
 	return nil
@@ -125,21 +122,21 @@ func GetRPCPair(req interface{}) reflect.Type {
 
 // game
 var (
-	Handle_Game_ChatREQ   = func(ev service.Event, req *ChatREQ) { panic("'ChatREQ' not handled") }
-	Handle_Game_VerifyREQ = func(ev service.Event, req *VerifyREQ) { panic("'VerifyREQ' not handled") }
-	Handle_Game_Default   = func(ev service.Event) {}
+	Handle_Game_ChatREQ   = func(ev service.Event, msg *ChatREQ) { panic("'ChatREQ' not handled") }
+	Handle_Game_VerifyREQ = func(ev service.Event, msg *VerifyREQ) { panic("'VerifyREQ' not handled") }
+	Handle_Game_Default   func(ev service.Event)
 )
 
 // login
 var (
-	Handle_Login_LoginREQ = func(ev service.Event, req *LoginREQ) { panic("'LoginREQ' not handled") }
-	Handle_Login_Default  = func(ev service.Event) {}
+	Handle_Login_LoginREQ = func(ev service.Event, msg *LoginREQ) { panic("'LoginREQ' not handled") }
+	Handle_Login_Default  func(ev service.Event)
 )
 
 // router
 var (
-	Handle_Router_RouterBindUserREQ = func(ev service.Event, req *RouterBindUserREQ) { panic("'RouterBindUserREQ' not handled") }
-	Handle_Router_Default           = func(ev service.Event) {}
+	Handle_Router_RouterBindUserACK = func(ev service.Event, msg *RouterBindUserACK) { panic("'RouterBindUserACK' not handled") }
+	Handle_Router_Default           func(ev service.Event)
 )
 
 func GetDispatcher(svcName string) service.DispatcherFunc {
@@ -153,7 +150,9 @@ func GetDispatcher(svcName string) service.DispatcherFunc {
 			case *VerifyREQ:
 				Handle_Game_VerifyREQ(ev, req)
 			default:
-				Handle_Game_Default(ev)
+				if Handle_Game_Default != nil {
+					Handle_Game_Default(ev)
+				}
 			}
 		}
 	case "login":
@@ -162,16 +161,20 @@ func GetDispatcher(svcName string) service.DispatcherFunc {
 			case *LoginREQ:
 				Handle_Login_LoginREQ(ev, req)
 			default:
-				Handle_Login_Default(ev)
+				if Handle_Login_Default != nil {
+					Handle_Login_Default(ev)
+				}
 			}
 		}
 	case "router":
 		return func(ev service.Event) {
 			switch req := ev.Message().(type) {
-			case *RouterBindUserREQ:
-				Handle_Router_RouterBindUserREQ(ev, req)
+			case *RouterBindUserACK:
+				Handle_Router_RouterBindUserACK(ev, req)
 			default:
-				Handle_Router_Default(ev)
+				if Handle_Router_Default != nil {
+					Handle_Router_Default(ev)
+				}
 			}
 		}
 	}
@@ -225,14 +228,14 @@ func init() {
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
-		Type:  reflect.TypeOf((*RouterBindUserREQ)(nil)).Elem(),
-		ID:    34501,
+		Type:  reflect.TypeOf((*RouterBindUserACK)(nil)).Elem(),
+		ID:    61868,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
-		Type:  reflect.TypeOf((*RouterBindUserACK)(nil)).Elem(),
-		ID:    61868,
+		Type:  reflect.TypeOf((*ClientClosedACK)(nil)).Elem(),
+		ID:    63464,
 	})
 
 }

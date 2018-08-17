@@ -45,12 +45,9 @@ func (self *conService) connFlow(sd *discovery.ServiceDesc) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionConnected:
-
-			port := p.(cellnet.TCPConnector).Port()
 			ev.Session().Send(proto.ServiceIdentifyACK{
 				SvcName: self.svcName,
 				SvcID:   fxmodel.GetSvcID(self.svcName),
-				Port:    int32(port),
 			})
 
 		case *cellnet.SessionClosed:

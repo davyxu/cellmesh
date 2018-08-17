@@ -11,7 +11,7 @@ func init() {
 
 		fmt.Printf("verfiy: %+v \n", req.GameToken)
 
-		ev.Session().Send(proto.RouterBindUserREQ{ID: ev.GetContextID()})
+		ev.Session().Send(proto.RouterBindUserACK{ID: ev.GetContextID()})
 
 		ev.Reply(proto.VerifyACK{})
 	}
