@@ -97,16 +97,10 @@ func init() {
 	// 从后端服务器收到的消息
 	relay.SetBroadcaster(func(event *relay.RecvMsgEvent) {
 
-		for _, sesID := range event.ContextID {
-
-			ses := model.FrontendListener.(peer.SessionManager).GetSession(sesID)
-			if ses == nil {
-				continue
-			}
-
+		ses := model.FrontendListener.(peer.SessionManager).GetSession(event.PassThroughAsInt64())
+		if ses != nil {
 			ses.Send(event.Msg)
 		}
-
 	})
 
 	transmitter := new(tcp.TCPMessageTransmitter)

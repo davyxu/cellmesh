@@ -15,7 +15,7 @@ type ReplyEvent interface {
 
 func (self *svcEvent) GetContextID() int64 {
 	if relayEvent, ok := self.Event.(*relay.RecvMsgEvent); ok {
-		return relayEvent.OneContextID()
+		return relayEvent.PassThroughAsInt64()
 	}
 
 	return 0
