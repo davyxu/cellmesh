@@ -1,6 +1,26 @@
 # cellmesh
 基于cellnet的游戏服务框架
 
+# 特点
+
+## Based On Service Discovery(基于服务发现)
+
+   通过服务发现自动实现服务互联,探测,挂接.无需配置服务器间的端口.
+
+## Zero Config File(零配置文件)
+
+   任何服务器配置均通过Consul的KV存取,无任何配置文件.
+
+## Code Generation(代码生成)
+
+   基于github.com/davyxu/protoplus的代码生成技术,迅速粘合逻辑与底层,代码好看易懂且高效.
+
+   使用更简单更强大的schema编写协议, 并自动生成protobuf schema.
+
+## Transport based on cellnet(基于cellnet的网络传输)
+
+   提供强大的扩展及适配能力.
+
 # 基础包依赖
 
 ```
@@ -58,7 +78,7 @@ backend(后端)
 
 - 后台认证
 
-  后台服务通过RouterBindUserACK消息,将后台连接与客户端绑定,客户端固定将对应消息发送到绑定的后台服务器.
+  后台服务通过BindBackendACK消息,将后台连接与客户端绑定,客户端固定将对应消息发送到绑定的后台服务器.
 
 - 后台断线重连
 

@@ -15,7 +15,7 @@ func main() {
 
 	svcfx.Init()
 
-	s := cellsvc.NewService("login")
+	s := cellsvc.NewAcceptor("login")
 	s.SetDispatcher(proto.GetDispatcher("login"))
 
 	s.Start()

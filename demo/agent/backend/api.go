@@ -14,14 +14,21 @@ func bindClientToBackend(backendSes cellnet.Session, clientSesID int64) {
 		return
 	}
 
-	sd := service.GetSessionSD(backendSes)
+	sd := service.BackendSesToSD(backendSes)
 	if sd == nil {
 		log.Errorln("backend sd not found")
 		return
 	}
 
-	u := model.CreateUser(clientSes)
-	u.AddBackend(sd.Name, backendSes)
+	u := model.SessionToUser(clientSes)
+
+	if u != nil {
+		u.SetBackend(sd.Name, backendSes)
+	} else {
+		u = model.CreateUser(clientSes)
+		u.AddBackend(sd.Name, backendSes)
+	}
+
 }
 
 // 恢复后台连接
@@ -38,7 +45,7 @@ func recoverBackend(backendSes cellnet.Session, svcName string) {
 // 移除玩家对应的后台连接
 func removeBackend(backendSes cellnet.Session) {
 
-	sd := service.GetSessionSD(backendSes)
+	sd := service.BackendSesToSD(backendSes)
 	if sd == nil {
 		log.Errorln("backend sd not found")
 		return

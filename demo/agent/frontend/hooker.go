@@ -33,7 +33,7 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 	case *cellnet.SessionClosed:
 
 		// 通知后台客户端关闭
-		u := model.GetUser(inputEvent.Session())
+		u := model.SessionToUser(inputEvent.Session())
 		if u != nil {
 			for _, backend := range u.Targets {
 				backend.Session.Send(proto.ClientClosedACK{
@@ -61,7 +61,7 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 
 			case "auth":
 
-				u := model.GetUser(inputEvent.Session())
+				u := model.SessionToUser(inputEvent.Session())
 
 				if u != nil {
 

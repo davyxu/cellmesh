@@ -8,7 +8,8 @@ type Backend struct {
 }
 
 type User struct {
-	Targets []*Backend
+	ClientSession cellnet.Session
+	Targets       []*Backend
 }
 
 func (self *User) AddBackend(svcName string, ses cellnet.Session) {
@@ -39,6 +40,8 @@ func (self *User) GetBackend(svcName string) cellnet.Session {
 	return nil
 }
 
-func NewUser() *User {
-	return &User{}
+func NewUser(clientSes cellnet.Session) *User {
+	return &User{
+		ClientSession: clientSes,
+	}
 }

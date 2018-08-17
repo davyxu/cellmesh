@@ -16,7 +16,7 @@ func main() {
 
 	svcfx.Init()
 
-	r := cellsvc.NewConnService("game", "router")
+	r := cellsvc.NewConnector("game", "router")
 	r.SetDispatcher(proto.GetDispatcher("game"))
 	r.Start()
 

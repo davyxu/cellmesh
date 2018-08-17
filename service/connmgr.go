@@ -34,7 +34,7 @@ func GetConn(svcid string) cellnet.Session {
 	return nil
 }
 
-func GetSessionSD(ses cellnet.Session) *discovery.ServiceDesc {
+func BackendSesToSD(ses cellnet.Session) *discovery.ServiceDesc {
 
 	if raw, ok := ses.(cellnet.ContextSet).GetContext("desc"); ok {
 		return raw.(*discovery.ServiceDesc)
@@ -61,7 +61,7 @@ func VisitConn(callback func(ses cellnet.Session, desc *discovery.ServiceDesc)) 
 
 	for _, ses := range connBySvcID {
 
-		sd := GetSessionSD(ses)
+		sd := BackendSesToSD(ses)
 
 		callback(ses, sd)
 	}

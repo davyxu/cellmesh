@@ -87,8 +87,12 @@ type ServiceIdentifyACK struct {
 	SvcID   string
 }
 
-type RouterBindUserACK struct {
+type BindBackendACK struct {
 	ID int64
+}
+
+type CloseClientACK struct {
+	ID []int64
 }
 
 type ClientClosedACK struct {
@@ -103,7 +107,8 @@ func (self *VerifyACK) String() string          { return fmt.Sprintf("%+v", *sel
 func (self *ChatREQ) String() string            { return fmt.Sprintf("%+v", *self) }
 func (self *ChatACK) String() string            { return fmt.Sprintf("%+v", *self) }
 func (self *ServiceIdentifyACK) String() string { return fmt.Sprintf("%+v", *self) }
-func (self *RouterBindUserACK) String() string  { return fmt.Sprintf("%+v", *self) }
+func (self *BindBackendACK) String() string     { return fmt.Sprintf("%+v", *self) }
+func (self *CloseClientACK) String() string     { return fmt.Sprintf("%+v", *self) }
 func (self *ClientClosedACK) String() string    { return fmt.Sprintf("%+v", *self) }
 
 func GetRPCPair(req interface{}) reflect.Type {
@@ -135,8 +140,9 @@ var (
 
 // router
 var (
-	Handle_Router_RouterBindUserACK = func(ev service.Event, msg *RouterBindUserACK) { panic("'RouterBindUserACK' not handled") }
-	Handle_Router_Default           func(ev service.Event)
+	Handle_Router_BindBackendACK = func(ev service.Event, msg *BindBackendACK) { panic("'BindBackendACK' not handled") }
+	Handle_Router_CloseClientACK = func(ev service.Event, msg *CloseClientACK) { panic("'CloseClientACK' not handled") }
+	Handle_Router_Default        func(ev service.Event)
 )
 
 func GetDispatcher(svcName string) service.DispatcherFunc {
@@ -169,8 +175,10 @@ func GetDispatcher(svcName string) service.DispatcherFunc {
 	case "router":
 		return func(ev service.Event) {
 			switch req := ev.Message().(type) {
-			case *RouterBindUserACK:
-				Handle_Router_RouterBindUserACK(ev, req)
+			case *BindBackendACK:
+				Handle_Router_BindBackendACK(ev, req)
+			case *CloseClientACK:
+				Handle_Router_CloseClientACK(ev, req)
 			default:
 				if Handle_Router_Default != nil {
 					Handle_Router_Default(ev)
@@ -228,8 +236,14 @@ func init() {
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
-		Type:  reflect.TypeOf((*RouterBindUserACK)(nil)).Elem(),
-		ID:    61868,
+		Type:  reflect.TypeOf((*BindBackendACK)(nil)).Elem(),
+		ID:    20052,
+	})
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("binary"),
+		Type:  reflect.TypeOf((*CloseClientACK)(nil)).Elem(),
+		ID:    6788,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{

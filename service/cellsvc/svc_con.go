@@ -119,7 +119,7 @@ func (self *conService) Stop() {
 
 }
 
-func NewConnService(svcName, targetSvcName string) service.Service {
+func NewConnector(svcName, targetSvcName string) service.Service {
 
 	return &conService{
 		svcName:       svcName,

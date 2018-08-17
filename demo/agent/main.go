@@ -45,7 +45,7 @@ func main() {
 
 	routerule.Download()
 
-	s := cellsvc.NewService("router")
+	s := cellsvc.NewAcceptor("router")
 	s.SetDispatcher(proto.GetDispatcher("router"))
 	s.Start()
 

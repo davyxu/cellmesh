@@ -74,7 +74,7 @@ func (self *accService) Stop() {
 	discovery.Default.Deregister(fxmodel.GetSvcID(self.svcName))
 }
 
-func NewService(svcName string) service.Service {
+func NewAcceptor(svcName string) service.Service {
 
 	return &accService{
 		svcName: svcName,

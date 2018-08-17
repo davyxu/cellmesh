@@ -7,8 +7,15 @@ struct ServiceIdentifyACK {
 
 // backend ->agent 将用户绑定到后台连接
 [AutoMsgID Codec:"binary" Service: "router"]
-struct RouterBindUserACK {
+struct BindBackendACK {
     ID int64	
+}
+
+
+// backend ->agent 切断用户连接
+[AutoMsgID Codec:"binary" Service: "router"]
+struct CloseClientACK {
+    ID []int64
 }
 
 // agent -> backend 客户端断开
