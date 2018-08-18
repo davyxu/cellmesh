@@ -16,6 +16,8 @@ var log = golog.New("main")
 
 func login() (agentAddr string) {
 
+	log.Debugln("Create login connection...")
+
 	loginReq, err := service.CreateConnection("login")
 	if err != nil {
 		log.Errorln(err)
@@ -43,6 +45,8 @@ func login() (agentAddr string) {
 
 func getAgentSession(agentAddr string) (ret cellnet.Session) {
 
+	log.Debugln("Prepare agent connection...")
+
 	waitGameReady := make(chan struct{})
 	go service.KeepConnection(agentAddr, agentAddr, func(ses cellnet.Session) {
 		ret = ses
@@ -52,6 +56,8 @@ func getAgentSession(agentAddr string) (ret cellnet.Session) {
 	})
 
 	<-waitGameReady
+
+	log.Debugln("Agent connection ready")
 
 	return
 }

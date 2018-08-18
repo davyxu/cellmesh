@@ -21,33 +21,58 @@
 
    提供强大的扩展及适配能力.
 
-# 基础包依赖
+# 运行Demo
+
+## 下载cellmesh源码
 
 ```
-    go get -v github.com/hashicorp/consul
+    go get -v github.com/davyxu/cellmesh
 ```
 
-# 启动服务发现
+## 准备第三方包
 
 ```
-    cd shell
-    ./StartConsul.sh
+    # 转到cellmesh的shell目录
+    cd github.com/davyxu/cellmesh/shell
+    sh ./DownloadThirdParty.sh
 ```
 
+## 准备consul服务发现
 
-# 本工程包含什么？
+```
+    # 转到cellmesh的shell目录
+    cd github.com/davyxu/cellmesh/shell
 
-- 客户端直连服务器例子(demo/login)
+    # 这里会自动编译和运行consul
+    sh ./StartConsul.sh
+```
 
-  使用基于cellnet封装网络通信+Consul服务发现的例子
+在浏览器里访问http://localhost:8500 地址可查看当前Consul状态
 
-- 网关例子(demo/agent)
+Mac下可直接运行下面的命令
+```
+    cd github.com/davyxu/cellmesh/shell
+    sh ./ShowUI.sh
+```
 
-- 基于Consul的服务发现封装(discovery)
+## 更新协议及上传路由规则
 
-- 协议代码生成工具
+执行下面指令更新路由规则到Consul
+```
+    cd github.com/davyxu/cellmesh/demo/proto
+    sh ./Gen.sh
+```
 
-- 网关路由规则自动上传Consul
+## 启动demo服务
+
+按照下面shell分别启动login, agent, game, client
+```
+    cd github.com/davyxu/cellmesh/shell
+
+    sh ./RunDemoSvc.sh login
+```
+
+启动client后,可在命令行中输入文字作为聊天内容发送
 
 # 概念
 
@@ -109,7 +134,7 @@ routerule(路由规则)
 逻辑中根据策略从已有连接及信息选择出连接与目标通信，例如：选择负载最低的一台游戏服务器
 
 
-# TODO
+# 开发进度
 - [x] 基于Consul的服务发现及Watch机制
 - [x] 网关基本逻辑
 - [x] 带服务发现的连接器,侦听器
