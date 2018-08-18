@@ -122,20 +122,6 @@ func (self *CloseClientACK) String() string     { return fmt.Sprintf("%+v", *sel
 func (self *ClientClosedACK) String() string    { return fmt.Sprintf("%+v", *self) }
 func (self *PingACK) String() string            { return fmt.Sprintf("%+v", *self) }
 
-func GetRPCPair(req interface{}) reflect.Type {
-
-	switch req.(type) {
-	case *LoginREQ:
-		return reflect.TypeOf((*LoginACK)(nil)).Elem()
-	case *VerifyREQ:
-		return reflect.TypeOf((*VerifyACK)(nil)).Elem()
-	case *ChatREQ:
-		return reflect.TypeOf((*ChatACK)(nil)).Elem()
-	}
-
-	return nil
-}
-
 // agent
 var (
 	Handle_Agent_PingACK = func(ev service.Event) { panic("'PingACK' not handled") }

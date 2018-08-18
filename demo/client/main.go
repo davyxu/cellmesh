@@ -28,8 +28,7 @@ func login() (agentAddr string) {
 		Version:  "1.0",
 		Platform: "demo",
 		UID:      "1234",
-	}, func(raw interface{}) {
-		ack := raw.(*proto.LoginACK)
+	}, func(ack *proto.LoginACK) {
 
 		if ack.Result == proto.ResultCode_NoError {
 			agentAddr = fmt.Sprintf("%s:%d", ack.Server.IP, ack.Server.Port)
@@ -42,12 +41,19 @@ func login() (agentAddr string) {
 	return
 }
 
-func getAgentRequestor(agentAddr string) cellnet.Session {
+func getAgentSession(agentAddr string) (ret cellnet.Session) {
 
-	waitGameReady := make(chan cellnet.Session)
-	go service.KeepConnection(agentAddr, agentAddr, waitGameReady)
+	waitGameReady := make(chan struct{})
+	go service.KeepConnection(agentAddr, agentAddr, func(ses cellnet.Session) {
+		ret = ses
+		waitGameReady <- struct{}{}
+	}, func() {
+		os.Exit(0)
+	})
 
-	return <-waitGameReady
+	<-waitGameReady
+
+	return
 }
 
 func ReadConsole(callback func(string)) {
@@ -70,8 +76,6 @@ func ReadConsole(callback func(string)) {
 
 func main() {
 
-	service.RPCPairQueryFunc = proto.GetRPCPair
-
 	svcfx.Init()
 
 	agentAddr := login()
@@ -82,12 +86,11 @@ func main() {
 
 	fmt.Println("agent:", agentAddr)
 
-	agentReq := getAgentRequestor(agentAddr)
+	agentReq := getAgentSession(agentAddr)
 
 	service.RemoteCall(agentReq, &proto.VerifyREQ{
 		GameToken: "verify",
-	}, func(raw interface{}) {
-		ack := raw.(*proto.VerifyACK)
+	}, func(ack *proto.VerifyACK) {
 
 		fmt.Println(ack)
 	})
@@ -96,8 +99,7 @@ func main() {
 
 		service.RemoteCall(agentReq, &proto.ChatREQ{
 			Content: s,
-		}, func(raw interface{}) {
-			ack := raw.(*proto.ChatACK)
+		}, func(ack *proto.ChatACK) {
 
 			fmt.Println(ack)
 		})

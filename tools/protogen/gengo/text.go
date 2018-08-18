@@ -59,16 +59,6 @@ type {{.Name}} struct{	{{range .Fields}}
 {{range .Structs}}
 func (self *{{.Name}}) String() string { return fmt.Sprintf("%+v",*self) } {{end}}
 
-func GetRPCPair(req interface{}) reflect.Type {
-
-	switch req.(type) { {{range RPCPair $}}
-	case *{{.REQ.Name}}:
-		return reflect.TypeOf((*{{.ACK.Name}})(nil)).Elem() {{end}}
-	}
-
-	return nil
-}
-
 {{range ServiceGroup $}}
 // {{$svcName := .Key}}{{$svcName}}
 var ( {{range .Group}}

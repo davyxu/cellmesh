@@ -51,7 +51,7 @@ type connector interface {
 }
 
 // 保持长连接
-func KeepConnection(svcid, addr string, onReady chan cellnet.Session) {
+func KeepConnection(svcid, addr string, onReady func(cellnet.Session), onClose func()) {
 
 	var stop sync.WaitGroup
 
@@ -72,17 +72,18 @@ func KeepConnection(svcid, addr string, onReady chan cellnet.Session) {
 
 	if conn.IsReady() {
 
-		if onReady != nil {
-			onReady <- conn.Session()
-		}
+		onReady(conn.Session())
 
 		// 连接断开
 		stop.Wait()
-
-	} else {
-
-		p.Stop()
 	}
+
+	p.Stop()
+
+	if onClose != nil {
+		onClose()
+	}
+
 }
 
 var (
@@ -120,11 +121,13 @@ func ResolveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, ha
 	return inputEvent, false, nil
 }
 
-var (
-	RPCPairQueryFunc func(req interface{}) reflect.Type
-)
+// callback =func(ack *YouMsgACK)
+func RemoteCall(target, req interface{}, callback interface{}) error {
 
-func RemoteCall(target, req interface{}, callback func(interface{})) error {
+	funcType := reflect.TypeOf(callback)
+	if funcType.Kind() != reflect.Func {
+		panic("callback require 'func'")
+	}
 
 	var ses cellnet.Session
 	switch tgt := target.(type) {
@@ -140,11 +143,18 @@ func RemoteCall(target, req interface{}, callback func(interface{})) error {
 
 	feedBack := make(chan interface{})
 
-	if RPCPairQueryFunc == nil {
-		panic("Require 'RPCPairQueryFunc' from protogen code")
+	// 获取回调第一个参数
+
+	if funcType.NumIn() != 1 {
+		panic("callback func param format like 'func(ack *YouMsgACK)'")
 	}
 
-	ackType := RPCPairQueryFunc(req)
+	ackType := funcType.In(0)
+	if ackType.Kind() != reflect.Ptr {
+		panic("callback func param format like 'func(ack *YouMsgACK)'")
+	}
+
+	ackType = ackType.Elem()
 
 	callByType.Store(ackType, feedBack)
 
@@ -154,7 +164,10 @@ func RemoteCall(target, req interface{}, callback func(interface{})) error {
 
 	select {
 	case ack := <-feedBack:
-		callback(ack)
+
+		vCall := reflect.ValueOf(callback)
+
+		vCall.Call([]reflect.Value{reflect.ValueOf(ack)})
 		return nil
 	case <-time.After(time.Second):
 
