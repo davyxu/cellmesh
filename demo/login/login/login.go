@@ -7,7 +7,10 @@ import (
 )
 
 func init() {
-	proto.Handle_Login_LoginREQ = func(ev service.Event, req *proto.LoginREQ) {
+	proto.Handle_Login_LoginREQ = func(ev service.Event) {
+
+		//msg := ev.Message().(*proto.LoginREQ)
+
 		// TODO 第三方请求验证及信息拉取
 
 		var ack proto.LoginACK
