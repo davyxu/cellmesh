@@ -82,6 +82,11 @@ type ChatACK struct {
 	Content string
 }
 
+type ClientID struct {
+	ID    int64  // 客户端在网关上的SessionID
+	SvcID string // 客户端在哪个网关
+}
+
 type ServiceIdentifyACK struct {
 	SvcName string
 	SvcID   string
@@ -92,11 +97,15 @@ type BindBackendACK struct {
 }
 
 type CloseClientACK struct {
-	ID []int64
+	ID  []int64
+	All bool
 }
 
 type ClientClosedACK struct {
-	ID int64
+	ID ClientID
+}
+
+type PingACK struct {
 }
 
 func (self *ServerInfo) String() string         { return fmt.Sprintf("%+v", *self) }
@@ -106,10 +115,12 @@ func (self *VerifyREQ) String() string          { return fmt.Sprintf("%+v", *sel
 func (self *VerifyACK) String() string          { return fmt.Sprintf("%+v", *self) }
 func (self *ChatREQ) String() string            { return fmt.Sprintf("%+v", *self) }
 func (self *ChatACK) String() string            { return fmt.Sprintf("%+v", *self) }
+func (self *ClientID) String() string           { return fmt.Sprintf("%+v", *self) }
 func (self *ServiceIdentifyACK) String() string { return fmt.Sprintf("%+v", *self) }
 func (self *BindBackendACK) String() string     { return fmt.Sprintf("%+v", *self) }
 func (self *CloseClientACK) String() string     { return fmt.Sprintf("%+v", *self) }
 func (self *ClientClosedACK) String() string    { return fmt.Sprintf("%+v", *self) }
+func (self *PingACK) String() string            { return fmt.Sprintf("%+v", *self) }
 
 func GetRPCPair(req interface{}) reflect.Type {
 
@@ -125,36 +136,53 @@ func GetRPCPair(req interface{}) reflect.Type {
 	return nil
 }
 
+// agent
+var (
+	Handle_Agent_PingACK = func(ev service.Event) { panic("'PingACK' not handled") }
+	Handle_Agent_Default func(ev service.Event)
+)
+
 // game
 var (
-	Handle_Game_ChatREQ   = func(ev service.Event, msg *ChatREQ) { panic("'ChatREQ' not handled") }
-	Handle_Game_VerifyREQ = func(ev service.Event, msg *VerifyREQ) { panic("'VerifyREQ' not handled") }
+	Handle_Game_ChatREQ   = func(ev service.Event) { panic("'ChatREQ' not handled") }
+	Handle_Game_VerifyREQ = func(ev service.Event) { panic("'VerifyREQ' not handled") }
 	Handle_Game_Default   func(ev service.Event)
 )
 
 // login
 var (
-	Handle_Login_LoginREQ = func(ev service.Event, msg *LoginREQ) { panic("'LoginREQ' not handled") }
+	Handle_Login_LoginREQ = func(ev service.Event) { panic("'LoginREQ' not handled") }
 	Handle_Login_Default  func(ev service.Event)
 )
 
 // router
 var (
-	Handle_Router_BindBackendACK = func(ev service.Event, msg *BindBackendACK) { panic("'BindBackendACK' not handled") }
-	Handle_Router_CloseClientACK = func(ev service.Event, msg *CloseClientACK) { panic("'CloseClientACK' not handled") }
+	Handle_Router_BindBackendACK = func(ev service.Event) { panic("'BindBackendACK' not handled") }
+	Handle_Router_CloseClientACK = func(ev service.Event) { panic("'CloseClientACK' not handled") }
 	Handle_Router_Default        func(ev service.Event)
 )
 
 func GetDispatcher(svcName string) service.DispatcherFunc {
 
 	switch svcName {
+	case "agent":
+		return func(ev service.Event) {
+			switch ev.Message().(type) {
+			case *PingACK:
+				Handle_Agent_PingACK(ev)
+			default:
+				if Handle_Agent_Default != nil {
+					Handle_Agent_Default(ev)
+				}
+			}
+		}
 	case "game":
 		return func(ev service.Event) {
-			switch req := ev.Message().(type) {
+			switch ev.Message().(type) {
 			case *ChatREQ:
-				Handle_Game_ChatREQ(ev, req)
+				Handle_Game_ChatREQ(ev)
 			case *VerifyREQ:
-				Handle_Game_VerifyREQ(ev, req)
+				Handle_Game_VerifyREQ(ev)
 			default:
 				if Handle_Game_Default != nil {
 					Handle_Game_Default(ev)
@@ -163,9 +191,9 @@ func GetDispatcher(svcName string) service.DispatcherFunc {
 		}
 	case "login":
 		return func(ev service.Event) {
-			switch req := ev.Message().(type) {
+			switch ev.Message().(type) {
 			case *LoginREQ:
-				Handle_Login_LoginREQ(ev, req)
+				Handle_Login_LoginREQ(ev)
 			default:
 				if Handle_Login_Default != nil {
 					Handle_Login_Default(ev)
@@ -174,11 +202,11 @@ func GetDispatcher(svcName string) service.DispatcherFunc {
 		}
 	case "router":
 		return func(ev service.Event) {
-			switch req := ev.Message().(type) {
+			switch ev.Message().(type) {
 			case *BindBackendACK:
-				Handle_Router_BindBackendACK(ev, req)
+				Handle_Router_BindBackendACK(ev)
 			case *CloseClientACK:
-				Handle_Router_CloseClientACK(ev, req)
+				Handle_Router_CloseClientACK(ev)
 			default:
 				if Handle_Router_Default != nil {
 					Handle_Router_Default(ev)
@@ -230,6 +258,12 @@ func init() {
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
+		Type:  reflect.TypeOf((*ClientID)(nil)).Elem(),
+		ID:    64524,
+	})
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ServiceIdentifyACK)(nil)).Elem(),
 		ID:    49180,
 	})
@@ -250,6 +284,12 @@ func init() {
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ClientClosedACK)(nil)).Elem(),
 		ID:    63464,
+	})
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("binary"),
+		Type:  reflect.TypeOf((*PingACK)(nil)).Elem(),
+		ID:    58557,
 	})
 
 }

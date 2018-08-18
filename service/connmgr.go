@@ -12,7 +12,7 @@ var (
 	connBySvcNameGuard sync.RWMutex
 )
 
-func AddConn(ses cellnet.Session, desc *discovery.ServiceDesc) {
+func AddRemoteService(ses cellnet.Session, desc *discovery.ServiceDesc) {
 
 	connBySvcNameGuard.Lock()
 	ses.(cellnet.ContextSet).SetContext("desc", desc)
@@ -22,7 +22,7 @@ func AddConn(ses cellnet.Session, desc *discovery.ServiceDesc) {
 	log.SetColor("green").Debugf("add connection: '%s'", desc.ID)
 }
 
-func GetConn(svcid string) cellnet.Session {
+func GetRemoteService(svcid string) cellnet.Session {
 	connBySvcNameGuard.RLock()
 	defer connBySvcNameGuard.RUnlock()
 
@@ -34,7 +34,7 @@ func GetConn(svcid string) cellnet.Session {
 	return nil
 }
 
-func BackendSesToSD(ses cellnet.Session) *discovery.ServiceDesc {
+func ServiceSessionToSD(ses cellnet.Session) *discovery.ServiceDesc {
 
 	if raw, ok := ses.(cellnet.ContextSet).GetContext("desc"); ok {
 		return raw.(*discovery.ServiceDesc)
@@ -43,7 +43,7 @@ func BackendSesToSD(ses cellnet.Session) *discovery.ServiceDesc {
 	return nil
 }
 
-func RemoveConn(ses cellnet.Session) {
+func RemoveRemoteService(ses cellnet.Session) {
 	if raw, ok := ses.(cellnet.ContextSet).GetContext("desc"); ok {
 
 		desc := raw.(*discovery.ServiceDesc)
@@ -56,14 +56,16 @@ func RemoveConn(ses cellnet.Session) {
 	}
 }
 
-func VisitConn(callback func(ses cellnet.Session, desc *discovery.ServiceDesc)) {
+func VisitRemoteService(callback func(ses cellnet.Session, desc *discovery.ServiceDesc) bool) {
 	connBySvcNameGuard.RLock()
 
 	for _, ses := range connBySvcID {
 
-		sd := BackendSesToSD(ses)
+		sd := ServiceSessionToSD(ses)
 
-		callback(ses, sd)
+		if !callback(ses, sd) {
+			break
+		}
 	}
 
 	connBySvcNameGuard.RUnlock()

@@ -1,6 +1,9 @@
 package model
 
-import "github.com/davyxu/cellnet"
+import (
+	"github.com/davyxu/cellnet"
+	"time"
+)
 
 type Backend struct {
 	SvcName string
@@ -10,6 +13,7 @@ type Backend struct {
 type User struct {
 	ClientSession cellnet.Session
 	Targets       []*Backend
+	LastPingTime  time.Time
 }
 
 func (self *User) AddBackend(svcName string, ses cellnet.Session) {

@@ -12,13 +12,18 @@ func (self *consulDiscovery) SetValue(key string, value []byte) error {
 	return err
 }
 
-func (self *consulDiscovery) GetValue(key string) ([]byte, error) {
+func (self *consulDiscovery) GetValue(key string) ([]byte, bool, error) {
 
 	kvPair, _, err := self.client.KV().Get(key, nil)
 
-	if err != nil || kvPair == nil {
-		return nil, err
+	if err != nil {
+		return nil, false, err
 	}
 
-	return kvPair.Value, nil
+	// 值不存在
+	if kvPair == nil {
+		return nil, false, nil
+	}
+
+	return kvPair.Value, true, nil
 }

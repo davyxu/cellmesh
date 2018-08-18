@@ -72,7 +72,7 @@ func GetRPCPair(req interface{}) reflect.Type {
 {{range ServiceGroup $}}
 // {{$svcName := .Key}}{{$svcName}}
 var ( {{range .Group}}
-	Handle_{{ExportSymbolName $svcName}}_{{.Name}} = func(ev service.Event, msg *{{.Name}}){ panic("'{{.Name}}' not handled") } {{end}}
+	Handle_{{ExportSymbolName $svcName}}_{{.Name}} = func(ev service.Event){ panic("'{{.Name}}' not handled") } {{end}}
 	Handle_{{ExportSymbolName $svcName}}_Default func(ev service.Event)
 )
 {{end}}
@@ -82,9 +82,9 @@ func GetDispatcher(svcName string) service.DispatcherFunc {
 	switch svcName { {{range ServiceGroup $}}
 	case "{{$svcName := .Key}}{{$svcName}}":
 		return func(ev service.Event) {
-			switch req := ev.Message().(type) { {{range .Group}}
+			switch ev.Message().(type) { {{range .Group}}
 			case *{{.Name}}:
-				Handle_{{ExportSymbolName $svcName}}_{{.Name}}(ev, req) {{end}}
+				Handle_{{ExportSymbolName $svcName}}_{{.Name}}(ev) {{end}}
 			default:
 				if Handle_{{ExportSymbolName $svcName}}_Default != nil {
 					Handle_{{ExportSymbolName $svcName}}_Default(ev)

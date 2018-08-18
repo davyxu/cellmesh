@@ -6,12 +6,13 @@ import (
 )
 
 var (
-	FrontendListener cellnet.Peer
+	FrontendSessionManager peer.SessionManager
+	AgentSvcID             string // 网关id
 )
 
 func GetClientSession(sesid int64) cellnet.Session {
 
-	return FrontendListener.(peer.SessionManager).GetSession(sesid)
+	return FrontendSessionManager.GetSession(sesid)
 }
 
 func GetUser(sesid int64) *User {
@@ -40,7 +41,7 @@ func SessionToUser(clientSes cellnet.Session) *User {
 
 // 遍历所有的用户
 func VisitUser(callback func(*User) bool) {
-	FrontendListener.(peer.SessionManager).VisitSession(func(clientSes cellnet.Session) bool {
+	FrontendSessionManager.VisitSession(func(clientSes cellnet.Session) bool {
 
 		if u := SessionToUser(clientSes); u != nil {
 			return callback(u)

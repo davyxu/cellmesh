@@ -16,11 +16,11 @@ const (
 )
 
 func Start(add string) {
-	model.FrontendListener = peer.NewGenericPeer("tcp.Acceptor", agentSvcName, add, nil)
+	clientListener := peer.NewGenericPeer("tcp.Acceptor", agentSvcName, add, nil)
 
-	proc.BindProcessorHandler(model.FrontendListener, "agent.frontend", nil)
+	proc.BindProcessorHandler(clientListener, "agent.frontend", nil)
 
-	socketOpt := model.FrontendListener.(cellnet.TCPSocketOption)
+	socketOpt := clientListener.(cellnet.TCPSocketOption)
 
 	// 无延迟设置缓冲
 	socketOpt.SetSocketBuffer(2048, 2048, true)
@@ -28,12 +28,13 @@ func Start(add string) {
 	// 40秒无读，20秒无写断开
 	socketOpt.SetSocketDeadline(time.Second*40, time.Second*20)
 
-	model.FrontendListener.Start()
+	clientListener.Start()
+	model.FrontendSessionManager = clientListener.(peer.SessionManager)
 
 	// 保存端口
-	listenPort := model.FrontendListener.(cellnet.TCPAcceptor).Port()
+	listenPort := clientListener.(cellnet.TCPAcceptor).Port()
 
-	model.FrontendListener.(cellnet.PeerProperty).SetName("frontend")
+	clientListener.(cellnet.PeerProperty).SetName("agent")
 
 	host := util.GetLocalIP()
 
@@ -44,16 +45,18 @@ func Start(add string) {
 		Name: agentSvcName,
 	}
 
+	model.AgentSvcID = sd.ID
+
 	// 服务发现注册服务
 	discovery.Default.Register(sd)
 }
 
 func Stop() {
 
-	if model.FrontendListener != nil {
-		model.FrontendListener.Stop()
+	if model.FrontendSessionManager != nil {
+		model.FrontendSessionManager.(cellnet.Peer).Stop()
 
-		svcid := model.FrontendListener.(cellnet.PeerProperty).Name()
+		svcid := model.FrontendSessionManager.(cellnet.PeerProperty).Name()
 
 		discovery.Default.Deregister(svcid)
 	}

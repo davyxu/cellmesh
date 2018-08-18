@@ -2,16 +2,21 @@ package chat
 
 import (
 	"fmt"
+	"github.com/davyxu/cellmesh/demo/agent/api"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 )
 
 func init() {
 
-	proto.Handle_Game_ChatREQ = func(ev service.Event, req *proto.ChatREQ) {
-		fmt.Printf("chat: %+v \n", req.Content)
-		ev.Reply(&proto.ChatACK{
-			Content: req.Content,
+	proto.Handle_Game_ChatREQ = api.HandleRouteMessage(func(ev service.Event, cid proto.ClientID) {
+
+		msg := ev.Message().(*proto.ChatREQ)
+
+		fmt.Printf("chat: %+v \n", msg.Content)
+
+		api.BroadcastAll(&proto.ChatACK{
+			Content: msg.Content,
 		})
-	}
+	})
 }

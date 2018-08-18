@@ -12,35 +12,27 @@ import (
 	"time"
 )
 
-type conService struct {
-	svcName       string
-	targetSvcName string
-	dis           service.DispatcherFunc
-
-	descMap sync.Map
-}
-
-func (self *conService) SetDispatcher(dis service.DispatcherFunc) {
-
-	self.dis = dis
-}
-
 type connector interface {
 	cellnet.TCPConnector
 	IsReady() bool
 }
 
-func (self *conService) connFlow(sd *discovery.ServiceDesc) {
+type conService struct {
+	svcName       string
+	targetSvcName string
+	dis           service.DispatcherFunc
 
-	if _, ok := self.descMap.Load(sd.Address()); ok {
-		return
-	}
+	connectorBySvcID sync.Map // map[svcid] connector
+}
 
-	self.descMap.Store(sd.Address(), sd)
+func (self *conService) SetDispatcher(dis service.DispatcherFunc) {
+	self.dis = dis
+}
+
+func (self *conService) connFlow(p cellnet.GenericPeer, sd *discovery.ServiceDesc) {
 
 	var stop sync.WaitGroup
 
-	p := peer.NewGenericPeer("tcp.SyncConnector", self.svcName, sd.Address(), nil)
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
@@ -71,14 +63,14 @@ func (self *conService) connFlow(sd *discovery.ServiceDesc) {
 
 		if sd != nil {
 
-			service.AddConn(conn.Session(), sd)
+			service.AddRemoteService(conn.Session(), sd)
 		}
 
 		// 连接断开
 		stop.Wait()
 
 		if sd != nil {
-			service.RemoveConn(conn.Session())
+			service.RemoveRemoteService(conn.Session())
 		}
 
 	} else {
@@ -87,7 +79,7 @@ func (self *conService) connFlow(sd *discovery.ServiceDesc) {
 		time.Sleep(time.Second * 3)
 	}
 
-	self.descMap.Delete(sd.Address())
+	self.connectorBySvcID.Delete(sd.ID)
 }
 
 func (self *conService) loop() {
@@ -98,10 +90,18 @@ func (self *conService) loop() {
 		if err == nil && len(descList) > 0 {
 
 			// 保持服务发现中的所有连接
-			for _, desc := range descList {
+			for _, sd := range descList {
 
-				go self.connFlow(desc)
+				if _, ok := self.connectorBySvcID.Load(sd.ID); !ok {
+
+					p := peer.NewGenericPeer("tcp.SyncConnector", self.svcName, sd.Address(), nil)
+					self.connectorBySvcID.Store(sd.ID, p)
+
+					go self.connFlow(p, sd)
+				}
 			}
+
+			// TODO 处理agentsvcid被去掉后连接是否保留?
 
 		}
 

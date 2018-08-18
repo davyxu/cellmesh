@@ -1,3 +1,9 @@
+[AutoMsgID Codec:"binary"]
+struct ClientID {
+    ID 		int64	// 客户端在网关上的SessionID
+	SvcID 	string	// 客户端在哪个网关
+}
+
 // backend -> agent 连接服务
 [AutoMsgID Codec:"binary"]
 struct ServiceIdentifyACK {
@@ -16,10 +22,18 @@ struct BindBackendACK {
 [AutoMsgID Codec:"binary" Service: "router"]
 struct CloseClientACK {
     ID []int64
+	All bool
 }
 
 // agent -> backend 客户端断开
 [AutoMsgID Codec:"binary"]
 struct ClientClosedACK {
-    ID int64	
+    ID 	ClientID
+}
+
+
+
+// client -> agent 客户端Ping
+[AutoMsgID Codec:"binary" Service: "agent"]
+struct PingACK {    
 }

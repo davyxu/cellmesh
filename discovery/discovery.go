@@ -41,7 +41,7 @@ type Discovery interface {
 	SetValue(key string, value []byte) error
 
 	// 获取值
-	GetValue(key string) ([]byte, error)
+	GetValue(key string) ([]byte, bool, error)
 }
 
 var (

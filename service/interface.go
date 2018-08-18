@@ -12,7 +12,7 @@ type Event interface {
 	Message() interface{}
 
 	// 网关透传输出,如客户端在网关的SessionID
-	GetContextID() int64
+	PassThrough() interface{}
 
 	// 回复客户端
 	Reply(msg interface{})

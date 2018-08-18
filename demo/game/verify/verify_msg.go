@@ -2,17 +2,21 @@ package verify
 
 import (
 	"fmt"
+	"github.com/davyxu/cellmesh/demo/agent/api"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 )
 
 func init() {
-	proto.Handle_Game_VerifyREQ = func(ev service.Event, req *proto.VerifyREQ) {
 
-		fmt.Printf("verfiy: %+v \n", req.GameToken)
+	proto.Handle_Game_VerifyREQ = api.HandleRouteMessage(func(ev service.Event, cid proto.ClientID) {
 
-		ev.Session().Send(proto.BindBackendACK{ID: ev.GetContextID()})
+		msg := ev.Message().(*proto.VerifyREQ)
+
+		fmt.Printf("verfiy: %+v \n", msg.GameToken)
+
+		ev.Session().Send(proto.BindBackendACK{ID: cid.ID})
 
 		ev.Reply(proto.VerifyACK{})
-	}
+	})
 }

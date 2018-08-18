@@ -6,7 +6,6 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
@@ -37,7 +36,10 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 		if u != nil {
 			for _, backend := range u.Targets {
 				backend.Session.Send(proto.ClientClosedACK{
-					ID: inputEvent.Session().ID(),
+					ID: proto.ClientID{
+						ID:    inputEvent.Session().ID(),
+						SvcID: model.AgentSvcID,
+					},
 				})
 			}
 		}
@@ -48,15 +50,22 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 		// 确定消息所在的服务
 		if rule := model.GetTargetService(msgType.Name()); rule != nil {
 
+			clientID := proto.ClientID{
+				ID:    inputEvent.Session().ID(),
+				SvcID: model.AgentSvcID,
+			}
+
 			switch rule.Mode {
 			case "pass":
 				// TODO 挑选一台
-				service.VisitConn(func(ses cellnet.Session, desc *discovery.ServiceDesc) {
+				service.VisitRemoteService(func(ses cellnet.Session, desc *discovery.ServiceDesc) bool {
 
 					if desc.Name == rule.SvcName {
 						// 透传消息
-						relay.Relay(ses, incomingMsg, inputEvent.Session().ID())
+						relay.Relay(ses, incomingMsg, &clientID)
 					}
+
+					return true
 				})
 
 			case "auth":
@@ -68,7 +77,7 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 					backendSes := u.GetBackend(rule.SvcName)
 
 					if backendSes != nil {
-						relay.Relay(backendSes, incomingMsg, inputEvent.Session().ID())
+						relay.Relay(backendSes, incomingMsg, &clientID)
 					} else {
 						log.Warnf("Route target not found, msg: '%s' mode: 'auth'", msgType.Name())
 					}
@@ -93,15 +102,6 @@ func (RelayUpMsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent c
 }
 
 func init() {
-
-	// 从后端服务器收到的消息
-	relay.SetBroadcaster(func(event *relay.RecvMsgEvent) {
-
-		ses := model.FrontendListener.(peer.SessionManager).GetSession(event.PassThroughAsInt64())
-		if ses != nil {
-			ses.Send(event.Msg)
-		}
-	})
 
 	transmitter := new(tcp.TCPMessageTransmitter)
 	routerHooker := new(RelayUpMsgHooker)

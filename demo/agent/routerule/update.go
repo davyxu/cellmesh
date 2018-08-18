@@ -11,8 +11,8 @@ func Download() error {
 
 	log.Debugf("Download route rule from discovery...")
 
-	data, err := discovery.Default.GetValue(model.ConfigPath)
-	if err != nil {
+	data, exists, err := discovery.Default.GetValue(model.ConfigPath)
+	if err != nil || !exists {
 		return err
 	}
 

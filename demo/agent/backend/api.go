@@ -14,7 +14,7 @@ func bindClientToBackend(backendSes cellnet.Session, clientSesID int64) {
 		return
 	}
 
-	sd := service.BackendSesToSD(backendSes)
+	sd := service.ServiceSessionToSD(backendSes)
 	if sd == nil {
 		log.Errorln("backend sd not found")
 		return
@@ -45,7 +45,7 @@ func recoverBackend(backendSes cellnet.Session, svcName string) {
 // 移除玩家对应的后台连接
 func removeBackend(backendSes cellnet.Session) {
 
-	sd := service.BackendSesToSD(backendSes)
+	sd := service.ServiceSessionToSD(backendSes)
 	if sd == nil {
 		log.Errorln("backend sd not found")
 		return

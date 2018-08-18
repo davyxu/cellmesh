@@ -13,12 +13,12 @@ type ReplyEvent interface {
 	Reply(msg interface{})
 }
 
-func (self *svcEvent) GetContextID() int64 {
+func (self *svcEvent) PassThrough() interface{} {
 	if relayEvent, ok := self.Event.(*relay.RecvMsgEvent); ok {
-		return relayEvent.PassThroughAsInt64()
+		return relayEvent.PassThrough
 	}
 
-	return 0
+	return nil
 }
 
 func (self *svcEvent) Reply(msg interface{}) {

@@ -34,16 +34,17 @@ func (self *accService) Start() {
 		switch msg := ev.Message().(type) {
 		case *proto.ServiceIdentifyACK:
 
-			if pre := service.GetConn(msg.SvcID); pre == nil {
+			if pre := service.GetRemoteService(msg.SvcID); pre == nil {
 
-				service.AddConn(ev.Session(), &discovery.ServiceDesc{
+				// 添加连接上来的对方服务
+				service.AddRemoteService(ev.Session(), &discovery.ServiceDesc{
 					ID:   msg.SvcID,
 					Name: msg.SvcName,
 				})
 			}
 
 		case *cellnet.SessionClosed:
-			service.RemoveConn(ev.Session())
+			service.RemoveRemoteService(ev.Session())
 		}
 
 		if self.dis != nil {
