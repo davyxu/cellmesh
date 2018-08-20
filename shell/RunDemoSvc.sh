@@ -7,6 +7,9 @@ then
 	exit 1
 fi
 
+# 错误退出
+set -e
+
 # 编译
 go build -v -o=${GOPATH}/bin/${Name} github.com/davyxu/cellmesh/demo/${Name}
 
