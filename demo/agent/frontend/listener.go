@@ -15,9 +15,9 @@ const (
 	agentSvcName = "agent"
 )
 
-func Start(add string) {
+func Start() {
 
-	clientListener := peer.NewGenericPeer("tcp.Acceptor", agentSvcName, add, nil)
+	clientListener := peer.NewGenericPeer("tcp.Acceptor", agentSvcName, ":0", nil)
 
 	proc.BindProcessorHandler(clientListener, "agent.frontend", nil)
 

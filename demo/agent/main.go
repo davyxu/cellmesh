@@ -7,7 +7,6 @@ import (
 	"github.com/davyxu/cellmesh/demo/agent/routerule"
 	"github.com/davyxu/cellmesh/demo/proto"
 	_ "github.com/davyxu/cellmesh/demo/proto" // 进入协议
-	"github.com/davyxu/cellmesh/discovery/kvconfig"
 	"github.com/davyxu/cellmesh/service/cellsvc"
 	"github.com/davyxu/cellmesh/svcfx"
 	"github.com/davyxu/cellmesh/util"
@@ -28,7 +27,7 @@ func main() {
 	s.SetDispatcher(proto.GetDispatcher("router"))
 	s.Start()
 
-	frontend.Start(kvconfig.String("config/agent/frontend_addr", ":18000"))
+	frontend.Start()
 
 	util.WaitExit()
 
