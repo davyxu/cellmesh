@@ -54,7 +54,7 @@ func (self *accService) Start() {
 	sd := &discovery.ServiceDesc{
 		Host: host,
 		Port: self.listener.(cellnet.TCPAcceptor).Port(),
-		ID:   self.svcName,
+		ID:   fxmodel.GetSvcID(self.svcName),
 		Name: self.svcName,
 	}
 

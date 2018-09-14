@@ -9,7 +9,7 @@ import (
 
 func init() {
 
-	proto.Handle_Game_VerifyREQ = api.HandleRouteMessage(func(ev service.Event, cid proto.ClientID) {
+	proto.Handle_Game_VerifyREQ = api.HandleBackendMessage(func(ev service.Event, cid proto.ClientID) {
 
 		msg := ev.Message().(*proto.VerifyREQ)
 

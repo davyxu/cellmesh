@@ -4,6 +4,7 @@ import (
 	_ "github.com/davyxu/cellmesh/demo/agent/backend"
 	"github.com/davyxu/cellmesh/demo/agent/frontend"
 	"github.com/davyxu/cellmesh/demo/agent/heartbeat"
+	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/demo/agent/routerule"
 	"github.com/davyxu/cellmesh/demo/proto"
 	_ "github.com/davyxu/cellmesh/demo/proto" // 进入协议
@@ -23,9 +24,9 @@ func main() {
 
 	heartbeat.StartCheck()
 
-	acc := cellsvc.NewAcceptor("svc->agent")
+	acc := cellsvc.NewAcceptor(model.BackendName)
 	acc.SetProcessor("tcp.ltv")
-	acc.SetEventCallback(proto.GetDispatcher("router"))
+	acc.SetEventCallback(proto.GetDispatcher(model.BackendName))
 	acc.Start()
 
 	frontend.Start()

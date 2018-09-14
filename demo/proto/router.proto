@@ -12,14 +12,14 @@ struct ServiceIdentifyACK {
 }
 
 // backend ->agent 将用户绑定到后台连接
-[AutoMsgID Codec:"binary" Service: "router"]
+[AutoMsgID Codec:"binary" Service: "agent_backend"]
 struct BindBackendACK {
     ID int64	
 }
 
 
 // backend ->agent 切断用户连接
-[AutoMsgID Codec:"binary" Service: "router"]
+[AutoMsgID Codec:"binary" Service: "agent_backend"]
 struct CloseClientACK {
     ID []int64
 	All bool
@@ -32,6 +32,6 @@ struct ClientClosedACK {
 }
 
 // client -> agent 客户端Ping
-[AutoMsgID Codec:"binary" Service: "agent"]
+[AutoMsgID Codec:"binary" Service: "agent_frontend"]
 struct PingACK {    
 }

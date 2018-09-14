@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
@@ -13,7 +14,7 @@ func CloseAllClient() {
 
 	service.VisitRemoteService(func(ses cellnet.Session, desc *discovery.ServiceDesc) bool {
 
-		if desc.Name == "router" {
+		if desc.Name == model.BackendName {
 			ses.Send(&proto.CloseClientACK{
 				All: true,
 			})
@@ -27,7 +28,7 @@ func CloseAllClient() {
 func BroadcastAll(msg interface{}) {
 	service.VisitRemoteService(func(ses cellnet.Session, desc *discovery.ServiceDesc) bool {
 
-		if desc.Name == "router" {
+		if desc.Name == model.BackendName {
 			relay.Relay(ses, msg, nil)
 		}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/davyxu/cellmesh/demo/agent/model"
 	_ "github.com/davyxu/cellmesh/demo/game/chat"
 	_ "github.com/davyxu/cellmesh/demo/game/verify"
 	"github.com/davyxu/cellmesh/demo/proto"
@@ -16,7 +17,7 @@ func main() {
 
 	svcfx.Init()
 
-	con := cellsvc.NewConnector("svc->agent")
+	con := cellsvc.NewConnector("game", model.BackendName)
 	con.SetProcessor("tcp.ltv")
 	con.SetEventCallback(proto.GetDispatcher("game"))
 	con.Start()

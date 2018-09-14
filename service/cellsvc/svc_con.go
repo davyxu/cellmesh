@@ -20,7 +20,9 @@ type connector interface {
 type conService struct {
 	evDispatcher
 
-	svcName string
+	svcName string // 让远程服务看到的自己的服务名
+
+	tgtSvcName string // 远程要连接的服务名
 
 	connectorBySvcID sync.Map // map[svcid] connector
 }
@@ -80,8 +82,8 @@ func (self *conService) loop() {
 	notify := discovery.Default.RegisterNotify("add")
 	for {
 
-		log.Debugf("Query svc from discovery, name: '%s'...", self.svcName)
-		descList, err := discovery.Default.Query(self.svcName)
+		log.Debugf("Query svc from discovery, name: '%s'...", self.tgtSvcName)
+		descList, err := discovery.Default.Query(self.tgtSvcName)
 		if err == nil && len(descList) > 0 {
 
 			// 保持服务发现中的所有连接
@@ -112,9 +114,10 @@ func (self *conService) Stop() {
 
 }
 
-func NewConnector(svcName string) service.Service {
+func NewConnector(svcName, tgtSvcName string) service.Service {
 
 	return &conService{
-		svcName: svcName,
+		tgtSvcName: tgtSvcName,
+		svcName:    svcName,
 	}
 }

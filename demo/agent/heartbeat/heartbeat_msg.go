@@ -20,7 +20,7 @@ func StartCheck() {
 	}
 
 	// 接收客户端心跳
-	proto.Handle_Agent_PingACK = func(ev service.Event) {
+	proto.Handle_Agent_frontend_PingACK = func(ev service.Event) {
 		u := model.SessionToUser(ev.Session())
 		if u != nil {
 			u.LastPingTime = time.Now()

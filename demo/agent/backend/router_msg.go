@@ -11,14 +11,14 @@ import (
 
 func init() {
 
-	proto.Handle_Router_BindBackendACK = func(ev service.Event) {
+	proto.Handle_Agent_backend_BindBackendACK = func(ev service.Event) {
 
 		msg := ev.Message().(*proto.BindBackendACK)
 
 		bindClientToBackend(ev.Session(), msg.ID)
 	}
 
-	proto.Handle_Router_CloseClientACK = func(ev service.Event) {
+	proto.Handle_Agent_backend_CloseClientACK = func(ev service.Event) {
 
 		msg := ev.Message().(*proto.CloseClientACK)
 
@@ -41,7 +41,7 @@ func init() {
 
 	}
 
-	proto.Handle_Router_Default = func(ev service.Event) {
+	proto.Handle_Agent_backend_Default = func(ev service.Event) {
 
 		switch msg := ev.Message().(type) {
 		case *proto.ServiceIdentifyACK:

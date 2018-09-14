@@ -1,6 +1,7 @@
 package login
 
 import (
+	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
@@ -15,7 +16,7 @@ func init() {
 
 		var ack proto.LoginACK
 
-		gameList, err := discovery.Default.Query("agent")
+		gameList, err := discovery.Default.Query(model.FrontendName)
 		if err != nil || len(gameList) == 0 {
 
 			ack.Result = proto.ResultCode_GameNotReady

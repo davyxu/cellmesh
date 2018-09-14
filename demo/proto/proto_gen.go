@@ -122,10 +122,17 @@ func (self *CloseClientACK) String() string     { return fmt.Sprintf("%+v", *sel
 func (self *ClientClosedACK) String() string    { return fmt.Sprintf("%+v", *self) }
 func (self *PingACK) String() string            { return fmt.Sprintf("%+v", *self) }
 
-// agent
+// agent_backend
 var (
-	Handle_Agent_PingACK = func(ev service.Event) { panic("'PingACK' not handled") }
-	Handle_Agent_Default func(ev service.Event)
+	Handle_Agent_backend_BindBackendACK = func(ev service.Event) { panic("'BindBackendACK' not handled") }
+	Handle_Agent_backend_CloseClientACK = func(ev service.Event) { panic("'CloseClientACK' not handled") }
+	Handle_Agent_backend_Default        func(ev service.Event)
+)
+
+// agent_frontend
+var (
+	Handle_Agent_frontend_PingACK = func(ev service.Event) { panic("'PingACK' not handled") }
+	Handle_Agent_frontend_Default func(ev service.Event)
 )
 
 // game
@@ -141,24 +148,30 @@ var (
 	Handle_Login_Default  func(ev service.Event)
 )
 
-// router
-var (
-	Handle_Router_BindBackendACK = func(ev service.Event) { panic("'BindBackendACK' not handled") }
-	Handle_Router_CloseClientACK = func(ev service.Event) { panic("'CloseClientACK' not handled") }
-	Handle_Router_Default        func(ev service.Event)
-)
-
 func GetDispatcher(svcName string) service.EventFunc {
 
 	switch svcName {
-	case "agent":
+	case "agent_backend":
+		return func(ev service.Event) {
+			switch ev.Message().(type) {
+			case *BindBackendACK:
+				Handle_Agent_backend_BindBackendACK(ev)
+			case *CloseClientACK:
+				Handle_Agent_backend_CloseClientACK(ev)
+			default:
+				if Handle_Agent_backend_Default != nil {
+					Handle_Agent_backend_Default(ev)
+				}
+			}
+		}
+	case "agent_frontend":
 		return func(ev service.Event) {
 			switch ev.Message().(type) {
 			case *PingACK:
-				Handle_Agent_PingACK(ev)
+				Handle_Agent_frontend_PingACK(ev)
 			default:
-				if Handle_Agent_Default != nil {
-					Handle_Agent_Default(ev)
+				if Handle_Agent_frontend_Default != nil {
+					Handle_Agent_frontend_Default(ev)
 				}
 			}
 		}
@@ -183,19 +196,6 @@ func GetDispatcher(svcName string) service.EventFunc {
 			default:
 				if Handle_Login_Default != nil {
 					Handle_Login_Default(ev)
-				}
-			}
-		}
-	case "router":
-		return func(ev service.Event) {
-			switch ev.Message().(type) {
-			case *BindBackendACK:
-				Handle_Router_BindBackendACK(ev)
-			case *CloseClientACK:
-				Handle_Router_CloseClientACK(ev)
-			default:
-				if Handle_Router_Default != nil {
-					Handle_Router_Default(ev)
 				}
 			}
 		}
