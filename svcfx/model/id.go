@@ -1,9 +1,10 @@
 package fxmodel
 
 var (
-	IDTail string
+	Node       string   // svcid的尾缀，与名字组合后全局唯一
+	MatchNodes []string // 去匹配其他节点
 )
 
 func GetSvcID(svcName string) string {
-	return svcName + "_" + IDTail
+	return svcName + "@" + Node
 }

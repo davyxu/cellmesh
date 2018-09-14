@@ -148,7 +148,7 @@ var (
 	Handle_Router_Default        func(ev service.Event)
 )
 
-func GetDispatcher(svcName string) service.DispatcherFunc {
+func GetDispatcher(svcName string) service.EventFunc {
 
 	switch svcName {
 	case "agent":
@@ -209,73 +209,73 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*LoginREQ)(nil)).Elem(),
-		ID:    39009,
+		ID:    54595,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*LoginACK)(nil)).Elem(),
-		ID:    840,
+		ID:    16426,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
-		ID:    23773,
+		ID:    13823,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*VerifyACK)(nil)).Elem(),
-		ID:    51140,
+		ID:    41190,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatREQ)(nil)).Elem(),
-		ID:    5832,
+		ID:    16234,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatACK)(nil)).Elem(),
-		ID:    33199,
+		ID:    43601,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ClientID)(nil)).Elem(),
-		ID:    64524,
+		ID:    14574,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ServiceIdentifyACK)(nil)).Elem(),
-		ID:    49180,
+		ID:    65406,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*BindBackendACK)(nil)).Elem(),
-		ID:    20052,
+		ID:    11446,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*CloseClientACK)(nil)).Elem(),
-		ID:    6788,
+		ID:    63718,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ClientClosedACK)(nil)).Elem(),
-		ID:    63464,
+		ID:    41610,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*PingACK)(nil)).Elem(),
-		ID:    58557,
+		ID:    3423,
 	})
 
 }

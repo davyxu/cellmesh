@@ -9,6 +9,7 @@ type ServiceDesc struct {
 	ID   string // 所有service中唯一的id
 	Host string
 	Port int
+	Tags []string // 标签
 }
 
 func (self *ServiceDesc) Address() string {

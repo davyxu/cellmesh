@@ -29,6 +29,7 @@ func (self *consulDiscovery) Register(svc *discovery.ServiceDesc) error {
 		Name:    svc.Name,
 		Address: svc.Host,
 		Port:    svc.Port,
+		Tags:    svc.Tags,
 		Check:   &checker,
 	})
 

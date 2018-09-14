@@ -67,7 +67,7 @@ var ( {{range .Group}}
 )
 {{end}}
 
-func GetDispatcher(svcName string) service.DispatcherFunc {
+func GetDispatcher(svcName string) service.EventFunc {
 
 	switch svcName { {{range ServiceGroup $}}
 	case "{{$svcName := .Key}}{{$svcName}}":

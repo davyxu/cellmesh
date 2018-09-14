@@ -18,10 +18,15 @@ type Event interface {
 	Reply(msg interface{})
 }
 
-type DispatcherFunc func(Event)
+type EventFunc func(Event)
 
 type Service interface {
-	SetDispatcher(dis DispatcherFunc)
+
+	// 在cellnet中注册的事件处理器名
+	SetProcessor(name string)
+
+	// 接收消息的回调
+	SetEventCallback(dis EventFunc)
 
 	// 服务发现注册
 	Start()

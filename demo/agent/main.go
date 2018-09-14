@@ -23,14 +23,15 @@ func main() {
 
 	heartbeat.StartCheck()
 
-	s := cellsvc.NewAcceptor("router")
-	s.SetDispatcher(proto.GetDispatcher("router"))
-	s.Start()
+	acc := cellsvc.NewAcceptor("svc->agent")
+	acc.SetProcessor("tcp.ltv")
+	acc.SetEventCallback(proto.GetDispatcher("router"))
+	acc.Start()
 
 	frontend.Start()
 
 	util.WaitExit()
 
 	frontend.Stop()
-	s.Stop()
+	acc.Stop()
 }

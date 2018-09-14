@@ -12,14 +12,14 @@ import (
 )
 
 const (
-	agentSvcName = "agent"
+	agentPeerName = "client->agent"
 )
 
 func Start() {
 
-	clientListener := peer.NewGenericPeer("tcp.Acceptor", agentSvcName, ":0", nil)
+	clientListener := peer.NewGenericPeer("tcp.Acceptor", agentPeerName, ":0", nil)
 
-	proc.BindProcessorHandler(clientListener, "agent.frontend", nil)
+	proc.BindProcessorHandler(clientListener, "tcp.frontend", nil)
 
 	socketOpt := clientListener.(cellnet.TCPSocketOption)
 
@@ -42,8 +42,8 @@ func Start() {
 	sd := &discovery.ServiceDesc{
 		Host: host,
 		Port: listenPort,
-		ID:   fxmodel.GetSvcID(agentSvcName), //由名称和idtail组成svcid
-		Name: agentSvcName,
+		ID:   fxmodel.GetSvcID(agentPeerName), //由名称和idtail组成svcid
+		Name: agentPeerName,
 	}
 
 	model.AgentSvcID = sd.ID

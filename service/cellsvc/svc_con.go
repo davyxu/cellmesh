@@ -18,22 +18,18 @@ type connector interface {
 }
 
 type conService struct {
-	svcName       string
-	targetSvcName string
-	dis           service.DispatcherFunc
+	evDispatcher
+
+	svcName string
 
 	connectorBySvcID sync.Map // map[svcid] connector
-}
-
-func (self *conService) SetDispatcher(dis service.DispatcherFunc) {
-	self.dis = dis
 }
 
 func (self *conService) connFlow(p cellnet.GenericPeer, sd *discovery.ServiceDesc) {
 
 	var stop sync.WaitGroup
 
-	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(p, self.procName, func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionConnected:
@@ -46,11 +42,9 @@ func (self *conService) connFlow(p cellnet.GenericPeer, sd *discovery.ServiceDes
 			stop.Done()
 		}
 
-		if self.dis != nil {
-			self.dis(&svcEvent{
-				Event: ev,
-			})
-		}
+		self.Invoke(&svcEvent{
+			Event: ev,
+		})
 	})
 
 	stop.Add(1)
@@ -86,12 +80,14 @@ func (self *conService) loop() {
 	notify := discovery.Default.RegisterNotify("add")
 	for {
 
-		descList, err := discovery.Default.Query(self.targetSvcName)
+		log.Debugf("Query svc from discovery, name: '%s'...", self.svcName)
+		descList, err := discovery.Default.Query(self.svcName)
 		if err == nil && len(descList) > 0 {
 
 			// 保持服务发现中的所有连接
 			for _, sd := range descList {
 
+				// 新连接马上连接，老连接保留
 				if _, ok := self.connectorBySvcID.Load(sd.ID); !ok {
 
 					p := peer.NewGenericPeer("tcp.SyncConnector", self.svcName, sd.Address(), nil)
@@ -101,11 +97,8 @@ func (self *conService) loop() {
 				}
 			}
 
-			// TODO 处理agentsvcid被去掉后连接是否保留?
-
 		}
 
-		// TODO 关闭及删除signal
 		<-notify
 	}
 }
@@ -119,10 +112,9 @@ func (self *conService) Stop() {
 
 }
 
-func NewConnector(svcName, targetSvcName string) service.Service {
+func NewConnector(svcName string) service.Service {
 
 	return &conService{
-		svcName:       svcName,
-		targetSvcName: targetSvcName,
+		svcName: svcName,
 	}
 }

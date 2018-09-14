@@ -15,12 +15,12 @@ func main() {
 
 	svcfx.Init()
 
-	s := cellsvc.NewAcceptor("login")
-	s.SetDispatcher(proto.GetDispatcher("login"))
-
-	s.Start()
+	acc := cellsvc.NewAcceptor("client->login")
+	acc.SetProcessor("tcp.ltv")
+	acc.SetEventCallback(proto.GetDispatcher("login"))
+	acc.Start()
 
 	util.WaitExit()
 
-	s.Stop()
+	acc.Stop()
 }

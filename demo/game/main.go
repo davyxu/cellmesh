@@ -16,11 +16,12 @@ func main() {
 
 	svcfx.Init()
 
-	r := cellsvc.NewConnector("game", "router")
-	r.SetDispatcher(proto.GetDispatcher("game"))
-	r.Start()
+	con := cellsvc.NewConnector("svc->agent")
+	con.SetProcessor("tcp.ltv")
+	con.SetEventCallback(proto.GetDispatcher("game"))
+	con.Start()
 
 	util.WaitExit()
 
-	r.Stop()
+	con.Stop()
 }

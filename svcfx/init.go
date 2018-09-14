@@ -9,19 +9,23 @@ import (
 	"github.com/davyxu/cellnet/msglog"
 	_ "github.com/davyxu/cellnet/relay" // relay消息
 	"github.com/davyxu/golog"
+	"strings"
 )
 
 var (
 	flagColorLog = flag.Bool("colorlog", false, "Make log in color in *nix")
 
-	flagIDtail = flag.String("idtail", "dev", "svcname + idtail = svcid")
+	flagMatchNodes = flag.String("matchnodes", "", "discovery other node, split by |")
+
+	flagNode = flag.String("node", "dev", "node name, svcname@node = unique svcid")
 )
 
 func Init() {
 
 	flag.Parse()
 
-	fxmodel.IDTail = *flagIDtail
+	fxmodel.MatchNodes = strings.Split(*flagMatchNodes, "|")
+	fxmodel.Node = *flagNode
 
 	golog.SetLevelByString("consul", "info")
 

@@ -14,22 +14,17 @@ import (
 )
 
 type accService struct {
-	svcName string
-	dis     service.DispatcherFunc
+	evDispatcher
 
+	svcName  string
 	listener cellnet.GenericPeer
-}
-
-func (self *accService) SetDispatcher(dis service.DispatcherFunc) {
-
-	self.dis = dis
 }
 
 func (self *accService) Start() {
 
 	self.listener = peer.NewGenericPeer("tcp.Acceptor", self.svcName, ":0", nil)
 
-	proc.BindProcessorHandler(self.listener, "tcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(self.listener, self.procName, func(ev cellnet.Event) {
 
 		switch msg := ev.Message().(type) {
 		case *proto.ServiceIdentifyACK:
@@ -47,12 +42,9 @@ func (self *accService) Start() {
 			service.RemoveRemoteService(ev.Session())
 		}
 
-		if self.dis != nil {
-
-			self.dis(&svcEvent{
-				Event: ev,
-			})
-		}
+		self.Invoke(&svcEvent{
+			Event: ev,
+		})
 	})
 
 	self.listener.Start()
@@ -62,12 +54,13 @@ func (self *accService) Start() {
 	sd := &discovery.ServiceDesc{
 		Host: host,
 		Port: self.listener.(cellnet.TCPAcceptor).Port(),
-		ID:   fxmodel.GetSvcID(self.svcName),
+		ID:   self.svcName,
 		Name: self.svcName,
 	}
 
 	log.SetColor("green").Debugf("service '%s' listen at %s:%d", sd.ID, host, sd.Port)
 
+	// TODO 注册之前先搜索，有重名的启动失败
 	discovery.Default.Register(sd)
 }
 

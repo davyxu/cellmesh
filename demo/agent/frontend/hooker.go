@@ -108,7 +108,7 @@ func init() {
 	msgLogger := new(tcp.MsgHooker)
 
 	// 前端的processor
-	proc.RegisterProcessor("agent.frontend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("tcp.frontend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(transmitter)
 		bundle.SetHooker(proc.NewMultiHooker(msgLogger, routerHooker))
