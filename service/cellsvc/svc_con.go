@@ -82,7 +82,6 @@ func (self *conService) loop() {
 	notify := discovery.Default.RegisterNotify("add")
 	for {
 
-		log.Debugf("Query svc from discovery, name: '%s'...", self.tgtSvcName)
 		descList, err := discovery.Default.Query(self.tgtSvcName)
 		if err == nil && len(descList) > 0 {
 
@@ -114,6 +113,7 @@ func (self *conService) Stop() {
 
 }
 
+// 连接目标服务,并告诉对方自己服务名字
 func NewConnector(svcName, tgtSvcName string) service.Service {
 
 	return &conService{

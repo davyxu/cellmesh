@@ -9,7 +9,8 @@ import (
 func isMeshServiceHealth(entry *api.ServiceEntry) bool {
 
 	for _, check := range entry.Checks {
-		if check.ServiceID == entry.Service.ID && check.Output == healthWords {
+		if check.ServiceID == entry.Service.ID &&
+			check.Output == makeHealthWords(entry.Service.ID) {
 			return true
 		}
 	}

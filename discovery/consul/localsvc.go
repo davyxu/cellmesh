@@ -2,6 +2,7 @@ package consulsd
 
 import (
 	"context"
+	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
 	"time"
@@ -17,7 +18,9 @@ type localService struct {
 	agent *api.Agent
 }
 
-const healthWords = "cellmesh service ready"
+func makeHealthWords(svcid string) string {
+	return fmt.Sprintf("'%s' ready!", svcid)
+}
 
 func (self *localService) Update() {
 
@@ -32,7 +35,7 @@ func (self *localService) Update() {
 
 			//log.Debugf("UpdateTTL id: %s", self.ID)
 
-			self.agent.UpdateTTL(self.Desc.ID, healthWords, "pass")
+			self.agent.UpdateTTL(self.Desc.ID, makeHealthWords(self.Desc.ID), "pass")
 
 			time.Sleep(ServiceTTL)
 		}
