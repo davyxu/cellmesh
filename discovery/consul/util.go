@@ -25,6 +25,7 @@ func consulSvcToService(s *api.ServiceEntry) *discovery.ServiceDesc {
 		ID:   s.Service.ID,
 		Host: s.Service.Address,
 		Port: s.Service.Port,
+		Tags: s.Service.Tags,
 	}
 }
 

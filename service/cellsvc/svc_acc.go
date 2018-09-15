@@ -56,6 +56,7 @@ func (self *accService) Start() {
 		Port: self.listener.(cellnet.TCPAcceptor).Port(),
 		ID:   fxmodel.GetSvcID(self.svcName),
 		Name: self.svcName,
+		Tags: []string{fxmodel.Node},
 	}
 
 	log.SetColor("green").Debugf("service '%s' listen at %s:%d", sd.ID, host, sd.Port)

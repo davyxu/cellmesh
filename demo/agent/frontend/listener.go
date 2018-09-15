@@ -36,8 +36,9 @@ func Start() {
 	sd := &discovery.ServiceDesc{
 		Host: host,
 		Port: listenPort,
-		ID:   fxmodel.GetSvcID(model.FrontendName), //由名称和idtail组成svcid
+		ID:   fxmodel.GetSvcID(model.FrontendName),
 		Name: model.FrontendName,
+		Tags: []string{fxmodel.Node},
 	}
 
 	model.AgentSvcID = sd.ID
@@ -51,9 +52,7 @@ func Stop() {
 	if model.FrontendSessionManager != nil {
 		model.FrontendSessionManager.(cellnet.Peer).Stop()
 
-		svcid := model.FrontendSessionManager.(cellnet.PeerProperty).Name()
-
-		discovery.Default.Deregister(svcid)
+		discovery.Default.Deregister(model.AgentSvcID)
 	}
 
 }

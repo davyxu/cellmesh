@@ -83,6 +83,9 @@ func (self *conService) loop() {
 	for {
 
 		descList, err := discovery.Default.Query(self.tgtSvcName)
+
+		descList = discovery.FilterByTag(descList, fxmodel.MatchNodes...)
+
 		if err == nil && len(descList) > 0 {
 
 			// 保持服务发现中的所有连接

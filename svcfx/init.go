@@ -27,6 +27,9 @@ func Init() {
 	fxmodel.MatchNodes = strings.Split(*flagMatchNodes, "|")
 	fxmodel.Node = *flagNode
 
+	// 匹配节点中默认添加自己的节点
+	fxmodel.MatchNodes = append(fxmodel.MatchNodes, fxmodel.Node)
+
 	golog.SetLevelByString("consul", "info")
 
 	discovery.Default = consulsd.NewDiscovery()
