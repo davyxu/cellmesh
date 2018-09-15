@@ -8,6 +8,7 @@ import (
 	"github.com/davyxu/cellmesh/demo/agent/routerule"
 	"github.com/davyxu/cellmesh/demo/proto"
 	_ "github.com/davyxu/cellmesh/demo/proto" // 进入协议
+	"github.com/davyxu/cellmesh/discovery/kvconfig"
 	"github.com/davyxu/cellmesh/service/cellsvc"
 	"github.com/davyxu/cellmesh/svcfx"
 	"github.com/davyxu/cellmesh/util"
@@ -29,7 +30,7 @@ func main() {
 	acc.SetEventCallback(proto.GetDispatcher(model.BackendName))
 	acc.Start()
 
-	frontend.Start()
+	frontend.Start(kvconfig.String("config/agent/frontend_addr", ":8001~8101"))
 
 	util.WaitExit()
 

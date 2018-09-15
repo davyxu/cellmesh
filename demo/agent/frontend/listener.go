@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-func Start() {
+func Start(addr string) {
 
-	clientListener := peer.NewGenericPeer("tcp.Acceptor", model.FrontendName, ":0", nil)
+	clientListener := peer.NewGenericPeer("tcp.Acceptor", model.FrontendName, addr, nil)
 
 	proc.BindProcessorHandler(clientListener, "tcp.frontend", nil)
 
