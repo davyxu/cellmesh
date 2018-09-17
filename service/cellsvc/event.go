@@ -13,6 +13,10 @@ type ReplyEvent interface {
 	Reply(msg interface{})
 }
 
+func (self *svcEvent) Raw() cellnet.Event {
+	return self.Event
+}
+
 func (self *svcEvent) PassThrough() interface{} {
 	if relayEvent, ok := self.Event.(*relay.RecvMsgEvent); ok {
 		return relayEvent.PassThrough

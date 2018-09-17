@@ -17,7 +17,7 @@ func main() {
 
 	svcfx.Init()
 
-	con := cellsvc.NewConnector("game", model.BackendName)
+	con := cellsvc.NewCommunicateConnector("game", model.BackendName)
 	con.SetProcessor("tcp.ltv")
 	con.SetEventCallback(proto.GetDispatcher("game"))
 	con.Start()

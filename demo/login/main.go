@@ -15,7 +15,7 @@ func main() {
 
 	svcfx.Init()
 
-	acc := cellsvc.NewAcceptor("login")
+	acc := cellsvc.NewCommunicateAcceptor("login", ":0")
 	acc.SetProcessor("tcp.ltv")
 	acc.SetEventCallback(proto.GetDispatcher("login"))
 	acc.Start()

@@ -1,6 +1,7 @@
 package cellsvc
 
 import (
+	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
@@ -16,13 +17,28 @@ import (
 type accService struct {
 	evDispatcher
 
-	svcName  string
-	listener cellnet.GenericPeer
+	svcName    string
+	listenAddr string
+	listener   cellnet.GenericPeer
+}
+
+func (self *accService) String() string {
+	return fmt.Sprintf("Acceptor: '%s' addr: '%s'", self.svcName, self.listenAddr)
+}
+
+func (self *accService) IsReady() bool {
+	if self.listener == nil {
+		return false
+	}
+
+	return self.listener.(interface {
+		IsReady() bool
+	}).IsReady()
 }
 
 func (self *accService) Start() {
 
-	self.listener = peer.NewGenericPeer("tcp.Acceptor", self.svcName, ":0", nil)
+	self.listener = peer.NewGenericPeer("tcp.Acceptor", self.svcName, self.listenAddr, nil)
 
 	proc.BindProcessorHandler(self.listener, self.procName, func(ev cellnet.Event) {
 
@@ -69,9 +85,17 @@ func (self *accService) Stop() {
 	discovery.Default.Deregister(fxmodel.GetSvcID(self.svcName))
 }
 
-func NewAcceptor(svcName string) service.Service {
+// listenAddr 格式:
+// :0，自动设置端口，
+// host:min~max设置[min,max]范围的可用端口
+func NewCommunicateAcceptor(svcName, listenAddr string) service.CommunicateService {
+
+	if listenAddr == "" {
+		listenAddr = ":0"
+	}
 
 	return &accService{
-		svcName: svcName,
+		listenAddr: listenAddr,
+		svcName:    svcName,
 	}
 }

@@ -39,36 +39,12 @@ type Discovery interface {
 
 	// https://www.consul.io/intro/getting-started/kv.html
 	// 设置值
-	SetValue(key string, value []byte) error
+	SetValue(key string, value interface{}) error
 
 	// 获取值
-	GetValue(key string) ([]byte, bool, error)
+	GetValue(key string, dataPtr interface{}) error
 }
 
 var (
 	Default Discovery
 )
-
-// 只过滤出需要的结果
-func FilterByTag(sdList []*ServiceDesc, tags ...string) (ret []*ServiceDesc) {
-
-	if len(sdList) == 0 {
-		return
-	}
-
-nextSD:
-	for _, sd := range sdList {
-
-		for _, sdTag := range sd.Tags {
-			for _, tag := range tags {
-				if sdTag == tag {
-					ret = append(ret, sd)
-					continue nextSD
-				}
-			}
-		}
-
-	}
-
-	return
-}

@@ -22,6 +22,10 @@ type consulDiscovery struct {
 
 	addNotify    []chan struct{}
 	removeNotify []chan struct{}
+
+	// 带缓冲kv
+	cacheDuration time.Duration
+	metaByKey     sync.Map //map[string]*cacheValue
 }
 
 // 检查Consul自己挂掉
@@ -62,7 +66,8 @@ func (self *consulDiscovery) consulChecker() {
 func NewDiscovery() discovery.Discovery {
 
 	self := &consulDiscovery{
-		config: api.DefaultConfig(),
+		config:        api.DefaultConfig(),
+		cacheDuration: time.Second * 30,
 	}
 
 	var err error

@@ -1,6 +1,7 @@
 package cellsvc
 
 import (
+	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
@@ -8,6 +9,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
+	"strings"
 	"sync"
 	"time"
 )
@@ -27,9 +29,54 @@ type conService struct {
 	connectorBySvcID sync.Map // map[svcid] connector
 }
 
+func (self *conService) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(fmt.Sprintf("Connector '%s' ", self.tgtSvcName))
+
+	self.connectorBySvcID.Range(func(key, value interface{}) bool {
+
+		conn := value.(connector)
+
+		//var sd *discovery.ServiceDesc
+		//conn.(cellnet.ContextSet).FetchContext("sd", &sd)
+		pp := conn.(cellnet.PeerProperty)
+
+		sb.WriteString(fmt.Sprintf("addr: '%s' ready: %v", pp.Address(), conn.IsReady()))
+
+		return true
+	})
+
+	return sb.String()
+}
+
+func (self *conService) IsReady() (ret bool) {
+
+	ret = true
+
+	var count int
+	self.connectorBySvcID.Range(func(key, value interface{}) bool {
+
+		count++
+
+		conn := value.(connector)
+
+		if !conn.IsReady() {
+			ret = false
+			return false
+		}
+
+		return true
+	})
+
+	return count > 0 && ret
+}
+
 func (self *conService) connFlow(p cellnet.GenericPeer, sd *discovery.ServiceDesc) {
 
 	var stop sync.WaitGroup
+
+	p.(cellnet.ContextSet).SetContext("sd", sd)
 
 	proc.BindProcessorHandler(p, self.procName, func(ev cellnet.Event) {
 
@@ -117,7 +164,7 @@ func (self *conService) Stop() {
 }
 
 // 连接目标服务,并告诉对方自己服务名字
-func NewConnector(svcName, tgtSvcName string) service.Service {
+func NewCommunicateConnector(svcName, tgtSvcName string) service.CommunicateService {
 
 	return &conService{
 		tgtSvcName: tgtSvcName,

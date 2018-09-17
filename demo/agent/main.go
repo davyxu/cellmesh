@@ -25,12 +25,12 @@ func main() {
 
 	heartbeat.StartCheck()
 
-	acc := cellsvc.NewAcceptor(model.BackendName)
+	acc := cellsvc.NewCommunicateAcceptor(model.BackendName, ":0")
 	acc.SetProcessor("tcp.ltv")
 	acc.SetEventCallback(proto.GetDispatcher(model.BackendName))
 	acc.Start()
 
-	frontend.Start(kvconfig.String("config/agent/frontend_addr", ":8001~8101"))
+	frontend.Start(kvconfig.String("cm_demo/config/agent/frontend_addr", ":8001~8101"))
 
 	util.WaitExit()
 
