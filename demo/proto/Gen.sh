@@ -18,4 +18,4 @@ echo "Generating proto..."
 ${CellMeshProtoGen} -package=proto -cmgo_out=proto_gen.go `source ./protolist.sh`
 
 echo "Uploading route table..."
-${RouteGen} `source ./protolist.sh`
+${RouteGen} -configpath=cm_demo/config/agent/route_rule `source ./protolist.sh`

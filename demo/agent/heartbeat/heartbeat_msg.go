@@ -3,6 +3,7 @@ package heartbeat
 import (
 	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/demo/proto"
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/kvconfig"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet/timer"
@@ -12,7 +13,7 @@ import (
 func StartCheck() {
 
 	// 从KV获取配置,默认关闭
-	heatBeatDuration := kvconfig.Int32("config/agent/heatbeat_sec", 0)
+	heatBeatDuration := kvconfig.Int32(discovery.Default, "config/agent/heatbeat_sec", 0)
 
 	// 为0时关闭心跳检查
 	if heatBeatDuration == 0 {

@@ -42,8 +42,12 @@ func UploadRouteTable(tab *agentmodel.RouteTable) error {
 		return err
 	}
 
-	return discovery.Default.SetValue(agentmodel.ConfigPath, data)
+	return discovery.Default.SetValue(*flagConfigPath, string(data))
 }
+
+var (
+	flagConfigPath = flag.String("configpath", "config/agent/route_rule", "consul kv config path")
+)
 
 func main() {
 
