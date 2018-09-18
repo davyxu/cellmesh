@@ -10,6 +10,23 @@ type ServiceDesc struct {
 	Host string
 	Port int
 	Tags []string // 标签
+	Meta map[string]string
+}
+
+func (self *ServiceDesc) SetMeta(key, value string) {
+	if self.Meta == nil {
+		self.Meta = make(map[string]string)
+	}
+
+	self.Meta[key] = value
+}
+
+func (self *ServiceDesc) GetMeta(name string) string {
+	if self.Meta == nil {
+		return ""
+	}
+
+	return self.Meta[name]
 }
 
 func (self *ServiceDesc) Address() string {

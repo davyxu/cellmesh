@@ -1,7 +1,7 @@
 package discovery
 
 // 只过滤出需要的结果
-func FilterByTag(sdList []*ServiceDesc, tags ...string) (ret []*ServiceDesc) {
+func MatchAnyTag(sdList []*ServiceDesc, tags ...string) (ret []*ServiceDesc) {
 
 	if len(sdList) == 0 {
 		return

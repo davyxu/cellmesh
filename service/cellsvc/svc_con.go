@@ -131,7 +131,7 @@ func (self *conService) loop() {
 
 		descList, err := discovery.Default.Query(self.tgtSvcName)
 
-		descList = discovery.FilterByTag(descList, fxmodel.MatchNodes...)
+		descList = discovery.MatchAnyTag(descList, fxmodel.MatchNodes...)
 
 		if err == nil && len(descList) > 0 {
 

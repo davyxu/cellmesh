@@ -18,6 +18,8 @@ var (
 	flagMatchNodes = flag.String("matchnodes", "", "discovery other node, split by |")
 
 	flagNode = flag.String("node", "dev", "node name, svcname@node = unique svcid")
+
+	flagWANIP = flag.String("wanip", "", "client connect from extern ip")
 )
 
 func Init() {
@@ -26,11 +28,12 @@ func Init() {
 
 	fxmodel.MatchNodes = strings.Split(*flagMatchNodes, "|")
 	fxmodel.Node = *flagNode
+	fxmodel.WANIP = *flagWANIP
 
 	// 匹配节点中默认添加自己的节点
 	fxmodel.MatchNodes = append(fxmodel.MatchNodes, fxmodel.Node)
 
-	golog.SetLevelByString("consul", "info")
+	//golog.SetLevelByString("consul", "info")
 
 	discovery.Default = consulsd.NewDiscovery()
 	broker.Default = broker.NewLocalBroker()

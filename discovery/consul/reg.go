@@ -31,6 +31,7 @@ func (self *consulDiscovery) Register(svc *discovery.ServiceDesc) error {
 		Port:    svc.Port,
 		Tags:    svc.Tags,
 		Check:   &checker,
+		Meta:    svc.Meta,
 	})
 
 	if err != nil {

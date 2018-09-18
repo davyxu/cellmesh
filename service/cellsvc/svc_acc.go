@@ -12,11 +12,13 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
+	util2 "github.com/davyxu/cellnet/util"
 )
 
 type accService struct {
 	evDispatcher
 
+	peerType   string
 	svcName    string
 	listenAddr string
 	listener   cellnet.GenericPeer
@@ -24,6 +26,10 @@ type accService struct {
 
 func (self *accService) String() string {
 	return fmt.Sprintf("Acceptor: '%s' addr: '%s'", self.svcName, self.listenAddr)
+}
+
+func (self *accService) Raw() interface{} {
+	return self.listener
 }
 
 func (self *accService) IsReady() bool {
@@ -38,7 +44,7 @@ func (self *accService) IsReady() bool {
 
 func (self *accService) Start() {
 
-	self.listener = peer.NewGenericPeer("tcp.Acceptor", self.svcName, self.listenAddr, nil)
+	self.listener = peer.NewGenericPeer(self.peerType, self.svcName, self.listenAddr, nil)
 
 	proc.BindProcessorHandler(self.listener, self.procName, func(ev cellnet.Event) {
 
@@ -69,10 +75,16 @@ func (self *accService) Start() {
 
 	sd := &discovery.ServiceDesc{
 		Host: host,
-		Port: self.listener.(cellnet.TCPAcceptor).Port(),
+		Port: self.listener.(interface {
+			Port() int
+		}).Port(),
 		ID:   fxmodel.GetSvcID(self.svcName),
 		Name: self.svcName,
 		Tags: []string{fxmodel.Node},
+	}
+
+	if fxmodel.WANIP != "" {
+		sd.SetMeta("WANAddress", util2.JoinAddress(fxmodel.WANIP, sd.Port))
 	}
 
 	log.SetColor("green").Debugf("service '%s' listen at %s:%d", sd.ID, host, sd.Port)
@@ -83,6 +95,10 @@ func (self *accService) Start() {
 
 func (self *accService) Stop() {
 	discovery.Default.Deregister(fxmodel.GetSvcID(self.svcName))
+}
+
+func (self *accService) SetPeerType(peerType string) {
+	self.peerType = peerType
 }
 
 // listenAddr 格式:
@@ -97,5 +113,6 @@ func NewCommunicateAcceptor(svcName, listenAddr string) service.CommunicateServi
 	return &accService{
 		listenAddr: listenAddr,
 		svcName:    svcName,
+		peerType:   "tcp.Acceptor",
 	}
 }
