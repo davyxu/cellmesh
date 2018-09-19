@@ -8,13 +8,12 @@ import (
 	"reflect"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	"github.com/davyxu/cellmesh/service"
 	_ "github.com/davyxu/cellnet/codec/json"
+	_ "github.com/davyxu/cellnet/codec/binary"
 )
 
 // Make compiler import happy
 var (
-	_ service.Service
 	_ cellnet.Peer
 	_ cellnet.Codec
 	_ reflect.Type
