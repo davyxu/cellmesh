@@ -5,10 +5,11 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellnet"
 )
 
 func init() {
-	proto.Handle_Login_LoginREQ = func(ev service.Event) {
+	proto.Handle_Login_LoginREQ = func(ev cellnet.Event) {
 
 		//msg := ev.Message().(*proto.LoginREQ)
 
@@ -21,7 +22,7 @@ func init() {
 
 			ack.Result = proto.ResultCode_GameNotReady
 
-			ev.Reply(&ack)
+			service.Reply(ev, &ack)
 			return
 		}
 
@@ -31,6 +32,6 @@ func init() {
 		ack.Server.IP = finalDesc.Host
 		ack.Server.Port = int32(finalDesc.Port)
 
-		ev.Reply(&ack)
+		service.Reply(ev, &ack)
 	}
 }

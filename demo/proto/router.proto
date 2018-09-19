@@ -4,13 +4,6 @@ struct ClientID {
 	SvcID 	string	// 客户端在哪个网关
 }
 
-// backend -> agent 连接服务
-[AutoMsgID Codec:"binary"]
-struct ServiceIdentifyACK {
-    SvcName string
-	SvcID string	
-}
-
 // backend ->agent 将用户绑定到后台连接
 [AutoMsgID Codec:"binary" Service: "agent_backend"]
 struct BindBackendACK {

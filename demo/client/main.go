@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
-	"github.com/davyxu/cellmesh/svcfx"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
 	"os"
@@ -82,7 +81,7 @@ func ReadConsole(callback func(string)) {
 
 func main() {
 
-	svcfx.Init()
+	service.Init("client")
 
 	agentAddr := login()
 

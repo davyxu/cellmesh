@@ -62,16 +62,16 @@ func (self *{{.Name}}) String() string { return fmt.Sprintf("%+v",*self) } {{end
 {{range ServiceGroup $}}
 // {{$svcName := .Key}}{{$svcName}}
 var ( {{range .Group}}
-	Handle_{{ExportSymbolName $svcName}}_{{.Name}} = func(ev service.Event){ panic("'{{.Name}}' not handled") } {{end}}
-	Handle_{{ExportSymbolName $svcName}}_Default func(ev service.Event)
+	Handle_{{ExportSymbolName $svcName}}_{{.Name}} = func(ev cellnet.Event){ panic("'{{.Name}}' not handled") } {{end}}
+	Handle_{{ExportSymbolName $svcName}}_Default func(ev cellnet.Event)
 )
 {{end}}
 
-func GetDispatcher(svcName string) service.EventFunc {
+func GetMessageHandler(svcName string) cellnet.EventCallback {
 
 	switch svcName { {{range ServiceGroup $}}
 	case "{{$svcName := .Key}}{{$svcName}}":
-		return func(ev service.Event) {
+		return func(ev cellnet.Event) {
 			switch ev.Message().(type) { {{range .Group}}
 			case *{{.Name}}:
 				Handle_{{ExportSymbolName $svcName}}_{{.Name}}(ev) {{end}}

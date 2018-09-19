@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/davyxu/cellmesh/demo/agent/api"
 	"github.com/davyxu/cellmesh/demo/proto"
-	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellnet"
 )
 
 func init() {
 
-	proto.Handle_Game_ChatREQ = api.HandleBackendMessage(func(ev service.Event, cid proto.ClientID) {
+	proto.Handle_Game_ChatREQ = api.HandleBackendMessage(func(ev cellnet.Event, cid proto.ClientID) {
 
 		msg := ev.Message().(*proto.ChatREQ)
 

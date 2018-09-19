@@ -23,5 +23,7 @@ func Download() error {
 		model.AddRouteRule(r)
 	}
 
+	log.Debugf("Total %d rules added", len(tab.Rule))
+
 	return nil
 }

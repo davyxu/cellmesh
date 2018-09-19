@@ -3,7 +3,7 @@ package model
 import "sync"
 
 const (
-	ConfigPath = "config/agent/route_rule"
+	ConfigPath = "cm_demo/config/agent/route_rule"
 )
 
 // 路由规则
@@ -47,7 +47,6 @@ func ClearRule() {
 
 // 添加路由规则
 func AddRouteRule(rule *RouteRule) {
-	log.Debugf("Add route rule: %+v", *rule)
 
 	ruleByMsgNameGuard.Lock()
 	ruleByMsgName[rule.MsgName] = rule

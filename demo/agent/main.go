@@ -6,12 +6,11 @@ import (
 	"github.com/davyxu/cellmesh/demo/agent/heartbeat"
 	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/demo/agent/routerule"
-	"github.com/davyxu/cellmesh/demo/proto"
+	"github.com/davyxu/cellmesh/demo/basefx"
 	_ "github.com/davyxu/cellmesh/demo/proto" // 进入协议
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/kvconfig"
-	"github.com/davyxu/cellmesh/service/cellsvc"
-	"github.com/davyxu/cellmesh/svcfx"
+	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/golog"
 )
@@ -20,21 +19,18 @@ var log = golog.New("main")
 
 func main() {
 
-	svcfx.Init()
+	service.Init("agent")
 
 	routerule.Download()
 
 	heartbeat.StartCheck()
 
-	acc := cellsvc.NewCommunicateAcceptor(model.BackendName, ":0")
-	acc.SetProcessor("tcp.ltv")
-	acc.SetEventCallback(proto.GetDispatcher(model.BackendName))
-	acc.Start()
+	basefx.CreateCommnicateAcceptor(model.BackendName, ":0")
 
 	frontend.Start(kvconfig.String(discovery.Default, "cm_demo/config/agent/frontend_addr", ":8001~8101"))
 
 	util.WaitExit()
 
 	frontend.Stop()
-	acc.Stop()
+	basefx.StopAllPeers()
 }

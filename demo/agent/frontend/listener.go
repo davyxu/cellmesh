@@ -3,8 +3,7 @@ package frontend
 import (
 	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/svcfx/model"
-	"github.com/davyxu/cellmesh/util"
+	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
@@ -28,30 +27,16 @@ func Start(addr string) {
 	clientListener.Start()
 	model.FrontendSessionManager = clientListener.(peer.SessionManager)
 
-	// 保存端口
-	listenPort := clientListener.(cellnet.TCPAcceptor).Port()
-
-	host := util.GetLocalIP()
-
-	sd := &discovery.ServiceDesc{
-		Host: host,
-		Port: listenPort,
-		ID:   fxmodel.GetSvcID(model.FrontendName),
-		Name: model.FrontendName,
-		Tags: []string{fxmodel.Node},
-	}
-
-	model.AgentSvcID = sd.ID
+	model.AgentSvcID = service.MakeServiceID(model.FrontendName)
 
 	// 服务发现注册服务
-	discovery.Default.Register(sd)
+	service.Register(clientListener)
 }
 
 func Stop() {
 
 	if model.FrontendSessionManager != nil {
 		model.FrontendSessionManager.(cellnet.Peer).Stop()
-
 		discovery.Default.Deregister(model.AgentSvcID)
 	}
 

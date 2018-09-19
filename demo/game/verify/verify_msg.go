@@ -5,11 +5,12 @@ import (
 	"github.com/davyxu/cellmesh/demo/agent/api"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellnet"
 )
 
 func init() {
 
-	proto.Handle_Game_VerifyREQ = api.HandleBackendMessage(func(ev service.Event, cid proto.ClientID) {
+	proto.Handle_Game_VerifyREQ = api.HandleBackendMessage(func(ev cellnet.Event, cid proto.ClientID) {
 
 		msg := ev.Message().(*proto.VerifyREQ)
 
@@ -17,6 +18,6 @@ func init() {
 
 		ev.Session().Send(proto.BindBackendACK{ID: cid.ID})
 
-		ev.Reply(proto.VerifyACK{})
+		service.Reply(ev, &proto.VerifyACK{})
 	})
 }

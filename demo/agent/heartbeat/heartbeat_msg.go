@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/kvconfig"
-	"github.com/davyxu/cellmesh/service"
+	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/timer"
 	"time"
 )
@@ -21,7 +21,7 @@ func StartCheck() {
 	}
 
 	// 接收客户端心跳
-	proto.Handle_Agent_frontend_PingACK = func(ev service.Event) {
+	proto.Handle_Agent_frontend_PingACK = func(ev cellnet.Event) {
 		u := model.SessionToUser(ev.Session())
 		if u != nil {
 			u.LastPingTime = time.Now()

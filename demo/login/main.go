@@ -1,10 +1,9 @@
 package main
 
 import (
+	"github.com/davyxu/cellmesh/demo/basefx"
 	_ "github.com/davyxu/cellmesh/demo/login/login"
-	"github.com/davyxu/cellmesh/demo/proto"
-	"github.com/davyxu/cellmesh/service/cellsvc"
-	"github.com/davyxu/cellmesh/svcfx"
+	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/golog"
 )
@@ -13,14 +12,11 @@ var log = golog.New("main")
 
 func main() {
 
-	svcfx.Init()
+	service.Init("login")
 
-	acc := cellsvc.NewCommunicateAcceptor("login", ":0")
-	acc.SetProcessor("tcp.ltv")
-	acc.SetEventCallback(proto.GetDispatcher("login"))
-	acc.Start()
+	basefx.CreateCommnicateAcceptor("login", ":0")
 
 	util.WaitExit()
 
-	acc.Stop()
+	basefx.StopAllPeers()
 }
