@@ -54,12 +54,10 @@ func Discovery(tgtSvcName string, peerCreator func(*discovery.ServiceDesc) celln
 
 		descList, err := discovery.Default.Query(tgtSvcName)
 
-		descList = discovery.MatchAnyTag(descList, GetMatchNodes()...)
-
 		if err == nil && len(descList) > 0 {
 
 			// 保持服务发现中的所有连接
-			for _, sd := range descList {
+			for _, sd := range MatchService(tgtSvcName, descList) {
 
 				// 新连接马上连接，老连接保留
 				if _, ok := connectorBySvcID.Load(sd.ID); !ok {

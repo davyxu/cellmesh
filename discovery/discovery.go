@@ -34,7 +34,7 @@ func (self *ServiceDesc) Address() string {
 }
 
 func (self *ServiceDesc) String() string {
-	return fmt.Sprintf("name: '%s' id: '%s' addr: '%s:%d'", self.Name, self.ID, self.Host, self.Port)
+	return fmt.Sprintf("name: '%s' id: '%s' addr: '%s:%d'  tags: %v", self.Name, self.ID, self.Host, self.Port, self.Tags)
 }
 
 type Discovery interface {

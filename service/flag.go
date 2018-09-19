@@ -5,7 +5,7 @@ import "flag"
 var (
 	flagColorLog = flag.Bool("colorlog", false, "Make log in color in *nix")
 
-	flagMatchNodes = flag.String("matchnodes", "", "discovery other node, split by |")
+	flagMatchRule = flag.String("matchrule", "", "discovery other node, format like: 'svcname:tgtnode|defaultnode'")
 
 	flagNode = flag.String("node", "dev", "node name, svcname@node = unique svcid")
 

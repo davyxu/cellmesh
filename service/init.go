@@ -7,7 +7,6 @@ import (
 	"github.com/davyxu/cellmesh/discovery/consul"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/golog"
-	"strings"
 )
 
 func Init(name string) {
@@ -16,9 +15,7 @@ func Init(name string) {
 
 	flag.Parse()
 
-	matchNodes = strings.Split(*flagMatchNodes, "|")
-	// 匹配节点中默认添加自己的节点
-	matchNodes = append(matchNodes, GetNode())
+	matchRules = parseMatchRule(*flagMatchRule)
 
 	golog.SetLevelByString("consul", "info")
 

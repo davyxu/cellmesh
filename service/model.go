@@ -1,8 +1,7 @@
 package service
 
 var (
-	matchNodes []string
-	procName   string
+	procName string
 )
 
 // 获取当前服务进程名称
@@ -10,7 +9,7 @@ func GetProcName() string {
 	return procName
 }
 
-// 获取当前节点
+// 获取当前节点(服务侦听用)
 func GetNode() string {
 	return *flagNode
 }
@@ -18,11 +17,6 @@ func GetNode() string {
 // 获取外网IP
 func GetWANIP() string {
 	return *flagWANIP
-}
-
-// 获取要匹配节点名
-func GetMatchNodes() []string {
-	return matchNodes
 }
 
 // 构造服务ID
