@@ -44,7 +44,7 @@ func Unregister(p cellnet.Peer) {
 }
 
 // 发现一个服务，服务可能拥有多个地址，每个地址返回时，创建一个connector并开启
-func Discovery(tgtSvcName string, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) {
+func Discovery(rules []MatchRule, tgtSvcName string, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) {
 
 	// 从发现到连接有一个过程，需要用Map防止还没连上，又创建一个新的连接
 	var connectorBySvcID sync.Map
@@ -57,7 +57,7 @@ func Discovery(tgtSvcName string, peerCreator func(*discovery.ServiceDesc) celln
 		if err == nil && len(descList) > 0 {
 
 			// 保持服务发现中的所有连接
-			for _, sd := range MatchService(tgtSvcName, descList) {
+			for _, sd := range MatchService(rules, tgtSvcName, descList) {
 
 				// 新连接马上连接，老连接保留
 				if _, ok := connectorBySvcID.Load(sd.ID); !ok {

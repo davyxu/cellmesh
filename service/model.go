@@ -1,7 +1,8 @@
 package service
 
 var (
-	procName string
+	procName  string
+	LinkRules []MatchRule // 互联发现规则
 )
 
 // 获取当前服务进程名称

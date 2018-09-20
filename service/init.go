@@ -15,7 +15,11 @@ func Init(name string) {
 
 	flag.Parse()
 
-	matchRules = parseMatchRule(*flagMatchRule)
+	if *flagLinkRule == "" {
+		LinkRules = ParseMatchRule("dev") // 默认匹配dev组
+	} else {
+		LinkRules = ParseMatchRule(*flagLinkRule)
+	}
 
 	golog.SetLevelByString("consul", "info")
 

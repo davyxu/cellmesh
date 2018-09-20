@@ -13,13 +13,37 @@ import (
 	"time"
 )
 
+func selectStrategy(descList []*discovery.ServiceDesc) *discovery.ServiceDesc {
+
+	if len(descList) == 0 {
+		return nil
+	}
+
+	return descList[0]
+}
+
+func queryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
+	descList, err := discovery.Default.Query(serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	desc := selectStrategy(descList)
+
+	if desc == nil {
+		return nil, errors.New("target not reachable:" + serviceName)
+	}
+
+	return desc, nil
+}
+
 // 建立短连接
 func CreateConnection(serviceName string) (cellnet.Session, error) {
 
 	notify := discovery.Default.RegisterNotify("add")
 	for {
 
-		desc, err := QueryServiceAddress(serviceName)
+		desc, err := queryServiceAddress(serviceName)
 
 		if err == nil {
 

@@ -2,8 +2,8 @@ package consulsd
 
 import (
 	"errors"
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
-	"reflect"
 	"time"
 )
 
@@ -21,40 +21,47 @@ func (self *consulDiscovery) SetValue(key string, dataPtr interface{}) error {
 
 	return err
 }
+func (self *consulDiscovery) GetValue(key string, valuePtr interface{}) error {
 
-func (self *consulDiscovery) GetValue(key string, dataPtr interface{}) error {
-
-	vdata := reflect.Indirect(reflect.ValueOf(dataPtr))
-	if vdata.Kind() == reflect.Slice {
-
-		cv, err := self.getKV(key, func(value *cacheValue) (thisErr error) {
-			value.valueList, thisErr = self.directGetValueList(key)
-			return
-		})
-
-		if err != nil {
-			return err
-		}
-
-		if err := pairsToSlice(cv.valueList, dataPtr); err != nil {
-			return err
-		}
-
-		return nil
-
-	} else {
-		cv, err := self.getKV(key, func(value *cacheValue) (thisErr error) {
-			value.value, thisErr = self.directGetValue(key)
-			return
-		})
-
-		if err != nil {
-			return err
-		}
-
-		// TODO 本地缓存，及轮询/watch更新
-		return BytesToAny(cv.value, dataPtr)
+	data, err := self.GetRawValue(key)
+	if err != nil {
+		return err
 	}
+
+	return discovery.BytesToAny(data, valuePtr)
+}
+
+func (self *consulDiscovery) GetRawValue(key string) ([]byte, error) {
+	cv, err := self.getKV(key, func(value *cacheValue) (thisErr error) {
+		value.value, thisErr = self.directGetValue(key)
+		return
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cv.value, nil
+}
+
+func (self *consulDiscovery) GetRawValueList(key string) (ret []discovery.ValueMeta, err error) {
+	cv, err := self.getKV(key, func(value *cacheValue) (thisErr error) {
+		value.valueList, thisErr = self.directGetValueList(key)
+		return
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range cv.valueList {
+		ret = append(ret, discovery.ValueMeta{
+			Key:   v.Key,
+			Value: v.Value,
+		})
+	}
+
+	return
 }
 
 var (

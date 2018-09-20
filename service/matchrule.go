@@ -2,23 +2,36 @@ package service
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
+	"regexp"
 	"strings"
 )
 
-type matchRule struct {
+type MatchRule struct {
 	SvcName    string
 	TargetNode string
+
+	nodeExp *regexp.Regexp
 }
 
-var (
-	matchRules []matchRule
-)
+func (self *MatchRule) MatchNode(node string) bool {
 
-func matchTarget(node string, desc *discovery.ServiceDesc) bool {
+	if self.nodeExp == nil {
+		exp, err := regexp.Compile(self.TargetNode)
+		if err != nil {
+			return false
+		}
+
+		self.nodeExp = exp
+	}
+
+	return self.nodeExp.MatchString(node)
+}
+
+func matchTarget(desc *discovery.ServiceDesc, rule *MatchRule) bool {
 
 	// Tags中保存服务所在的节点
 	for _, sdTag := range desc.Tags {
-		if sdTag == node {
+		if rule.MatchNode(sdTag) {
 			return true
 		}
 	}
@@ -26,12 +39,8 @@ func matchTarget(node string, desc *discovery.ServiceDesc) bool {
 	return false
 }
 
-func MatchService(svcName string, desclist []*discovery.ServiceDesc) (ret []*discovery.ServiceDesc) {
-	return rawMatch(matchRules, svcName, desclist)
-}
-
 // 获取要匹配节点名(连接用)
-func rawMatch(rules []matchRule, svcName string, desclist []*discovery.ServiceDesc) (ret []*discovery.ServiceDesc) {
+func MatchService(rules []MatchRule, svcName string, desclist []*discovery.ServiceDesc) (ret []*discovery.ServiceDesc) {
 
 	if len(desclist) == 0 {
 		return
@@ -47,7 +56,7 @@ func rawMatch(rules []matchRule, svcName string, desclist []*discovery.ServiceDe
 
 			for _, sd := range desclist {
 
-				if matchTarget(rule.TargetNode, sd) {
+				if matchTarget(sd, &rule) {
 					ret = append(ret, sd)
 				}
 			}
@@ -63,11 +72,9 @@ func rawMatch(rules []matchRule, svcName string, desclist []*discovery.ServiceDe
 	for _, rule := range rules {
 		if rule.SvcName == "" {
 
-			anyMatch = true
-
 			for _, sd := range desclist {
 
-				if matchTarget(rule.TargetNode, sd) {
+				if matchTarget(sd, &rule) {
 					ret = append(ret, sd)
 				}
 			}
@@ -77,18 +84,22 @@ func rawMatch(rules []matchRule, svcName string, desclist []*discovery.ServiceDe
 	return
 }
 
-func parseMatchRule(rule string) (ret []matchRule) {
+func ParseMatchRule(rule string) (ret []MatchRule) {
 
 	for _, ruleStr := range strings.Split(rule, "|") {
 
 		ruleStr = strings.TrimSpace(ruleStr)
 		rulePairs := strings.Split(ruleStr, ":")
 
-		var rule matchRule
+		var rule MatchRule
 		if len(rulePairs) == 2 {
 			rule.SvcName = rulePairs[0]
 			rule.TargetNode = rulePairs[1]
 		} else {
+			if ruleStr == "" {
+				continue
+			}
+
 			rule.TargetNode = ruleStr
 		}
 

@@ -18,9 +18,9 @@ func makeSD(svcNodes ...string) (ret []*discovery.ServiceDesc) {
 
 func TestMatchRule(t *testing.T) {
 
-	rules := parseMatchRule("game:a|b")
+	rules := ParseMatchRule("game:a|b")
 
-	t.Log(rawMatch(rules, "game", makeSD("b", "a")))
+	t.Log(MatchService(rules, "game", makeSD("b", "a")))
 
-	t.Log(rawMatch(rules, "hub", makeSD("b", "c")))
+	t.Log(MatchService(rules, "hub", makeSD("b", "c")))
 }
