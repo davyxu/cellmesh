@@ -7,7 +7,6 @@ import (
 	"github.com/davyxu/cellnet/timer"
 	"reflect"
 	"strings"
-	"svc/table"
 	"time"
 )
 
@@ -29,12 +28,11 @@ func ParseConfigKey(key string) (svcid string) {
 		return
 	}
 
-	var id svctable.SvcID
-	id.Name = svcid[:sqIndex]
+	name := svcid[:sqIndex]
 
-	id.Node = svcid[sqIndex+1 : len(svcid)-1]
+	node := svcid[sqIndex+1 : len(svcid)-1]
 
-	return id.String()
+	return name + "@" + node
 }
 
 // 定时汇报状况
