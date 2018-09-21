@@ -11,6 +11,16 @@ type ServiceDesc struct {
 	Meta map[string]string
 }
 
+func (self *ServiceDesc) ContainTags(tag string) bool {
+	for _, libtag := range self.Tags {
+		if libtag == tag {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (self *ServiceDesc) SetMeta(key, value string) {
 	if self.Meta == nil {
 		self.Meta = make(map[string]string)

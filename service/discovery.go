@@ -20,9 +20,9 @@ func Register(p cellnet.Peer) {
 	sd := &discovery.ServiceDesc{
 		Host: host,
 		Port: p.(peerListener).Port(),
-		ID:   MakeServiceID(property.Name()),
+		ID:   MakeLocalSvcID(property.Name()),
 		Name: property.Name(),
-		Tags: []string{GetNode()},
+		Tags: []string{GetSvcGroup()},
 	}
 
 	if GetWANIP() != "" {
@@ -40,7 +40,7 @@ func Register(p cellnet.Peer) {
 // 解除peer注册
 func Unregister(p cellnet.Peer) {
 	property := p.(cellnet.PeerProperty)
-	discovery.Default.Deregister(MakeServiceID(property.Name()))
+	discovery.Default.Deregister(MakeLocalSvcID(property.Name()))
 }
 
 // 发现一个服务，服务可能拥有多个地址，每个地址返回时，创建一个connector并开启

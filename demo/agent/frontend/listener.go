@@ -27,7 +27,7 @@ func Start(addr string) {
 	clientListener.Start()
 	model.FrontendSessionManager = clientListener.(peer.SessionManager)
 
-	model.AgentSvcID = service.MakeServiceID(model.FrontendName)
+	model.AgentSvcID = service.MakeLocalSvcID(model.FrontendName)
 
 	// 服务发现注册服务
 	service.Register(clientListener)

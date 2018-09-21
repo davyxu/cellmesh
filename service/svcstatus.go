@@ -6,13 +6,13 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/timer"
 	"reflect"
+	"strconv"
 	"strings"
-	"svc/table"
 	"time"
 )
 
 func MakeConfigKey() string {
-	return fmt.Sprintf("status/%s(%s)", GetProcName(), GetNode())
+	return fmt.Sprintf("status/%s.%d.%s", GetProcName(), GetSvcIndex(), GetSvcGroup())
 }
 
 func ParseConfigKey(key string) (svcid string) {
@@ -24,17 +24,17 @@ func ParseConfigKey(key string) (svcid string) {
 
 	svcid = key[pathIndex+1:]
 
-	sqIndex := strings.Index(svcid, "(")
-	if sqIndex == -1 {
+	triples := strings.Split(svcid, ".")
+	if len(triples) != 3 {
 		return
 	}
 
-	var id svctable.SvcID
-	id.Name = svcid[:sqIndex]
+	svcIndex, err := strconv.ParseInt(triples[1], 10, 32)
+	if err != nil {
+		return
+	}
 
-	id.Node = svcid[sqIndex+1 : len(svcid)-1]
-
-	return id.String()
+	return MakeSvcID(triples[0], int(svcIndex), triples[2])
 }
 
 // 定时汇报状况

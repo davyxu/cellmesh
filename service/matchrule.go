@@ -7,8 +7,8 @@ import (
 )
 
 type MatchRule struct {
-	SvcName    string
-	TargetNode string
+	SvcName string
+	Target  string
 
 	nodeExp *regexp.Regexp
 }
@@ -16,7 +16,7 @@ type MatchRule struct {
 func (self *MatchRule) MatchNode(node string) bool {
 
 	if self.nodeExp == nil {
-		exp, err := regexp.Compile(self.TargetNode)
+		exp, err := regexp.Compile(self.Target)
 		if err != nil {
 			return false
 		}
@@ -94,13 +94,13 @@ func ParseMatchRule(rule string) (ret []MatchRule) {
 		var rule MatchRule
 		if len(rulePairs) == 2 {
 			rule.SvcName = rulePairs[0]
-			rule.TargetNode = rulePairs[1]
+			rule.Target = rulePairs[1]
 		} else {
 			if ruleStr == "" {
 				continue
 			}
 
-			rule.TargetNode = ruleStr
+			rule.Target = ruleStr
 		}
 
 		ret = append(ret, rule)

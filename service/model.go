@@ -1,5 +1,9 @@
 package service
 
+import (
+	"fmt"
+)
+
 var (
 	procName  string
 	LinkRules []MatchRule // 互联发现规则
@@ -10,17 +14,29 @@ func GetProcName() string {
 	return procName
 }
 
-// 获取当前节点(服务侦听用)
-func GetNode() string {
-	return *flagNode
-}
-
 // 获取外网IP
 func GetWANIP() string {
 	return *flagWANIP
 }
 
+func GetSvcGroup() string {
+	return *flagSvcGroup
+}
+
+func GetSvcIndex() int {
+	return *flagSvcIndex
+}
+
 // 构造服务ID
-func MakeServiceID(svcName string) string {
-	return svcName + "@" + GetNode()
+func MakeSvcID(svcName string, svcIndex int, svcGroup string) string {
+	return fmt.Sprintf("%s#%d@%s", svcName, svcIndex, svcGroup)
+}
+
+// 构造指定服务的ID
+func MakeLocalSvcID(svcName string) string {
+	return MakeSvcID(svcName, *flagSvcIndex, *flagSvcGroup)
+}
+
+func GetLocalSvcID() string {
+	return MakeLocalSvcID(GetProcName())
 }
