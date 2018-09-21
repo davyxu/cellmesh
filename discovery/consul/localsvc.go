@@ -18,7 +18,7 @@ type localService struct {
 	agent *api.Agent
 }
 
-func makeHealthWords(svcid string) string {
+func MakeHealthWords(svcid string) string {
 	return fmt.Sprintf("'%s' ready!", svcid)
 }
 
@@ -35,7 +35,7 @@ func (self *localService) Update() {
 
 			//log.Debugf("UpdateTTL id: %s", self.ID)
 
-			self.agent.UpdateTTL(self.Desc.ID, makeHealthWords(self.Desc.ID), "pass")
+			self.agent.UpdateTTL(self.Desc.ID, MakeHealthWords(self.Desc.ID), "pass")
 
 			time.Sleep(ServiceTTL)
 		}

@@ -12,9 +12,14 @@ func isMeshServiceHealth(entry *api.ServiceEntry) bool {
 
 	for _, check := range entry.Checks {
 		if check.ServiceID == entry.Service.ID &&
-			check.Output == makeHealthWords(entry.Service.ID) {
+			check.Output == MakeHealthWords(entry.Service.ID) {
 			return true
 		}
+	}
+
+	// 非内建建立的服务， 比如redis
+	if len(entry.Checks) > 0 && entry.Checks[0].Status == "passing" {
+		return true
 	}
 
 	return false
@@ -43,6 +48,10 @@ func existsInServiceList(svclist []*discovery.ServiceDesc, id string) bool {
 	return false
 }
 
+var (
+	PrettyMarshalJson bool
+)
+
 func AnyToBytes(data interface{}) ([]byte, error) {
 
 	switch v := data.(type) {
@@ -52,11 +61,19 @@ func AnyToBytes(data interface{}) ([]byte, error) {
 		return []byte(v), nil
 
 	default:
-		raw, err := json.Marshal(data)
-		if err != nil {
-			return nil, err
-		}
+		if PrettyMarshalJson {
+			raw, err := json.MarshalIndent(data, "", "\t")
+			if err != nil {
+				return nil, err
+			}
 
-		return raw, nil
+			return raw, nil
+		} else {
+			raw, err := json.Marshal(data)
+			if err != nil {
+				return nil, err
+			}
+			return raw, nil
+		}
 	}
 }

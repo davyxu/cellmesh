@@ -15,26 +15,32 @@ func MakeConfigKey() string {
 	return fmt.Sprintf("status/%s.%d.%s", GetProcName(), GetSvcIndex(), GetSvcGroup())
 }
 
-func ParseConfigKey(key string) (svcid string) {
+func ParseConfigKey(key string) (name string, svcIndex int, svcGroup string) {
 
 	pathIndex := strings.Index(key, "/")
 	if pathIndex == -1 {
 		return
 	}
 
-	svcid = key[pathIndex+1:]
+	svcid := key[pathIndex+1:]
 
 	triples := strings.Split(svcid, ".")
 	if len(triples) != 3 {
 		return
 	}
 
-	svcIndex, err := strconv.ParseInt(triples[1], 10, 32)
+	name = triples[0]
+
+	rawSvcIndex, err := strconv.ParseInt(triples[1], 10, 32)
 	if err != nil {
 		return
 	}
 
-	return MakeSvcID(triples[0], int(svcIndex), triples[2])
+	svcIndex = int(rawSvcIndex)
+
+	svcGroup = triples[2]
+
+	return
 }
 
 // 定时汇报状况
@@ -49,7 +55,7 @@ func StartSendStatus(q cellnet.EventQueue, interval time.Duration, statusCallbac
 	}, nil).Notify().Start()
 }
 
-func QueryServiceStatus(svcName string, statusType reflect.Type, callback func(svcid string, status interface{}) bool) error {
+func QueryServiceStatus(svcName string, statusType reflect.Type, callback func(svcIndex int, svcgroup string, status interface{}) bool) error {
 	valueList, err := discovery.Default.GetRawValueList("status/" + svcName)
 	if err != nil {
 		return err
@@ -57,7 +63,7 @@ func QueryServiceStatus(svcName string, statusType reflect.Type, callback func(s
 
 	for _, value := range valueList {
 
-		svcid := ParseConfigKey(value.Key)
+		_, svcIndex, svcGroup := ParseConfigKey(value.Key)
 
 		dataPtr := reflect.New(statusType).Interface()
 
@@ -65,7 +71,7 @@ func QueryServiceStatus(svcName string, statusType reflect.Type, callback func(s
 			return err
 		}
 
-		if !callback(svcid, dataPtr) {
+		if !callback(svcIndex, svcGroup, dataPtr) {
 			return nil
 		}
 	}

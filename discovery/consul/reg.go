@@ -25,13 +25,14 @@ func (self *consulDiscovery) Register(svc *discovery.ServiceDesc) error {
 	checker.DeregisterCriticalServiceAfter = RemoveServiceTimeout.String()
 
 	err := self.client.Agent().ServiceRegister(&api.AgentServiceRegistration{
-		ID:      svc.ID,
-		Name:    svc.Name,
-		Address: svc.Host,
-		Port:    svc.Port,
-		Tags:    svc.Tags,
-		Check:   &checker,
-		Meta:    svc.Meta,
+		ID:                svc.ID,
+		Name:              svc.Name,
+		Address:           svc.Host,
+		Port:              svc.Port,
+		Tags:              svc.Tags,
+		Check:             &checker,
+		Meta:              svc.Meta,
+		EnableTagOverride: true,
 	})
 
 	if err != nil {

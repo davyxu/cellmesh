@@ -7,6 +7,7 @@ import (
 	"github.com/davyxu/cellmesh/discovery/consul"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/golog"
+	"os"
 )
 
 func Init(name string) {
@@ -20,6 +21,16 @@ func Init(name string) {
 	} else {
 		LinkRules = ParseMatchRule(*flagLinkRule)
 	}
+
+	workdir, _ := os.Getwd()
+	log.Infoln("cellmesh initializing....")
+	log.Infof("ProcName: '%s'", GetProcName())
+	log.Infof("SvcIndex: %d", GetSvcIndex())
+	log.Infof("SvcGroup: '%s'", GetSvcGroup())
+	log.Infof("LinkRule: '%s'", *flagLinkRule)
+	log.Infof("Execuable: %s", os.Args[0])
+	log.Infof("WorkDir: %s", workdir)
+	log.Infof("PID: %d", os.Getpid())
 
 	golog.SetLevelByString("consul", "info")
 
