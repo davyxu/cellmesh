@@ -8,21 +8,15 @@ import (
 )
 
 // check包括：node的check和service check
-func isMeshServiceHealth(entry *api.ServiceEntry) bool {
+func isServiceHealth(entry *api.ServiceEntry) bool {
 
 	for _, check := range entry.Checks {
-		if check.ServiceID == entry.Service.ID &&
-			check.Output == MakeHealthWords(entry.Service.ID) {
-			return true
+		if check.Status != "passing" {
+			return false
 		}
 	}
 
-	// 非内建建立的服务， 比如redis
-	if len(entry.Checks) > 0 && entry.Checks[0].Status == "passing" {
-		return true
-	}
-
-	return false
+	return true
 }
 
 func consulSvcToService(s *api.ServiceEntry) *discovery.ServiceDesc {

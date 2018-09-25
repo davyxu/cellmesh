@@ -43,8 +43,23 @@ func Unregister(p cellnet.Peer) {
 	discovery.Default.Deregister(MakeLocalSvcID(property.Name()))
 }
 
+// 根据进程的互联发现规则和给定的服务名过滤发现的服务
+func DiscoveryService(rules []MatchRule, svcName string) (ret []*discovery.ServiceDesc) {
+	descList, err := discovery.Default.Query(svcName)
+
+	if err == nil && len(descList) > 0 {
+
+		// 保持服务发现中的所有连接
+		for _, sd := range MatchService(rules, svcName, descList) {
+			ret = append(ret, sd)
+		}
+	}
+
+	return
+}
+
 // 发现一个服务，服务可能拥有多个地址，每个地址返回时，创建一个connector并开启
-func Discovery(rules []MatchRule, tgtSvcName string, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) {
+func DiscoveryConnector(rules []MatchRule, tgtSvcName string, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) {
 
 	// 从发现到连接有一个过程，需要用Map防止还没连上，又创建一个新的连接
 	var connectorBySvcID sync.Map
@@ -52,26 +67,22 @@ func Discovery(rules []MatchRule, tgtSvcName string, peerCreator func(*discovery
 	notify := discovery.Default.RegisterNotify("add")
 	for {
 
-		descList, err := discovery.Default.Query(tgtSvcName)
+		descList := DiscoveryService(rules, tgtSvcName)
 
-		if err == nil && len(descList) > 0 {
+		// 保持服务发现中的所有连接
+		for _, sd := range descList {
 
-			// 保持服务发现中的所有连接
-			for _, sd := range MatchService(rules, tgtSvcName, descList) {
+			// 新连接马上连接，老连接保留
+			if _, ok := connectorBySvcID.Load(sd.ID); !ok {
 
-				// 新连接马上连接，老连接保留
-				if _, ok := connectorBySvcID.Load(sd.ID); !ok {
+				p := peerCreator(sd)
 
-					p := peerCreator(sd)
+				contextSet := p.(cellnet.ContextSet)
+				contextSet.SetContext("sd", sd)
+				contextSet.SetContext("connMap", &connectorBySvcID)
 
-					contextSet := p.(cellnet.ContextSet)
-					contextSet.SetContext("sd", sd)
-					contextSet.SetContext("connMap", &connectorBySvcID)
-
-					connectorBySvcID.Store(sd.ID, p)
-				}
+				connectorBySvcID.Store(sd.ID, p)
 			}
-
 		}
 
 		<-notify

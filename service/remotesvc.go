@@ -6,44 +6,61 @@ import (
 	"sync"
 )
 
+type remoteContext struct {
+	name string
+	id   string
+}
+
 var (
 	connBySvcID        = map[string]cellnet.Session{}
 	connBySvcNameGuard sync.RWMutex
 )
 
-func AddRemoteService(ses cellnet.Session, desc *discovery.ServiceDesc) {
+func AddRemoteService(ses cellnet.Session, svcid, name string) {
 
 	connBySvcNameGuard.Lock()
-	ses.(cellnet.ContextSet).SetContext("desc", desc)
-	connBySvcID[desc.ID] = ses
+	ses.(cellnet.ContextSet).SetContext("ctx", &remoteContext{name: name, id: svcid})
+	connBySvcID[svcid] = ses
 	connBySvcNameGuard.Unlock()
 
-	log.SetColor("green").Debugf("remote service added: '%s'", desc.ID)
+	log.SetColor("green").Debugf("remote service added: '%s'", svcid)
 }
 
 func RemoveRemoteService(ses cellnet.Session) {
-	if raw, ok := ses.(cellnet.ContextSet).GetContext("desc"); ok {
+	if raw, ok := ses.(cellnet.ContextSet).GetContext("ctx"); ok {
 
-		desc := raw.(*discovery.ServiceDesc)
+		ctx := raw.(*remoteContext)
 
 		connBySvcNameGuard.Lock()
-		delete(connBySvcID, desc.ID)
+		delete(connBySvcID, ctx.id)
 		connBySvcNameGuard.Unlock()
 
-		log.SetColor("yellow").Debugf("remote service removed '%s'", desc.ID)
+		log.SetColor("yellow").Debugf("remote service removed '%s'", ctx.id)
 	}
 }
 
 // 获取Session绑定的远程连接描述
 func SessionToDesc(ses cellnet.Session) *discovery.ServiceDesc {
+	if ses == nil {
+		return nil
+	}
 
-	if raw, ok := ses.(cellnet.ContextSet).GetContext("desc"); ok {
-		return raw.(*discovery.ServiceDesc)
+	if raw, ok := ses.(cellnet.ContextSet).GetContext("ctx"); ok {
+		ctx := raw.(*remoteContext)
+
+		// 要取新鲜的
+		descList := DiscoveryService(LinkRules, ctx.name)
+		for _, desc := range descList {
+			if desc.ID == ctx.id {
+				return desc
+			}
+		}
 	}
 
 	return nil
 }
 
+// 根据id获取远程服务的会话
 func GetRemoteService(svcid string) cellnet.Session {
 	connBySvcNameGuard.RLock()
 	defer connBySvcNameGuard.RUnlock()
@@ -70,4 +87,15 @@ func VisitRemoteService(callback func(ses cellnet.Session, desc *discovery.Servi
 	}
 
 	connBySvcNameGuard.RUnlock()
+}
+
+// 获得一个远程服务会话的外网地址
+func GetRemoteServiceWANAddress(ses cellnet.Session) string {
+	desc := SessionToDesc(ses)
+
+	if desc == nil {
+		return ""
+	}
+
+	return desc.GetMeta("WANAddress")
 }

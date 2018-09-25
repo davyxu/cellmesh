@@ -20,10 +20,7 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 		if pre := GetRemoteService(msg.SvcID); pre == nil {
 
 			// 添加连接上来的对方服务
-			AddRemoteService(inputEvent.Session(), &discovery.ServiceDesc{
-				ID:   msg.SvcID,
-				Name: msg.SvcName,
-			})
+			AddRemoteService(inputEvent.Session(), msg.SvcID, msg.SvcName)
 		}
 	case *cellnet.SessionConnected:
 
@@ -42,7 +39,7 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 			SvcID:   MakeLocalSvcID(property.Name()),
 		})
 
-		AddRemoteService(inputEvent.Session(), sd)
+		AddRemoteService(inputEvent.Session(), sd.ID, sd.Name)
 
 	case *cellnet.SessionClosed:
 		ctx := inputEvent.Session().Peer().(cellnet.ContextSet)

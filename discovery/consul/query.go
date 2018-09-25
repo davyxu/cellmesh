@@ -30,7 +30,7 @@ func (self *consulDiscovery) directQuery(name string) (ret []*discovery.ServiceD
 			continue
 		}
 
-		if isMeshServiceHealth(s) {
+		if isServiceHealth(s) {
 
 			sd := consulSvcToService(s)
 

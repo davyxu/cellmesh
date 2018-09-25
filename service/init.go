@@ -23,7 +23,6 @@ func Init(name string) {
 	}
 
 	workdir, _ := os.Getwd()
-	log.Infoln("cellmesh initializing....")
 	log.Infof("ProcName: '%s'", GetProcName())
 	log.Infof("SvcIndex: %d", GetSvcIndex())
 	log.Infof("SvcGroup: '%s'", GetSvcGroup())
@@ -32,7 +31,9 @@ func Init(name string) {
 	log.Infof("WorkDir: %s", workdir)
 	log.Infof("PID: %d", os.Getpid())
 
-	golog.SetLevelByString("consul", "info")
+	if !*flagDebugMode {
+		golog.SetLevelByString("consul", "info")
+	}
 
 	discovery.Default = consulsd.NewDiscovery()
 	broker.Default = broker.NewLocalBroker()
