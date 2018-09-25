@@ -109,7 +109,7 @@ func (self *consulDiscovery) getKV(key string, callback func(*cacheValue) error)
 	if ok {
 		cv = raw.(*cacheValue)
 
-		if now.Sub(cv.time) < self.cacheDuration {
+		if now.Sub(cv.time) < self.config.KVCacheDuration {
 			return cv, nil
 		}
 	} else {

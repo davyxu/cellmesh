@@ -10,7 +10,7 @@ import (
 type consulDiscovery struct {
 	client *api.Client
 
-	config *api.Config
+	config *Config
 
 	// 与consul的服务保持实时同步
 	cache sync.Map // map[string][]*discovery.ServiceDesc
@@ -24,8 +24,7 @@ type consulDiscovery struct {
 	removeNotify []chan struct{}
 
 	// 带缓冲kv
-	cacheDuration time.Duration
-	metaByKey     sync.Map //map[string]*cacheValue
+	metaByKey sync.Map //map[string]*cacheValue
 }
 
 // 检查Consul自己挂掉
@@ -63,21 +62,18 @@ func (self *consulDiscovery) consulChecker() {
 	}
 }
 
-func NewDiscovery() discovery.Discovery {
+func NewDiscovery(config interface{}) discovery.Discovery {
 
 	self := &consulDiscovery{
-		config:        api.DefaultConfig(),
-		cacheDuration: time.Second * 30,
+		config: config.(*Config),
 	}
 
 	var err error
-	self.client, err = api.NewClient(self.config)
+	self.client, err = api.NewClient(self.config.Config)
 
 	if err != nil {
 		panic(err)
 	}
-
-	//go self.consulChecker()
 
 	self.startWatch()
 

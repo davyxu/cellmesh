@@ -28,10 +28,6 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 
 	for svcName := range svcNames {
 
-		//if svcName == "consul" {
-		//	continue
-		//}
-
 		// 已经对这种名称的服务创建了watcher的跳过
 		if _, ok := self.nameWatcher.Load(svcName); ok {
 			continue

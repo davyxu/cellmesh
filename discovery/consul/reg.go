@@ -3,17 +3,7 @@ package consulsd
 import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
-	"time"
 )
-
-// 心跳时间
-const ServiceTTL = 5 * time.Second
-
-// 心跳超时
-const ServiceTTLTimeout = 7 * time.Second
-
-// Consul移除服务时间，Consul要求必须在1分钟后才能删除TTL超时的服务
-const RemoveServiceTimeout = time.Minute + 5*time.Second
 
 func (self *consulDiscovery) Register(svc *discovery.ServiceDesc) error {
 
@@ -21,8 +11,8 @@ func (self *consulDiscovery) Register(svc *discovery.ServiceDesc) error {
 
 	var checker api.AgentServiceCheck
 	checker.CheckID = svc.ID
-	checker.TTL = ServiceTTLTimeout.String()
-	checker.DeregisterCriticalServiceAfter = RemoveServiceTimeout.String()
+	checker.TTL = self.config.ServiceTTLTimeOut.String()
+	checker.DeregisterCriticalServiceAfter = self.config.RemoveServiceTimeout.String()
 
 	err := self.client.Agent().ServiceRegister(&api.AgentServiceRegistration{
 		ID:                svc.ID,
@@ -39,7 +29,7 @@ func (self *consulDiscovery) Register(svc *discovery.ServiceDesc) error {
 		return err
 	}
 
-	localSvc := newLocalService(svc, self.client.Agent())
+	localSvc := newLocalService(self, svc, self.client.Agent())
 
 	self.localSvc.Store(svc.ID, localSvc)
 

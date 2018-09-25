@@ -2,7 +2,6 @@ package consulsd
 
 import (
 	"context"
-	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
 	"time"
@@ -10,6 +9,7 @@ import (
 
 // 本地服务更新TTL
 type localService struct {
+	sd     *consulDiscovery
 	Desc   *discovery.ServiceDesc
 	Cancel context.CancelFunc
 
@@ -18,13 +18,7 @@ type localService struct {
 	agent *api.Agent
 }
 
-func MakeHealthWords(svcid string) string {
-	return fmt.Sprintf("'%s' ready!", svcid)
-}
-
 func (self *localService) Update() {
-
-	//log.Debugf("UpdateTTL id: %s begin", self.ID)
 
 	for {
 
@@ -33,22 +27,18 @@ func (self *localService) Update() {
 			return
 		default:
 
-			//log.Debugf("UpdateTTL id: %s", self.ID)
+			self.agent.UpdateTTL(self.Desc.ID, self.Desc.ID, "pass")
 
-			self.agent.UpdateTTL(self.Desc.ID, MakeHealthWords(self.Desc.ID), "pass")
-
-			time.Sleep(ServiceTTL)
+			time.Sleep(self.sd.config.ServiceTTL)
 		}
 	}
-
-	//log.Debugf("UpdateTTL id: %s end", self.ID)
 }
 
 func (self *localService) Stop() {
 	self.Cancel()
 }
 
-func newLocalService(svc *discovery.ServiceDesc, agent *api.Agent) *localService {
+func newLocalService(sd *consulDiscovery, svc *discovery.ServiceDesc, agent *api.Agent) *localService {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -57,6 +47,7 @@ func newLocalService(svc *discovery.ServiceDesc, agent *api.Agent) *localService
 		Cancel: cancel,
 		ctx:    ctx,
 		agent:  agent,
+		sd:     sd,
 	}
 
 	go self.Update()

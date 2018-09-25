@@ -2,7 +2,6 @@ package service
 
 import (
 	"flag"
-	"github.com/davyxu/cellmesh/broker"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/consul"
 	"github.com/davyxu/cellnet/msglog"
@@ -23,20 +22,22 @@ func Init(name string) {
 	}
 
 	workdir, _ := os.Getwd()
-	log.Infof("ProcName: '%s'", GetProcName())
-	log.Infof("SvcIndex: %d", GetSvcIndex())
-	log.Infof("SvcGroup: '%s'", GetSvcGroup())
-	log.Infof("LinkRule: '%s'", *flagLinkRule)
 	log.Infof("Execuable: %s", os.Args[0])
 	log.Infof("WorkDir: %s", workdir)
+	log.Infof("ProcName: '%s'", GetProcName())
 	log.Infof("PID: %d", os.Getpid())
+	log.Infof("Discovery: '%s'", *flagDiscoveryAddr)
+	log.Infof("LinkRule: '%s'", *flagLinkRule)
+	log.Infof("SvcGroup: '%s'", GetSvcGroup())
+	log.Infof("SvcIndex: %d", GetSvcIndex())
 
 	if !*flagDebugMode {
 		golog.SetLevelByString("consul", "info")
 	}
 
-	discovery.Default = consulsd.NewDiscovery()
-	broker.Default = broker.NewLocalBroker()
+	sdConfig := consulsd.DefaultConfig()
+	sdConfig.Address = *flagDiscoveryAddr
+	discovery.Default = consulsd.NewDiscovery(sdConfig)
 
 	// 彩色日志
 	if *flagColorLog {
