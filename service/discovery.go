@@ -29,7 +29,7 @@ func Register(p cellnet.Peer) {
 		sd.SetMeta("WANAddress", util.JoinAddress(GetWANIP(), sd.Port))
 	}
 
-	log.SetColor("green").Debugf("service '%s' listen at %s:%d", sd.ID, host, sd.Port)
+	log.SetColor("green").Debugf("service '%s' listen at port: %d", sd.ID, sd.Port)
 
 	// 有同名的要先解除注册，再注册，防止watch不触发
 	discovery.Default.Deregister(sd.ID)
@@ -45,9 +45,9 @@ func Unregister(p cellnet.Peer) {
 
 // 根据进程的互联发现规则和给定的服务名过滤发现的服务
 func DiscoveryService(rules []MatchRule, svcName string) (ret []*discovery.ServiceDesc) {
-	descList, err := discovery.Default.Query(svcName)
+	descList := discovery.Default.Query(svcName)
 
-	if err == nil && len(descList) > 0 {
+	if len(descList) > 0 {
 
 		// 保持服务发现中的所有连接
 		for _, sd := range MatchService(rules, svcName, descList) {

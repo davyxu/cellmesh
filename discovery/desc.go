@@ -1,6 +1,10 @@
 package discovery
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 type ServiceDesc struct {
 	Name string
@@ -37,10 +41,32 @@ func (self *ServiceDesc) GetMeta(name string) string {
 	return self.Meta[name]
 }
 
+func (self *ServiceDesc) GetMetaAsInt(name string) int {
+	v, err := strconv.ParseInt(self.GetMeta(name), 10, 64)
+	if err != nil {
+		return 0
+	}
+
+	return int(v)
+}
+
 func (self *ServiceDesc) Address() string {
 	return fmt.Sprintf("%s:%d", self.Host, self.Port)
 }
 
 func (self *ServiceDesc) String() string {
-	return fmt.Sprintf("name: '%s' id: '%s' addr: '%s:%d'  tags: %v", self.Name, self.ID, self.Host, self.Port, self.Tags)
+
+	var sb strings.Builder
+	if len(self.Meta) > 0 {
+		sb.WriteString("meta: [ ")
+		for key, value := range self.Meta {
+			sb.WriteString(key)
+			sb.WriteString("=")
+			sb.WriteString(value)
+			sb.WriteString(" ")
+		}
+		sb.WriteString("]")
+	}
+
+	return fmt.Sprintf("%20s addr: '%20s' tags: %v %s", self.ID, self.Address(), self.Tags, sb.String())
 }

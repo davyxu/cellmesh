@@ -40,3 +40,7 @@ func MakeLocalSvcID(svcName string) string {
 func GetLocalSvcID() string {
 	return MakeLocalSvcID(GetProcName())
 }
+
+func GetDiscoveryAddr() string {
+	return *flagDiscoveryAddr
+}

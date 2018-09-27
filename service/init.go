@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/consul"
 	"github.com/davyxu/cellnet/msglog"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 	"os"
 )
@@ -16,7 +17,7 @@ func Init(name string) {
 	flag.Parse()
 
 	if *flagLinkRule == "" {
-		LinkRules = ParseMatchRule("dev") // 默认匹配dev组
+		LinkRules = ParseMatchRule(*flagSvcGroup)
 	} else {
 		LinkRules = ParseMatchRule(*flagLinkRule)
 	}
@@ -30,6 +31,8 @@ func Init(name string) {
 	log.Infof("LinkRule: '%s'", *flagLinkRule)
 	log.Infof("SvcGroup: '%s'", GetSvcGroup())
 	log.Infof("SvcIndex: %d", GetSvcIndex())
+	log.Infof("LANIP: '%s'", util.GetLocalIP())
+	log.Infof("WANIP: '%s'", GetWANIP())
 
 	if !*flagDebugMode {
 		golog.SetLevelByString("consul", "info")

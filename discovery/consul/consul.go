@@ -62,6 +62,21 @@ func (self *consulDiscovery) consulChecker() {
 	}
 }
 
+func (self *consulDiscovery) WaitReady() {
+
+	for {
+		_, _, err := self.client.Health().Service("consul", "", false, nil)
+
+		if err == nil {
+			break
+		}
+
+		log.Errorln(err)
+
+		time.Sleep(time.Second * 2)
+	}
+}
+
 func NewDiscovery(config interface{}) discovery.Discovery {
 
 	self := &consulDiscovery{
@@ -74,6 +89,8 @@ func NewDiscovery(config interface{}) discovery.Discovery {
 	if err != nil {
 		panic(err)
 	}
+
+	self.WaitReady()
 
 	self.startWatch()
 

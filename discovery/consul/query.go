@@ -4,13 +4,24 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 )
 
-func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc, err error) {
+func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc) {
 
 	log.Debugf("Query service, name: %s", name)
 
 	if raw, ok := self.cache.Load(name); ok {
 		ret = raw.([]*discovery.ServiceDesc)
 	}
+
+	return
+}
+
+func (self *consulDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
+
+	self.cache.Range(func(key, value interface{}) bool {
+		ret = append(ret, value.([]*discovery.ServiceDesc)...)
+
+		return true
+	})
 
 	return
 }

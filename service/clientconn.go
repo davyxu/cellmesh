@@ -23,10 +23,7 @@ func selectStrategy(descList []*discovery.ServiceDesc) *discovery.ServiceDesc {
 }
 
 func queryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
-	descList, err := discovery.Default.Query(serviceName)
-	if err != nil {
-		return nil, err
-	}
+	descList := discovery.Default.Query(serviceName)
 
 	desc := selectStrategy(descList)
 

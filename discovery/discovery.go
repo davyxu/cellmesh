@@ -14,7 +14,7 @@ type Discovery interface {
 	Deregister(svcid string) error
 
 	// 根据服务名查到可用的服务
-	Query(name string) (ret []*ServiceDesc, err error)
+	Query(name string) (ret []*ServiceDesc)
 
 	// 注册服务变化通知
 	RegisterNotify(mode string) (ret chan struct{})
