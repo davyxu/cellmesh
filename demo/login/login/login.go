@@ -17,8 +17,8 @@ func init() {
 
 		var ack proto.LoginACK
 
-		gameList, err := discovery.Default.Query(model.FrontendName)
-		if err != nil || len(gameList) == 0 {
+		gameList := discovery.Default.Query(model.FrontendName)
+		if len(gameList) == 0 {
 
 			ack.Result = proto.ResultCode_GameNotReady
 

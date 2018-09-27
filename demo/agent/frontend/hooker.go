@@ -3,7 +3,6 @@ package frontend
 import (
 	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/demo/proto"
-	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/peer/tcp"
@@ -58,7 +57,7 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 			switch rule.Mode {
 			case "pass":
 				// TODO 挑选一台
-				service.VisitRemoteService(func(ses cellnet.Session, desc *discovery.ServiceDesc) bool {
+				service.VisitRemoteService(func(ses cellnet.Session, desc *service.RemoteServiceContext) bool {
 
 					if desc.Name == rule.SvcName {
 						// 透传消息

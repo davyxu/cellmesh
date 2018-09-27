@@ -14,7 +14,7 @@ func bindClientToBackend(backendSes cellnet.Session, clientSesID int64) {
 		return
 	}
 
-	sd := service.SessionToDesc(backendSes)
+	sd := service.SessionToContext(backendSes)
 	if sd == nil {
 		log.Errorln("backend sd not found")
 		return
