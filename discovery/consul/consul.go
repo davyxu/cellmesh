@@ -79,6 +79,10 @@ func (self *consulDiscovery) WaitReady() {
 
 func NewDiscovery(config interface{}) discovery.Discovery {
 
+	if config == nil {
+		config = DefaultConfig()
+	}
+
 	self := &consulDiscovery{
 		config: config.(*Config),
 	}

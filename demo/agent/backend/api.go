@@ -45,14 +45,14 @@ func recoverBackend(backendSes cellnet.Session, svcName string) {
 // 移除玩家对应的后台连接
 func removeBackend(backendSes cellnet.Session) {
 
-	sd := service.SessionToDesc(backendSes)
-	if sd == nil {
+	ctx := service.SessionToContext(backendSes)
+	if ctx == nil {
 		log.Errorln("backend sd not found")
 		return
 	}
 
 	model.VisitUser(func(u *model.User) bool {
-		u.SetBackend(sd.Name, nil)
+		u.SetBackend(ctx.Name, nil)
 
 		return true
 	})

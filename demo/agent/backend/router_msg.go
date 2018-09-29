@@ -11,14 +11,14 @@ import (
 
 func init() {
 
-	proto.Handle_Agent_backend_BindBackendACK = func(ev cellnet.Event) {
+	proto.Handle_Agent_BindBackendACK = func(ev cellnet.Event) {
 
 		msg := ev.Message().(*proto.BindBackendACK)
 
 		bindClientToBackend(ev.Session(), msg.ID)
 	}
 
-	proto.Handle_Agent_backend_CloseClientACK = func(ev cellnet.Event) {
+	proto.Handle_Agent_CloseClientACK = func(ev cellnet.Event) {
 
 		msg := ev.Message().(*proto.CloseClientACK)
 
@@ -41,7 +41,7 @@ func init() {
 
 	}
 
-	proto.Handle_Agent_backend_Default = func(ev cellnet.Event) {
+	proto.Handle_Agent_Default = func(ev cellnet.Event) {
 
 		switch msg := ev.Message().(type) {
 		case *service.ServiceIdentifyACK:
