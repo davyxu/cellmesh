@@ -11,8 +11,10 @@ type peerListener interface {
 	Port() int
 }
 
+type ServiceMeta map[string]string
+
 // 将Acceptor注册到服务发现,IP自动取本地IP
-func Register(p cellnet.Peer) {
+func Register(p cellnet.Peer, options ...interface{}) {
 	host := util.GetLocalIP()
 
 	property := p.(cellnet.PeerProperty)
@@ -23,6 +25,16 @@ func Register(p cellnet.Peer) {
 		ID:   MakeLocalSvcID(property.Name()),
 		Name: property.Name(),
 		Tags: []string{GetSvcGroup()},
+	}
+
+	for _, opt := range options {
+
+		switch optValue := opt.(type) {
+		case ServiceMeta:
+			for metaKey, metaValue := range optValue {
+				sd.SetMeta(metaKey, metaValue)
+			}
+		}
 	}
 
 	if GetWANIP() != "" {

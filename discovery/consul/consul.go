@@ -27,6 +27,10 @@ type consulDiscovery struct {
 	metaByKey sync.Map //map[string]*cacheValue
 }
 
+func (self *consulDiscovery) Raw() interface{} {
+	return self.client
+}
+
 // 检查Consul自己挂掉
 func (self *consulDiscovery) consulChecker() {
 
