@@ -25,9 +25,12 @@ func main() {
 
 	heartbeat.StartCheck()
 
-	basefx.CreateCommnicateAcceptor(model.BackendName, ":0")
+	model.AgentSvcID = service.MakeLocalSvcID(model.BackendName)
 
-	frontend.Start(kvconfig.String(discovery.Default, "cm_demo/config/agent/frontend_addr", ":8001~8101"))
+	// 要连接的服务列表
+	basefx.CreateCommnicateConnector("game")
+
+	frontend.Start(kvconfig.String(discovery.Default, "cm_demo/config/addr_agentfrontend", ":8001~8101"))
 
 	util.WaitExit()
 

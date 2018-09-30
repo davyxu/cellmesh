@@ -53,7 +53,7 @@ func main() {
 
 	flag.Parse()
 
-	discovery.Default = consulsd.NewDiscovery()
+	discovery.Default = consulsd.NewDiscovery(nil)
 
 	golog.SetLevelByString("consul", "info")
 

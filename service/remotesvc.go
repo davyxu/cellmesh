@@ -6,9 +6,9 @@ import (
 	"sync"
 )
 
-type remoteContext struct {
-	name string
-	id   string
+type RemoteServiceContext struct {
+	Name  string
+	SvcID string
 }
 
 var (
@@ -19,23 +19,31 @@ var (
 func AddRemoteService(ses cellnet.Session, svcid, name string) {
 
 	connBySvcNameGuard.Lock()
-	ses.(cellnet.ContextSet).SetContext("ctx", &remoteContext{name: name, id: svcid})
+	ses.(cellnet.ContextSet).SetContext("ctx", &RemoteServiceContext{Name: name, SvcID: svcid})
 	connBySvcID[svcid] = ses
 	connBySvcNameGuard.Unlock()
 
 	log.SetColor("green").Debugf("remote service added: '%s'", svcid)
 }
 
-func RemoveRemoteService(ses cellnet.Session) {
+func SessionToContext(ses cellnet.Session) *RemoteServiceContext {
 	if raw, ok := ses.(cellnet.ContextSet).GetContext("ctx"); ok {
+		return raw.(*RemoteServiceContext)
+	}
 
-		ctx := raw.(*remoteContext)
+	return nil
+}
+
+func RemoveRemoteService(ses cellnet.Session) {
+
+	desc := SessionToContext(ses)
+	if desc != nil {
 
 		connBySvcNameGuard.Lock()
-		delete(connBySvcID, ctx.id)
+		delete(connBySvcID, desc.SvcID)
 		connBySvcNameGuard.Unlock()
 
-		log.SetColor("yellow").Debugf("remote service removed '%s'", ctx.id)
+		log.SetColor("yellow").Debugf("remote service removed '%s'", desc.SvcID)
 	}
 }
 
@@ -46,12 +54,12 @@ func SessionToDesc(ses cellnet.Session) *discovery.ServiceDesc {
 	}
 
 	if raw, ok := ses.(cellnet.ContextSet).GetContext("ctx"); ok {
-		ctx := raw.(*remoteContext)
+		ctx := raw.(*RemoteServiceContext)
 
 		// 要取新鲜的
-		descList := DiscoveryService(LinkRules, ctx.name)
+		descList := DiscoveryService(LinkRules, ctx.Name)
 		for _, desc := range descList {
-			if desc.ID == ctx.id {
+			if desc.ID == ctx.SvcID {
 				return desc
 			}
 		}
@@ -74,14 +82,12 @@ func GetRemoteService(svcid string) cellnet.Session {
 }
 
 // 遍历远程服务
-func VisitRemoteService(callback func(ses cellnet.Session, desc *discovery.ServiceDesc) bool) {
+func VisitRemoteService(callback func(ses cellnet.Session, desc *RemoteServiceContext) bool) {
 	connBySvcNameGuard.RLock()
 
 	for _, ses := range connBySvcID {
 
-		sd := SessionToDesc(ses)
-
-		if !callback(ses, sd) {
+		if !callback(ses, SessionToContext(ses)) {
 			break
 		}
 	}

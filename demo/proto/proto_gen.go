@@ -115,11 +115,11 @@ func (self *CloseClientACK) String() string  { return fmt.Sprintf("%+v", *self) 
 func (self *ClientClosedACK) String() string { return fmt.Sprintf("%+v", *self) }
 func (self *PingACK) String() string         { return fmt.Sprintf("%+v", *self) }
 
-// agent_backend
+// agent
 var (
-	Handle_Agent_backend_BindBackendACK = func(ev cellnet.Event) { panic("'BindBackendACK' not handled") }
-	Handle_Agent_backend_CloseClientACK = func(ev cellnet.Event) { panic("'CloseClientACK' not handled") }
-	Handle_Agent_backend_Default        func(ev cellnet.Event)
+	Handle_Agent_BindBackendACK = func(ev cellnet.Event) { panic("'BindBackendACK' not handled") }
+	Handle_Agent_CloseClientACK = func(ev cellnet.Event) { panic("'CloseClientACK' not handled") }
+	Handle_Agent_Default        func(ev cellnet.Event)
 )
 
 // agent_frontend
@@ -144,16 +144,16 @@ var (
 func GetMessageHandler(svcName string) cellnet.EventCallback {
 
 	switch svcName {
-	case "agent_backend":
+	case "agent":
 		return func(ev cellnet.Event) {
 			switch ev.Message().(type) {
 			case *BindBackendACK:
-				Handle_Agent_backend_BindBackendACK(ev)
+				Handle_Agent_BindBackendACK(ev)
 			case *CloseClientACK:
-				Handle_Agent_backend_CloseClientACK(ev)
+				Handle_Agent_CloseClientACK(ev)
 			default:
-				if Handle_Agent_backend_Default != nil {
-					Handle_Agent_backend_Default(ev)
+				if Handle_Agent_Default != nil {
+					Handle_Agent_Default(ev)
 				}
 			}
 		}

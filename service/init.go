@@ -16,10 +16,12 @@ func Init(name string) {
 
 	flag.Parse()
 
+	var linkRule string
+
 	if *flagLinkRule == "" {
-		LinkRules = ParseMatchRule(*flagSvcGroup)
+		linkRule = *flagSvcGroup
 	} else {
-		LinkRules = ParseMatchRule(*flagLinkRule)
+		linkRule = *flagLinkRule
 	}
 
 	workdir, _ := os.Getwd()
@@ -28,11 +30,13 @@ func Init(name string) {
 	log.Infof("ProcName: '%s'", GetProcName())
 	log.Infof("PID: %d", os.Getpid())
 	log.Infof("Discovery: '%s'", *flagDiscoveryAddr)
-	log.Infof("LinkRule: '%s'", *flagLinkRule)
+	log.Infof("LinkRule: '%s'", linkRule)
 	log.Infof("SvcGroup: '%s'", GetSvcGroup())
 	log.Infof("SvcIndex: %d", GetSvcIndex())
 	log.Infof("LANIP: '%s'", util.GetLocalIP())
 	log.Infof("WANIP: '%s'", GetWANIP())
+
+	LinkRules = ParseMatchRule(linkRule)
 
 	if !*flagDebugMode {
 		golog.SetLevelByString("consul", "info")
