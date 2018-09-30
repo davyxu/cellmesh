@@ -45,7 +45,10 @@ func Register(p cellnet.Peer, options ...interface{}) {
 	// 有同名的要先解除注册，再注册，防止watch不触发
 	discovery.Default.Deregister(sd.ID)
 
-	discovery.Default.Register(sd)
+	err := discovery.Default.Register(sd)
+	if err != nil {
+		log.Errorf("service register failed, %s %s", sd.String(), err.Error())
+	}
 }
 
 // 解除peer注册
@@ -93,10 +96,13 @@ func DiscoveryConnector(rules []MatchRule, tgtSvcName string, maxCount int, peer
 
 				p := peerCreator(sd)
 
-				contextSet := p.(cellnet.ContextSet)
-				contextSet.SetContext("sd", sd)
-				contextSet.SetContext("connSet", connectorBySvcID)
-				connectorBySvcID.Add(sd.ID, p)
+				if p != nil {
+					contextSet := p.(cellnet.ContextSet)
+					contextSet.SetContext("sd", sd)
+					contextSet.SetContext("connSet", connectorBySvcID)
+					connectorBySvcID.Add(sd.ID, p)
+				}
+
 			}
 		}
 
