@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
-	"sync"
 )
 
 // 服务互联消息处理
@@ -43,12 +42,12 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 		ctx := inputEvent.Session().Peer().(cellnet.ContextSet)
 
 		// 只有连接器做这个
-		var connMap *sync.Map
-		if ctx.FetchContext("connMap", &connMap) {
+		var connMap *connSet
+		if ctx.FetchContext("connSet", &connMap) {
 
 			var sd *discovery.ServiceDesc
 			if ctx.FetchContext("sd", &sd) {
-				connMap.Delete(sd.ID)
+				connMap.Remove(sd.ID)
 			} else {
 				panic("sd get failed")
 			}

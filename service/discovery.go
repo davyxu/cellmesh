@@ -4,7 +4,6 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
-	"sync"
 )
 
 type peerListener interface {
@@ -71,10 +70,10 @@ func DiscoveryService(rules []MatchRule, svcName string) (ret []*discovery.Servi
 }
 
 // 发现一个服务，服务可能拥有多个地址，每个地址返回时，创建一个connector并开启
-func DiscoveryConnector(rules []MatchRule, tgtSvcName string, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) {
+func DiscoveryConnector(rules []MatchRule, tgtSvcName string, maxCount int, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) {
 
 	// 从发现到连接有一个过程，需要用Map防止还没连上，又创建一个新的连接
-	var connectorBySvcID sync.Map
+	connectorBySvcID := newConnSet()
 
 	notify := discovery.Default.RegisterNotify("add")
 	for {
@@ -85,15 +84,19 @@ func DiscoveryConnector(rules []MatchRule, tgtSvcName string, peerCreator func(*
 		for _, sd := range descList {
 
 			// 新连接马上连接，老连接保留
-			if _, ok := connectorBySvcID.Load(sd.ID); !ok {
+			if connectorBySvcID.Get(sd.ID) == nil {
+
+				// 达到最大连接
+				if maxCount > 0 && connectorBySvcID.Count() >= maxCount {
+					continue
+				}
 
 				p := peerCreator(sd)
 
 				contextSet := p.(cellnet.ContextSet)
 				contextSet.SetContext("sd", sd)
-				contextSet.SetContext("connMap", &connectorBySvcID)
-
-				connectorBySvcID.Store(sd.ID, p)
+				contextSet.SetContext("connSet", connectorBySvcID)
+				connectorBySvcID.Add(sd.ID, p)
 			}
 		}
 

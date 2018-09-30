@@ -82,7 +82,7 @@ func GetRemoteService(svcid string) cellnet.Session {
 }
 
 // 遍历远程服务
-func VisitRemoteService(callback func(ses cellnet.Session, desc *RemoteServiceContext) bool) {
+func VisitRemoteService(callback func(ses cellnet.Session, ctx *RemoteServiceContext) bool) {
 	connBySvcNameGuard.RLock()
 
 	for _, ses := range connBySvcID {
