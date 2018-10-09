@@ -27,16 +27,9 @@ func (self *MatchRule) MatchNode(node string) bool {
 	return self.nodeExp.MatchString(node)
 }
 
-func matchTarget(desc *discovery.ServiceDesc, rule *MatchRule) bool {
+func matchTarget(rule *MatchRule, desc *discovery.ServiceDesc) bool {
 
-	// Tags中保存服务所在的节点
-	for _, sdTag := range desc.Tags {
-		if rule.MatchNode(sdTag) {
-			return true
-		}
-	}
-
-	return false
+	return rule.MatchNode(desc.GetMeta("SvcGroup"))
 }
 
 // 获取要匹配节点名(连接用)
@@ -56,7 +49,7 @@ func MatchService(rules []MatchRule, svcName string, desclist []*discovery.Servi
 
 			for _, sd := range desclist {
 
-				if matchTarget(sd, &rule) {
+				if matchTarget(&rule, sd) {
 					ret = append(ret, sd)
 				}
 			}
@@ -74,7 +67,7 @@ func MatchService(rules []MatchRule, svcName string, desclist []*discovery.Servi
 
 			for _, sd := range desclist {
 
-				if matchTarget(sd, &rule) {
+				if matchTarget(&rule, sd) {
 					ret = append(ret, sd)
 				}
 			}

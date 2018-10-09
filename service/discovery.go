@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
+	"strconv"
 )
 
 type peerListener interface {
@@ -19,12 +20,14 @@ func Register(p cellnet.Peer, options ...interface{}) {
 	property := p.(cellnet.PeerProperty)
 
 	sd := &discovery.ServiceDesc{
-		Host: host,
-		Port: p.(peerListener).Port(),
 		ID:   MakeLocalSvcID(property.Name()),
 		Name: property.Name(),
-		Tags: []string{GetSvcGroup()},
+		Host: host,
+		Port: p.(peerListener).Port(),
 	}
+
+	sd.SetMeta("SvcGroup", GetSvcGroup())
+	sd.SetMeta("SvcIndex", strconv.Itoa(GetSvcIndex()))
 
 	for _, opt := range options {
 
@@ -72,8 +75,13 @@ func DiscoveryService(rules []MatchRule, svcName string) (ret []*discovery.Servi
 	return
 }
 
+type DiscoveryOption struct {
+	MaxCount       int  // 连接数，默认发起多条连接
+	ForceSelfGroup bool // 默认只找与自己同组的服务
+}
+
 // 发现一个服务，服务可能拥有多个地址，每个地址返回时，创建一个connector并开启
-func DiscoveryConnector(rules []MatchRule, tgtSvcName string, maxCount int, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) {
+func DiscoveryConnector(rules []MatchRule, tgtSvcName string, opt DiscoveryOption, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) {
 
 	// 从发现到连接有一个过程，需要用Map防止还没连上，又创建一个新的连接
 	connectorBySvcID := newConnSet()
@@ -81,16 +89,38 @@ func DiscoveryConnector(rules []MatchRule, tgtSvcName string, maxCount int, peer
 	notify := discovery.Default.RegisterNotify("add")
 	for {
 
-		descList := DiscoveryService(rules, tgtSvcName)
+		var descList []*discovery.ServiceDesc
+		originList := discovery.Default.Query(tgtSvcName)
+
+		// 只匹配与自己同组
+		if opt.ForceSelfGroup {
+
+			for _, sd := range originList {
+
+				if sd.GetMeta("SvcGroup") == GetSvcGroup() {
+					descList = append(descList, sd)
+				}
+			}
+
+		} else {
+			// 按照匹配规则
+			if len(originList) > 0 {
+
+				// 保持服务发现中的所有连接
+				for _, sd := range MatchService(rules, tgtSvcName, originList) {
+					descList = append(descList, sd)
+				}
+			}
+		}
 
 		// 保持服务发现中的所有连接
 		for _, sd := range descList {
 
-			// 新连接马上连接，老连接保留
+			// 同一个svcid，永久对应一个connector，断开后自动重连
 			if connectorBySvcID.Get(sd.ID) == nil {
 
 				// 达到最大连接
-				if maxCount > 0 && connectorBySvcID.Count() >= maxCount {
+				if opt.MaxCount > 0 && connectorBySvcID.Count() >= opt.MaxCount {
 					continue
 				}
 

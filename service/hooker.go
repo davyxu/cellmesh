@@ -39,19 +39,6 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 		}
 
 	case *cellnet.SessionClosed:
-		ctx := inputEvent.Session().Peer().(cellnet.ContextSet)
-
-		// 只有连接器做这个
-		var connMap *connSet
-		if ctx.FetchContext("connSet", &connMap) {
-
-			var sd *discovery.ServiceDesc
-			if ctx.FetchContext("sd", &sd) {
-				connMap.Remove(sd.ID)
-			} else {
-				panic("sd get failed")
-			}
-		}
 
 		RemoveRemoteService(inputEvent.Session())
 	}
