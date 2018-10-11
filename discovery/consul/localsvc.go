@@ -16,6 +16,10 @@ type localService struct {
 	ctx context.Context
 
 	agent *api.Agent
+
+	checkerFunc discovery.CheckerFunc
+
+	lastOutput string
 }
 
 func (self *localService) Update() {
@@ -27,7 +31,20 @@ func (self *localService) Update() {
 			return
 		default:
 
-			self.agent.UpdateTTL(self.Desc.ID, self.Desc.ID, "pass")
+			var output string
+			var status string
+
+			if self.checkerFunc != nil {
+
+				output, status = self.checkerFunc()
+			} else {
+				output = self.Desc.ID
+				status = "pass"
+			}
+
+			// 注意，consul这里有bug https://github.com/hashicorp/consul/issues/1057
+			// 只有在status变化和有服务加入时，status才能及时更新，但是output依然不能及时更新
+			self.agent.UpdateTTL(self.Desc.ID, output, status)
 
 			time.Sleep(self.sd.config.ServiceTTL)
 		}

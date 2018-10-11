@@ -60,18 +60,21 @@ func (self *consulDiscovery) RegisterNotify(mode string) (ret chan struct{}) {
 
 	ret = make(chan struct{})
 
+	self.notifyGuard.Lock()
 	switch mode {
 	case "add":
 		self.addNotify = append(self.addNotify, ret)
 	case "remove":
 		self.removeNotify = append(self.removeNotify, ret)
 	}
+	self.notifyGuard.Unlock()
 
 	return
 }
 
 func (self *consulDiscovery) DeregisterNotify(mode string, c chan struct{}) {
 
+	self.notifyGuard.Lock()
 	switch mode {
 	case "add":
 		for index, n := range self.addNotify {
@@ -88,11 +91,13 @@ func (self *consulDiscovery) DeregisterNotify(mode string, c chan struct{}) {
 			}
 		}
 	}
+	self.notifyGuard.Unlock()
 
 }
 
 func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.ServiceDesc) {
 
+	self.notifyGuard.RLock()
 	switch eventName {
 	case "add":
 		log.Debugf("Add service '%s'", desc.ID)
@@ -103,5 +108,11 @@ func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.Se
 
 	case "remove":
 		log.Debugf("Remove service '%s'", desc.ID)
+
+		for _, n := range self.removeNotify {
+			n <- struct{}{}
+		}
 	}
+
+	self.notifyGuard.RUnlock()
 }

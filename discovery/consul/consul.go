@@ -13,13 +13,15 @@ type consulDiscovery struct {
 	config *Config
 
 	// 与consul的服务保持实时同步
-	cache sync.Map // map[string][]*discovery.ServiceDesc
+	cache      sync.Map // map[string][]*discovery.ServiceDesc
+	cacheGuard sync.Mutex
 
 	nameWatcher sync.Map //map[string]*watch.Plan
 	localSvc    sync.Map // map[string]*localService
 
 	ready bool
 
+	notifyGuard  sync.RWMutex
 	addNotify    []chan struct{}
 	removeNotify []chan struct{}
 

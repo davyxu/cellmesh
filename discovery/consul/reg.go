@@ -53,9 +53,20 @@ func (self *consulDiscovery) Deregister(svcid string) error {
 		localsvc := v.(*localService)
 
 		localsvc.Stop()
+
+		self.localSvc.Delete(svcid)
 	}
 
 	log.Debugf("Deregister service, id: %s", svcid)
 
 	return self.client.Agent().ServiceDeregister(svcid)
+}
+
+func (self *consulDiscovery) SetChecker(svcid string, checkerFunc discovery.CheckerFunc) {
+
+	if v, ok := self.localSvc.Load(svcid); ok {
+		localsvc := v.(*localService)
+
+		localsvc.checkerFunc = checkerFunc
+	}
 }

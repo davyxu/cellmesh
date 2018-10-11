@@ -97,6 +97,10 @@ func (self *consulDiscovery) onServiceChanged(u uint64, data interface{}) {
 		return
 	}
 
+	// 防止多次触发时，并发写入cache内列表时互相覆盖
+	self.cacheGuard.Lock()
+	defer self.cacheGuard.Unlock()
+
 	svcName := svcDetails[0].Service.Service
 
 	var newList []*discovery.ServiceDesc

@@ -14,7 +14,7 @@ type peerListener interface {
 type ServiceMeta map[string]string
 
 // 将Acceptor注册到服务发现,IP自动取本地IP
-func Register(p cellnet.Peer, options ...interface{}) {
+func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 	host := util.GetLocalIP()
 
 	property := p.(cellnet.PeerProperty)
@@ -48,10 +48,14 @@ func Register(p cellnet.Peer, options ...interface{}) {
 	// 有同名的要先解除注册，再注册，防止watch不触发
 	discovery.Default.Deregister(sd.ID)
 
+	p.(cellnet.ContextSet).SetContext("sd", sd)
+
 	err := discovery.Default.Register(sd)
 	if err != nil {
 		log.Errorf("service register failed, %s %s", sd.String(), err.Error())
 	}
+
+	return sd
 }
 
 // 解除peer注册
@@ -61,14 +65,18 @@ func Unregister(p cellnet.Peer) {
 }
 
 // 根据进程的互联发现规则和给定的服务名过滤发现的服务
-func DiscoveryService(rules []MatchRule, svcName string) (ret []*discovery.ServiceDesc) {
+func DiscoveryService(rules []MatchRule, svcName string, matchSvcGroup string) (ret []*discovery.ServiceDesc) {
 	descList := discovery.Default.Query(svcName)
 
 	if len(descList) > 0 {
 
 		// 保持服务发现中的所有连接
 		for _, sd := range MatchService(rules, svcName, descList) {
-			ret = append(ret, sd)
+
+			if matchSvcGroup == "" || (matchSvcGroup != "" && sd.GetMeta("SvcGroup") == matchSvcGroup) {
+				ret = append(ret, sd)
+			}
+
 		}
 	}
 
@@ -89,29 +97,12 @@ func DiscoveryConnector(rules []MatchRule, tgtSvcName string, opt DiscoveryOptio
 	notify := discovery.Default.RegisterNotify("add")
 	for {
 
-		var descList []*discovery.ServiceDesc
-		originList := discovery.Default.Query(tgtSvcName)
-
-		// 只匹配与自己同组
+		var matchSvcGroup string
 		if opt.ForceSelfGroup {
-
-			for _, sd := range originList {
-
-				if sd.GetMeta("SvcGroup") == GetSvcGroup() {
-					descList = append(descList, sd)
-				}
-			}
-
-		} else {
-			// 按照匹配规则
-			if len(originList) > 0 {
-
-				// 保持服务发现中的所有连接
-				for _, sd := range MatchService(rules, tgtSvcName, originList) {
-					descList = append(descList, sd)
-				}
-			}
+			matchSvcGroup = GetSvcGroup()
 		}
+
+		descList := DiscoveryService(rules, tgtSvcName, matchSvcGroup)
 
 		// 保持服务发现中的所有连接
 		for _, sd := range descList {

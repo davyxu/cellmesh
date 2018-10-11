@@ -57,7 +57,7 @@ func SessionToDesc(ses cellnet.Session) *discovery.ServiceDesc {
 		ctx := raw.(*RemoteServiceContext)
 
 		// 要取新鲜的
-		descList := DiscoveryService(LinkRules, ctx.Name)
+		descList := DiscoveryService(LinkRules, ctx.Name, "")
 		for _, desc := range descList {
 			if desc.ID == ctx.SvcID {
 				return desc

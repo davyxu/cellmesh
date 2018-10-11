@@ -5,6 +5,8 @@ type ValueMeta struct {
 	Value []byte
 }
 
+type CheckerFunc func() (output, status string)
+
 type Discovery interface {
 
 	// 注册服务
@@ -33,6 +35,9 @@ type Discovery interface {
 
 	// 获取原始值列表
 	GetRawValueList(key string) ([]ValueMeta, error)
+
+	// 设置服务状态汇报
+	SetChecker(svcid string, checkerFunc CheckerFunc)
 }
 
 var (
