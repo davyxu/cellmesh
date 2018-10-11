@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"sync"
 )
@@ -47,27 +46,6 @@ func RemoveRemoteService(ses cellnet.Session) {
 	}
 }
 
-// 获取Session绑定的远程连接描述
-func SessionToDesc(ses cellnet.Session) *discovery.ServiceDesc {
-	if ses == nil {
-		return nil
-	}
-
-	if raw, ok := ses.(cellnet.ContextSet).GetContext("ctx"); ok {
-		ctx := raw.(*RemoteServiceContext)
-
-		// 要取新鲜的
-		descList := DiscoveryService(LinkRules, ctx.Name, "")
-		for _, desc := range descList {
-			if desc.ID == ctx.SvcID {
-				return desc
-			}
-		}
-	}
-
-	return nil
-}
-
 // 根据id获取远程服务的会话
 func GetRemoteService(svcid string) cellnet.Session {
 	connBySvcNameGuard.RLock()
@@ -96,12 +74,26 @@ func VisitRemoteService(callback func(ses cellnet.Session, ctx *RemoteServiceCon
 }
 
 // 获得一个远程服务会话的外网地址
-func GetRemoteServiceWANAddress(ses cellnet.Session) string {
-	desc := SessionToDesc(ses)
+func GetRemoteServiceWANAddress(ses cellnet.Session, forceSelfGroup bool) string {
 
-	if desc == nil {
+	var matchSvcGroup string
+	if forceSelfGroup {
+		matchSvcGroup = GetSvcGroup()
+	}
+
+	ctx := SessionToContext(ses)
+
+	if ctx == nil {
 		return ""
 	}
 
-	return desc.GetMeta("WANAddress")
+	for _, sd := range DiscoveryService(LinkRules, ctx.Name, matchSvcGroup) {
+
+		if sd.ID == ctx.SvcID {
+			return sd.GetMeta("WANAddress")
+		}
+
+	}
+
+	return ""
 }

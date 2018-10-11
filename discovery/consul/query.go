@@ -2,26 +2,64 @@ package consulsd
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
+	"time"
 )
+
+func (self *consulDiscovery) startRefresh() {
+
+	for {
+
+		time.Sleep(time.Second * 3)
+
+		svc, err := self.client.Agent().Services()
+		if err != nil {
+			log.Errorln(err)
+			continue
+		}
+
+		var newList []*discovery.ServiceDesc
+
+		for _, detail := range svc {
+			newList = append(newList, consulSvcToService(detail))
+		}
+
+		self.newCacheGuard.Lock()
+		self.newCache = newList
+		self.newCacheGuard.Unlock()
+
+		self.OnCacheUpdated("add", nil)
+	}
+
+}
 
 func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc) {
 
-	log.Debugf("Query service, name: %s", name)
-
-	if raw, ok := self.cache.Load(name); ok {
-		ret = raw.([]*discovery.ServiceDesc)
+	//
+	//if raw, ok := self.cache.Load(name); ok {
+	//	ret = raw.([]*discovery.ServiceDesc)
+	//}
+	self.newCacheGuard.RLock()
+	for _, sd := range self.newCache {
+		if sd.Name == name {
+			ret = append(ret, sd)
+		}
 	}
+	self.newCacheGuard.RUnlock()
 
 	return
 }
 
 func (self *consulDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
 
-	self.cache.Range(func(key, value interface{}) bool {
-		ret = append(ret, value.([]*discovery.ServiceDesc)...)
+	self.newCacheGuard.RLock()
+	copy(ret, self.newCache)
+	self.newCacheGuard.RUnlock()
 
-		return true
-	})
+	//self.cache.Range(func(key, value interface{}) bool {
+	//	ret = append(ret, value.([]*discovery.ServiceDesc)...)
+	//
+	//	return true
+	//})
 
 	return
 }
@@ -43,7 +81,7 @@ func (self *consulDiscovery) directQuery(name string) (ret []*discovery.ServiceD
 
 		if isServiceHealth(s) {
 
-			sd := consulSvcToService(s)
+			sd := consulSvcToService(s.Service)
 
 			log.Debugf("  got servcie, %s", sd.String())
 
@@ -100,14 +138,14 @@ func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.Se
 	self.notifyGuard.RLock()
 	switch eventName {
 	case "add":
-		log.Debugf("Add service '%s'", desc.ID)
+		//log.Debugf("Add service '%s'", desc.ID)
 
 		for _, n := range self.addNotify {
 			n <- struct{}{}
 		}
 
 	case "remove":
-		log.Debugf("Remove service '%s'", desc.ID)
+		//log.Debugf("Remove service '%s'", desc.ID)
 
 		for _, n := range self.removeNotify {
 			n <- struct{}{}

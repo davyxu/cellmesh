@@ -19,15 +19,15 @@ func isServiceHealth(entry *api.ServiceEntry) bool {
 	return true
 }
 
-func consulSvcToService(s *api.ServiceEntry) *discovery.ServiceDesc {
+func consulSvcToService(s *api.AgentService) *discovery.ServiceDesc {
 
 	return &discovery.ServiceDesc{
-		Name: s.Service.Service,
-		ID:   s.Service.ID,
-		Host: s.Service.Address,
-		Port: s.Service.Port,
-		Tags: s.Service.Tags,
-		Meta: s.Service.Meta,
+		Name: s.Service,
+		ID:   s.ID,
+		Host: s.Address,
+		Port: s.Port,
+		Tags: s.Tags,
+		Meta: s.Meta,
 	}
 }
 

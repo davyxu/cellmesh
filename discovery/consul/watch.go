@@ -107,7 +107,7 @@ func (self *consulDiscovery) onServiceChanged(u uint64, data interface{}) {
 
 	for _, detail := range svcDetails {
 		if isServiceHealth(detail) {
-			newList = append(newList, consulSvcToService(detail))
+			newList = append(newList, consulSvcToService(detail.Service))
 		}
 	}
 

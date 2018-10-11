@@ -16,6 +16,9 @@ type consulDiscovery struct {
 	cache      sync.Map // map[string][]*discovery.ServiceDesc
 	cacheGuard sync.Mutex
 
+	newCache      []*discovery.ServiceDesc
+	newCacheGuard sync.RWMutex
+
 	nameWatcher sync.Map //map[string]*watch.Plan
 	localSvc    sync.Map // map[string]*localService
 
@@ -102,7 +105,8 @@ func NewDiscovery(config interface{}) discovery.Discovery {
 
 	self.WaitReady()
 
-	self.startWatch()
+	//self.startWatch()
+	go self.startRefresh()
 
 	return self
 }
