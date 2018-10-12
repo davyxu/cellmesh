@@ -36,11 +36,12 @@ func (self *consulDiscovery) queryFromCache(name string) (ret []*discovery.Servi
 
 func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc) {
 
-	//if raw, ok := self.cache.Load(name); ok {
-	//	ret = raw.([]*discovery.ServiceDesc)
-	//}
+	if raw, ok := self.cache.Load(name); ok {
+		ret = raw.([]*discovery.ServiceDesc)
+	}
+	return
 
-	return self.queryFromCache(name)
+	//return self.queryFromCache(name)
 }
 
 func (self *consulDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
@@ -55,36 +56,6 @@ func (self *consulDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
 	}
 
 	return
-}
-
-// from github.com/micro/go-micro/registry/consul_registry.go
-func (self *consulDiscovery) directQuery(name string) (ret []*discovery.ServiceDesc, err error) {
-
-	result, _, err := self.client.Health().Service(name, "", false, nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, s := range result {
-
-		if s.Service.Service != name {
-			continue
-		}
-
-		if isServiceHealth(s) {
-
-			sd := consulSvcToService(s.Service)
-
-			log.Debugf("  got servcie, %s", sd.String())
-
-			ret = append(ret, sd)
-		}
-
-	}
-
-	return
-
 }
 
 func (self *consulDiscovery) RegisterNotify(mode string) (ret chan struct{}) {
@@ -147,7 +118,7 @@ func notify(clist []chan struct{}) {
 
 		select {
 		case n <- struct{}{}:
-		case <-time.After(2 * time.Second):
+		case <-time.After(5 * time.Second):
 			log.Errorf("addNotify timeout, not free?")
 
 		}

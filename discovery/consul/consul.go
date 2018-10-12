@@ -106,8 +106,8 @@ func NewDiscovery(config interface{}) discovery.Discovery {
 
 	self.WaitReady()
 
-	//self.startWatch()
-	go self.startRefresh()
+	self.startWatch()
+	//self.startRefresh()
 
 	return self
 }
