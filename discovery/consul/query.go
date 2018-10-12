@@ -11,55 +11,48 @@ func (self *consulDiscovery) startRefresh() {
 
 		time.Sleep(time.Second * 3)
 
-		svc, err := self.client.Agent().Services()
-		if err != nil {
-			log.Errorln(err)
-			continue
-		}
+		newList := self.QueryAll()
 
-		var newList []*discovery.ServiceDesc
-
-		for _, detail := range svc {
-			newList = append(newList, consulSvcToService(detail))
-		}
-
-		self.newCacheGuard.Lock()
-		self.newCache = newList
-		self.newCacheGuard.Unlock()
+		self.fullCacheGuard.Lock()
+		self.fullCache = newList
+		self.fullCacheGuard.Unlock()
 
 		self.OnCacheUpdated("add", nil)
 	}
 
 }
 
-func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc) {
-
-	//
-	//if raw, ok := self.cache.Load(name); ok {
-	//	ret = raw.([]*discovery.ServiceDesc)
-	//}
-	self.newCacheGuard.RLock()
-	for _, sd := range self.newCache {
+func (self *consulDiscovery) queryFromCache(name string) (ret []*discovery.ServiceDesc) {
+	self.fullCacheGuard.RLock()
+	for _, sd := range self.fullCache {
 		if sd.Name == name {
 			ret = append(ret, sd)
 		}
 	}
-	self.newCacheGuard.RUnlock()
+	self.fullCacheGuard.RUnlock()
 
 	return
 }
 
+func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc) {
+
+	//if raw, ok := self.cache.Load(name); ok {
+	//	ret = raw.([]*discovery.ServiceDesc)
+	//}
+
+	return self.queryFromCache(name)
+}
+
 func (self *consulDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
 
-	self.newCacheGuard.RLock()
-	copy(ret, self.newCache)
-	self.newCacheGuard.RUnlock()
+	svc, err := self.client.Agent().Services()
+	if err != nil {
+		return
+	}
 
-	//self.cache.Range(func(key, value interface{}) bool {
-	//	ret = append(ret, value.([]*discovery.ServiceDesc)...)
-	//
-	//	return true
-	//})
+	for _, detail := range svc {
+		ret = append(ret, consulSvcToService(detail))
+	}
 
 	return
 }
@@ -139,18 +132,25 @@ func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.Se
 	switch eventName {
 	case "add":
 		//log.Debugf("Add service '%s'", desc.ID)
-
-		for _, n := range self.addNotify {
-			n <- struct{}{}
-		}
+		notify(self.addNotify)
 
 	case "remove":
 		//log.Debugf("Remove service '%s'", desc.ID)
-
-		for _, n := range self.removeNotify {
-			n <- struct{}{}
-		}
+		notify(self.removeNotify)
 	}
 
 	self.notifyGuard.RUnlock()
+}
+
+func notify(clist []chan struct{}) {
+	for _, n := range clist {
+
+		select {
+		case n <- struct{}{}:
+		case <-time.After(2 * time.Second):
+			log.Errorf("addNotify timeout, not free?")
+
+		}
+
+	}
 }
