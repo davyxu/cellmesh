@@ -62,66 +62,55 @@ func (self *consulDiscovery) RegisterNotify(mode string) (ret chan struct{}) {
 
 	ret = make(chan struct{})
 
-	self.notifyGuard.Lock()
 	switch mode {
 	case "add":
-		self.addNotify = append(self.addNotify, ret)
+		self.notifyMap.Store(ret, ret)
 	case "remove":
-		self.removeNotify = append(self.removeNotify, ret)
 	}
-	self.notifyGuard.Unlock()
 
 	return
 }
 
 func (self *consulDiscovery) DeregisterNotify(mode string, c chan struct{}) {
 
-	self.notifyGuard.Lock()
 	switch mode {
 	case "add":
-		for index, n := range self.addNotify {
-			if n == c {
-				self.addNotify = append(self.addNotify[:index], self.addNotify[index+1:]...)
-				break
-			}
-		}
+		self.notifyMap.Store(c, nil)
 	case "remove":
-		for index, n := range self.removeNotify {
-			if n == c {
-				self.removeNotify = append(self.removeNotify[:index], self.removeNotify[index+1:]...)
-				break
-			}
-		}
 	}
-	self.notifyGuard.Unlock()
-
 }
 
 func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.ServiceDesc) {
 
-	self.notifyGuard.RLock()
 	switch eventName {
 	case "add":
-		//log.Debugf("Add service '%s'", desc.ID)
-		notify(self.addNotify)
+		var needToDelete []chan struct{}
+		self.notifyMap.Range(func(key, value interface{}) bool {
+			c := key.(chan struct{})
+			notify(c)
+			needToDelete = append(needToDelete, c)
 
-	case "remove":
-		//log.Debugf("Remove service '%s'", desc.ID)
-		notify(self.removeNotify)
-	}
+			return true
+		})
 
-	self.notifyGuard.RUnlock()
-}
-
-func notify(clist []chan struct{}) {
-	for _, n := range clist {
-
-		select {
-		case n <- struct{}{}:
-		case <-time.After(5 * time.Second):
-			log.Errorf("addNotify timeout, not free?")
-
+		for _, c := range needToDelete {
+			close(c)
+			self.notifyMap.Delete(c)
 		}
 
+	case "remove":
+
 	}
+
+}
+
+func notify(c chan struct{}) {
+
+	select {
+	case c <- struct{}{}:
+	case <-time.After(10 * time.Second):
+		// 接收通知阻塞太久，或者没有释放侦听的channel
+		log.Errorf("addNotify timeout, not free?")
+	}
+
 }

@@ -34,13 +34,13 @@ func CreateCommnicateAcceptor(svcName, listenAddr string) cellnet.Peer {
 	return p
 }
 
-func CreateCommnicateConnector(tgtSvcName string) {
+func CreateCommnicateConnector(tgtSvcName string, opt service.DiscoveryOption) {
 
 	svcName := service.GetProcName()
 
 	msgFunc := proto.GetMessageHandler(svcName)
 
-	go service.DiscoveryConnector(service.LinkRules, tgtSvcName, -1, func(sd *discovery.ServiceDesc) cellnet.Peer {
+	go service.DiscoveryConnector(service.LinkRules, tgtSvcName, opt, func(sd *discovery.ServiceDesc) cellnet.Peer {
 
 		p := peer.NewGenericPeer("tcp.Connector", svcName, sd.Address(), nil)
 

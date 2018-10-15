@@ -17,11 +17,7 @@ func login() (agentAddr string) {
 
 	log.Debugln("Create login connection...")
 
-	loginReq, err := service.CreateConnection("login")
-	if err != nil {
-		log.Errorln(err)
-		return
-	}
+	loginReq := service.CreateConnection("login")
 
 	// TODO 短连接请求完毕关闭
 

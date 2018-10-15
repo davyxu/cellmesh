@@ -35,35 +35,44 @@ func queryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
 }
 
 // 建立短连接
-func CreateConnection(serviceName string) (cellnet.Session, error) {
+func CreateConnection(serviceName string) (ret cellnet.Session) {
 
 	notify := discovery.Default.RegisterNotify("add")
-	for {
 
-		desc, err := queryServiceAddress(serviceName)
+	done := make(chan struct{})
+	go func() {
+		for {
 
-		if err == nil {
+			desc, err := queryServiceAddress(serviceName)
 
-			p := peer.NewGenericPeer("tcp.SyncConnector", serviceName, desc.Address(), nil)
-			proc.BindProcessorHandler(p, "cellmesh.tcp", nil)
+			if err == nil {
 
-			p.Start()
+				p := peer.NewGenericPeer("tcp.SyncConnector", serviceName, desc.Address(), nil)
+				proc.BindProcessorHandler(p, "cellmesh.tcp", nil)
 
-			conn := p.(connector)
+				p.Start()
 
-			if conn.IsReady() {
-				return conn.Session(), err
+				conn := p.(connector)
+
+				if conn.IsReady() {
+					ret = conn.Session()
+
+					break
+				}
+
+				p.Stop()
 			}
 
-			p.Stop()
+			<-notify
 		}
 
-		<-notify
-	}
+		discovery.Default.DeregisterNotify("add", notify)
+		done <- struct{}{}
+	}()
 
-	discovery.Default.DeregisterNotify("add", notify)
+	<-done
 
-	return nil, nil
+	return
 }
 
 type connector interface {

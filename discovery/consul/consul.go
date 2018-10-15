@@ -25,9 +25,7 @@ type consulDiscovery struct {
 
 	ready bool
 
-	notifyGuard  sync.RWMutex
-	addNotify    []chan struct{}
-	removeNotify []chan struct{}
+	notifyMap sync.Map // key=mode+c value=chan struct{}
 
 	// 带缓冲kv
 	metaByKey sync.Map //map[string]*cacheValue

@@ -202,67 +202,67 @@ func init() {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*LoginREQ)(nil)).Elem(),
-		ID:    54595,
+		ID:    18837,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("json"),
 		Type:  reflect.TypeOf((*LoginACK)(nil)).Elem(),
-		ID:    16426,
+		ID:    46204,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
-		ID:    13823,
+		ID:    13457,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*VerifyACK)(nil)).Elem(),
-		ID:    41190,
+		ID:    40824,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatREQ)(nil)).Elem(),
-		ID:    16234,
+		ID:    29052,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ChatACK)(nil)).Elem(),
-		ID:    43601,
+		ID:    56419,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ClientID)(nil)).Elem(),
-		ID:    14574,
+		ID:    44352,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*BindBackendACK)(nil)).Elem(),
-		ID:    11446,
+		ID:    5768,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*CloseClientACK)(nil)).Elem(),
-		ID:    63718,
+		ID:    58040,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*ClientClosedACK)(nil)).Elem(),
-		ID:    41610,
+		ID:    50844,
 	})
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("binary"),
 		Type:  reflect.TypeOf((*PingACK)(nil)).Elem(),
-		ID:    3423,
+		ID:    16241,
 	})
 
 }
