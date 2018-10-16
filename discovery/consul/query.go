@@ -64,7 +64,7 @@ func (self *consulDiscovery) RegisterNotify(mode string) (ret chan struct{}) {
 
 	switch mode {
 	case "add":
-		self.notifyMap.Store(ret, ret)
+		self.notifyMap.Store(ret, struct{}{})
 	case "remove":
 	}
 
@@ -84,18 +84,29 @@ func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.Se
 
 	switch eventName {
 	case "add":
-		var needToDelete []chan struct{}
+
+		var notifyList []chan struct{}
+		var removeList []chan struct{}
+
+		// 将列表拷贝出来，避免互锁
 		self.notifyMap.Range(func(key, value interface{}) bool {
-			c := key.(chan struct{})
-			notify(c)
-			needToDelete = append(needToDelete, c)
+			if value != nil {
+				notifyList = append(notifyList, key.(chan struct{}))
+			} else {
+				removeList = append(removeList, key.(chan struct{}))
+			}
 
 			return true
 		})
 
-		for _, c := range needToDelete {
-			close(c)
-			self.notifyMap.Delete(c)
+		// 通知
+		for _, raw := range notifyList {
+			notify(raw)
+		}
+
+		// 删除已经解注册的
+		for _, raw := range removeList {
+			self.notifyMap.Delete(raw)
 		}
 
 	case "remove":
