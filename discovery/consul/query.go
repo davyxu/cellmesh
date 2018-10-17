@@ -60,7 +60,7 @@ func (self *consulDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
 
 func (self *consulDiscovery) RegisterNotify(mode string) (ret chan struct{}) {
 
-	ret = make(chan struct{})
+	ret = make(chan struct{}, 10)
 
 	switch mode {
 	case "add":
