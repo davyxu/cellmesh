@@ -21,14 +21,40 @@ func (self *consulDiscovery) SetValue(key string, dataPtr interface{}) error {
 
 	return err
 }
-func (self *consulDiscovery) GetValue(key string, valuePtr interface{}) error {
 
-	data, err := self.GetRawValue(key)
-	if err != nil {
-		return err
+func getOption(opts []interface{}) (ret discovery.Option) {
+	for _, raw := range opts {
+
+		if opt, ok := raw.(discovery.Option); ok {
+			ret = opt
+		}
 	}
 
-	return discovery.BytesToAny(data, valuePtr)
+	return
+}
+
+func (self *consulDiscovery) GetValue(key string, valuePtr interface{}, opts ...interface{}) error {
+
+	if getOption(opts).NoCache {
+
+		value, err := self.directGetValue(key)
+
+		if err != nil {
+			return err
+		}
+
+		return discovery.BytesToAny(value, valuePtr)
+
+	} else {
+
+		data, err := self.GetRawValue(key)
+		if err != nil {
+			return err
+		}
+
+		return discovery.BytesToAny(data, valuePtr)
+	}
+
 }
 
 func (self *consulDiscovery) GetRawValue(key string) ([]byte, error) {

@@ -7,6 +7,10 @@ type ValueMeta struct {
 
 type CheckerFunc func() (output, status string)
 
+type Option struct {
+	NoCache bool
+}
+
 type Discovery interface {
 
 	// 注册服务
@@ -28,16 +32,13 @@ type Discovery interface {
 	// 设置值
 	SetValue(key string, value interface{}) error
 
-	GetValue(key string, valuePtr interface{}) error
+	GetValue(key string, valuePtr interface{}, opts ...interface{}) error
 
 	// 获取原始值
 	GetRawValue(key string) ([]byte, error)
 
 	// 获取原始值列表
 	GetRawValueList(key string) ([]ValueMeta, error)
-
-	// 设置服务状态汇报
-	SetChecker(svcid string, checkerFunc CheckerFunc)
 }
 
 var (

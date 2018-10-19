@@ -12,7 +12,9 @@ func Download() error {
 
 	var tab model.RouteTable
 
-	err := discovery.Default.GetValue(model.ConfigPath, &tab)
+	err := discovery.Default.GetValue(model.ConfigPath, &tab, discovery.Option{
+		NoCache: true,
+	})
 	if err != nil {
 		return err
 	}

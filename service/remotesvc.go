@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"sync"
 )
@@ -73,21 +74,31 @@ func VisitRemoteService(callback func(ses cellnet.Session, ctx *RemoteServiceCon
 	connBySvcNameGuard.RUnlock()
 }
 
-// 获得一个远程服务会话的外网地址
-func GetRemoteServiceWANAddress(ses cellnet.Session, matchSvcGroup string) string {
-
+// 根据远程服务的session，获取服务发现信息
+func GetRemoteServiceDesc(ses cellnet.Session, matchSvcGroup string) *discovery.ServiceDesc {
 	ctx := SessionToContext(ses)
 
 	if ctx == nil {
-		return ""
+		return nil
 	}
 
 	for _, sd := range DiscoveryService(LinkRules, ctx.Name, matchSvcGroup) {
 
 		if sd.ID == ctx.SvcID {
-			return sd.GetMeta("WANAddress")
+			return sd
 		}
 
+	}
+
+	return nil
+}
+
+// 获得一个远程服务会话的外网地址
+func GetRemoteServiceWANAddress(ses cellnet.Session, matchSvcGroup string) string {
+
+	sd := GetRemoteServiceDesc(ses, matchSvcGroup)
+	if sd != nil {
+		sd.GetMeta("WANAddress")
 	}
 
 	return ""
