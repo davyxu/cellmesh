@@ -74,12 +74,7 @@ func VisitRemoteService(callback func(ses cellnet.Session, ctx *RemoteServiceCon
 }
 
 // 获得一个远程服务会话的外网地址
-func GetRemoteServiceWANAddress(ses cellnet.Session, forceSelfGroup bool) string {
-
-	var matchSvcGroup string
-	if forceSelfGroup {
-		matchSvcGroup = GetSvcGroup()
-	}
+func GetRemoteServiceWANAddress(ses cellnet.Session, matchSvcGroup string) string {
 
 	ctx := SessionToContext(ses)
 

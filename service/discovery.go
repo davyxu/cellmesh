@@ -84,8 +84,8 @@ func DiscoveryService(rules []MatchRule, svcName string, matchSvcGroup string) (
 }
 
 type DiscoveryOption struct {
-	MaxCount       int  // 连接数，默认发起多条连接
-	ForceSelfGroup bool // 默认只找与自己同组的服务
+	MaxCount      int    // 连接数，默认发起多条连接
+	MatchSvcGroup string // 空时，匹配所有同类服务，否则找指定组的服务
 }
 
 // 发现一个服务，服务可能拥有多个地址，每个地址返回时，创建一个connector并开启
@@ -97,12 +97,7 @@ func DiscoveryConnector(rules []MatchRule, tgtSvcName string, opt DiscoveryOptio
 	notify := discovery.Default.RegisterNotify("add")
 	for {
 
-		var matchSvcGroup string
-		if opt.ForceSelfGroup {
-			matchSvcGroup = GetSvcGroup()
-		}
-
-		descList := DiscoveryService(rules, tgtSvcName, matchSvcGroup)
+		descList := DiscoveryService(rules, tgtSvcName, opt.MatchSvcGroup)
 
 		// 保持服务发现中的所有连接
 		for _, sd := range descList {

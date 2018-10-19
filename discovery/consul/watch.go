@@ -106,7 +106,10 @@ func (self *consulDiscovery) onServiceChanged(u uint64, data interface{}) {
 	var newList []*discovery.ServiceDesc
 
 	for _, detail := range svcDetails {
-		newList = append(newList, consulSvcToService(detail.Service))
+		if isServiceHealth(detail) {
+			newList = append(newList, consulSvcToService(detail.Service))
+		}
+
 	}
 
 	var oldList []*discovery.ServiceDesc
