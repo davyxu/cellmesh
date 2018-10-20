@@ -98,7 +98,7 @@ func GetRemoteServiceWANAddress(ses cellnet.Session, matchSvcGroup string) strin
 
 	sd := GetRemoteServiceDesc(ses, matchSvcGroup)
 	if sd != nil {
-		sd.GetMeta("WANAddress")
+		return sd.GetMeta("WANAddress")
 	}
 
 	return ""
