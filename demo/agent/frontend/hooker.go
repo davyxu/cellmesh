@@ -33,14 +33,12 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 		// 通知后台客户端关闭
 		u := model.SessionToUser(inputEvent.Session())
 		if u != nil {
-			for _, backend := range u.Targets {
-				backend.Session.Send(proto.ClientClosedACK{
-					ID: proto.ClientID{
-						ID:    inputEvent.Session().ID(),
-						SvcID: model.AgentSvcID,
-					},
-				})
-			}
+			u.BroadcastToBackends(&proto.ClientClosedACK{
+				ID: proto.ClientID{
+					ID:    inputEvent.Session().ID(),
+					SvcID: model.AgentSvcID,
+				},
+			})
 		}
 
 	default:
@@ -69,18 +67,15 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 
 			case "auth":
 
+				// 从客户端过来的会话取得绑定的用户
 				u := model.SessionToUser(inputEvent.Session())
 
 				if u != nil {
 
-					backendSes := u.GetBackend(rule.SvcName)
+					u.RelayToService(rule.SvcName, incomingMsg)
 
-					if backendSes != nil {
-						relay.Relay(backendSes, incomingMsg, &clientID)
-					} else {
-						log.Warnf("Route target not found, msg: '%s' mode: 'auth'", msgType.Name())
-					}
-
+				} else {
+					// 这是一个未授权的用户发授权消息,可以踢掉
 				}
 
 			}

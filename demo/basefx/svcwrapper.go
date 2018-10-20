@@ -7,6 +7,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
+	"time"
 )
 
 var (
@@ -50,6 +51,8 @@ func CreateCommnicateConnector(tgtSvcName string, opt service.DiscoveryOption) {
 				msgFunc(ev)
 			}
 		})
+
+		p.(cellnet.TCPConnector).SetReconnectDuration(time.Second * 3)
 
 		p.Start()
 
