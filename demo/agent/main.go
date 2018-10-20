@@ -29,8 +29,7 @@ func main() {
 
 	// 要连接的服务列表
 	basefx.CreateCommnicateConnector("game", service.DiscoveryOption{
-		MaxCount:       -1,
-		ForceSelfGroup: false,
+		MaxCount: -1,
 	})
 
 	frontend.Start(kvconfig.String(discovery.Default, "cm_demo/config/addr_agentfrontend", ":8001~8101"))

@@ -9,52 +9,30 @@ import (
 // 将客户端连接绑定到后台服务
 func bindClientToBackend(backendSes cellnet.Session, clientSesID int64) {
 
+	// 将客户端的id转为session
 	clientSes := model.GetClientSession(clientSesID)
+
+	// 客户端已经断开了
 	if clientSes == nil {
 		return
 	}
 
+	// 取得后台服务的信息
 	sd := service.SessionToContext(backendSes)
 	if sd == nil {
 		log.Errorln("backend sd not found")
 		return
 	}
 
+	// 从客户端的会话取得用户
 	u := model.SessionToUser(clientSes)
 
-	if u != nil {
-		u.SetBackend(sd.Name, backendSes)
-	} else {
+	// 第一次绑定
+	if u == nil {
 		u = model.CreateUser(clientSes)
-		u.AddBackend(sd.Name, backendSes)
 	}
 
-}
-
-// 恢复后台连接
-func recoverBackend(backendSes cellnet.Session, svcName string) {
-
-	model.VisitUser(func(u *model.User) bool {
-		u.SetBackend(svcName, backendSes)
-
-		return true
-	})
-
-}
-
-// 移除玩家对应的后台连接
-func removeBackend(backendSes cellnet.Session) {
-
-	ctx := service.SessionToContext(backendSes)
-	if ctx == nil {
-		log.Errorln("backend sd not found")
-		return
-	}
-
-	model.VisitUser(func(u *model.User) bool {
-		u.SetBackend(ctx.Name, nil)
-
-		return true
-	})
+	// 更新绑定后台服务的svcid
+	u.SetBackend(sd.Name, sd.SvcID)
 
 }
