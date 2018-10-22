@@ -6,13 +6,14 @@ import (
 	"strings"
 )
 
+// 注册到服务发现的服务描述
 type ServiceDesc struct {
 	Name string
 	ID   string // 所有service中唯一的id
 	Host string
 	Port int
-	Tags []string // 标签
-	Meta map[string]string
+	Tags []string          // 分类标签
+	Meta map[string]string // 细节配置
 }
 
 func (self *ServiceDesc) ContainTags(tag string) bool {

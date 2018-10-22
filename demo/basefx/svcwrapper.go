@@ -41,7 +41,9 @@ func CreateCommnicateConnector(tgtSvcName string, opt service.DiscoveryOption) {
 
 	msgFunc := proto.GetMessageHandler(svcName)
 
-	go service.DiscoveryConnector(service.LinkRules, tgtSvcName, opt, func(sd *discovery.ServiceDesc) cellnet.Peer {
+	opt.Rules = service.LinkRules
+
+	go service.DiscoveryConnector(tgtSvcName, opt, func(sd *discovery.ServiceDesc) cellnet.Peer {
 
 		p := peer.NewGenericPeer("tcp.Connector", svcName, sd.Address(), nil)
 
