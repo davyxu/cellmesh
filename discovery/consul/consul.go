@@ -13,17 +13,14 @@ type consulDiscovery struct {
 	config *Config
 
 	// 与consul的服务保持实时同步
-	cache      sync.Map // map[string][]*discovery.ServiceDesc
-	cacheGuard sync.Mutex
+	svcCache       sync.Map // map[string][]*discovery.ServiceDesc
+	svcCacheGuard  sync.Mutex
+	svcNameWatcher sync.Map //map[string]*watch.Plan
 
-	// 备用
-	fullCache      []*discovery.ServiceDesc
-	fullCacheGuard sync.RWMutex
+	kvCache sync.Map // map[string]*KVPair
 
-	nameWatcher sync.Map //map[string]*watch.Plan
-	localSvc    sync.Map // map[string]*localService
-
-	ready bool
+	// 本地服务的心跳
+	localSvc sync.Map // map[string]*localService
 
 	notifyMap sync.Map // key=mode+c value=chan struct{}
 
@@ -35,44 +32,10 @@ func (self *consulDiscovery) Raw() interface{} {
 	return self.client
 }
 
-// 检查Consul自己挂掉
-func (self *consulDiscovery) consulChecker() {
-
-	self.ready = true
-
-	for {
-
-		_, _, err := self.client.Health().Service("consul", "", false, nil)
-
-		var thisReady bool
-
-		if err == nil {
-			thisReady = true
-		}
-
-		switch {
-		case self.ready == true && thisReady == false: // 宕机
-			log.Warnf("Consul not reachable...")
-
-		case self.ready == false && thisReady == true: // 恢复
-			log.Warnf("Consul recovered, reregistering service...")
-
-			// 恢复注册，虽然Consul有持久化，但是在宕机期间有注册时，还是需要重新注册
-			self.Recover()
-		}
-
-		if thisReady != self.ready {
-			self.ready = thisReady
-		}
-
-		time.Sleep(time.Second)
-
-	}
-}
-
 func (self *consulDiscovery) WaitReady() {
 
 	for {
+
 		_, _, err := self.client.Health().Service("consul", "", false, nil)
 
 		if err == nil {
@@ -104,8 +67,8 @@ func NewDiscovery(config interface{}) discovery.Discovery {
 
 	self.WaitReady()
 
-	self.startWatch()
-	//self.startRefresh()
+	self.startWatchService()
+	self.startWatchKV()
 
 	return self
 }

@@ -6,21 +6,21 @@ import (
 	"github.com/hashicorp/consul/watch"
 )
 
-func (self *consulDiscovery) startWatch() {
+func (self *consulDiscovery) startWatchService() {
 
 	plan, err := watch.Parse(map[string]interface{}{"type": "services"})
 	if err != nil {
-		log.Errorln("startWatch:", err)
+		log.Errorln("startWatchService:", err)
 		return
 	}
 
-	plan.Handler = self.onNameListChanged
+	plan.Handler = self.onSvcNameListChanged
 
 	go plan.Run(self.config.Address)
 
 }
 
-func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
+func (self *consulDiscovery) onSvcNameListChanged(u uint64, data interface{}) {
 	svcNames, ok := data.(map[string][]string)
 	if !ok {
 		return
@@ -29,7 +29,7 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 	for svcName := range svcNames {
 
 		// 已经对这种名称的服务创建了watcher的跳过
-		if _, ok := self.nameWatcher.Load(svcName); ok {
+		if _, ok := self.svcNameWatcher.Load(svcName); ok {
 			continue
 		}
 
@@ -45,7 +45,7 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 
 			//log.Debugf("Watch service '%s' begin", svcName)
 
-			self.nameWatcher.Store(svcName, plan)
+			self.svcNameWatcher.Store(svcName, plan)
 		}
 	}
 
@@ -53,7 +53,7 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 
 	for {
 
-		self.nameWatcher.Range(func(key, value interface{}) bool {
+		self.svcNameWatcher.Range(func(key, value interface{}) bool {
 
 			svcName := key.(string)
 			plan := value.(*watch.Plan)
@@ -75,16 +75,16 @@ func (self *consulDiscovery) onNameListChanged(u uint64, data interface{}) {
 			break
 		}
 
-		self.nameWatcher.Delete(foundSvc)
+		self.svcNameWatcher.Delete(foundSvc)
 
-		if raw, ok := self.cache.Load(foundSvc); ok {
+		if raw, ok := self.svcCache.Load(foundSvc); ok {
 			for _, svc := range raw.([]*discovery.ServiceDesc) {
 				self.OnCacheUpdated("remove", svc)
 			}
 		}
 
 		// 删除这个名字的所有缓冲的服务
-		self.cache.Delete(foundSvc)
+		self.svcCache.Delete(foundSvc)
 
 		foundSvc = ""
 	}
@@ -98,8 +98,8 @@ func (self *consulDiscovery) onServiceChanged(u uint64, data interface{}) {
 	}
 
 	// 防止多次触发时，并发写入cache内列表时互相覆盖
-	self.cacheGuard.Lock()
-	defer self.cacheGuard.Unlock()
+	self.svcCacheGuard.Lock()
+	defer self.svcCacheGuard.Unlock()
 
 	svcName := svcDetails[0].Service.Service
 
@@ -113,11 +113,11 @@ func (self *consulDiscovery) onServiceChanged(u uint64, data interface{}) {
 	}
 
 	var oldList []*discovery.ServiceDesc
-	if raw, ok := self.cache.Load(svcName); ok {
+	if raw, ok := self.svcCache.Load(svcName); ok {
 		oldList = raw.([]*discovery.ServiceDesc)
 	}
 
-	self.cache.Store(svcName, newList)
+	self.svcCache.Store(svcName, newList)
 
 	for _, oldSvc := range oldList {
 

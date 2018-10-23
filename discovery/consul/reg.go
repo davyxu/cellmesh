@@ -7,7 +7,7 @@ import (
 
 func (self *consulDiscovery) Register(svc *discovery.ServiceDesc) error {
 
-	log.Debugf("Register service, %s", svc.String())
+	//log.Debugf("Register service, %s", svc.String())
 
 	var checker api.AgentServiceCheck
 	checker.CheckID = svc.ID
@@ -57,7 +57,7 @@ func (self *consulDiscovery) Deregister(svcid string) error {
 		self.localSvc.Delete(svcid)
 	}
 
-	log.Debugf("Deregister service, id: %s", svcid)
+	//log.Debugf("Deregister service, id: %s", svcid)
 
 	return self.client.Agent().ServiceDeregister(svcid)
 }

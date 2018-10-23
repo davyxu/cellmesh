@@ -38,10 +38,7 @@ func Init(name string) {
 
 	LinkRules = ParseMatchRule(linkRule)
 
-	if !*flagDebugMode {
-		golog.SetLevelByString("consul", "info")
-	}
-
+	log.Debugln("Connect to consul...")
 	sdConfig := consulsd.DefaultConfig()
 	sdConfig.Address = *flagDiscoveryAddr
 	discovery.Default = consulsd.NewDiscovery(sdConfig)

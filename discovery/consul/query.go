@@ -5,43 +5,13 @@ import (
 	"time"
 )
 
-func (self *consulDiscovery) startRefresh() {
-
-	for {
-
-		time.Sleep(time.Second * 3)
-
-		newList := self.QueryAll()
-
-		self.fullCacheGuard.Lock()
-		self.fullCache = newList
-		self.fullCacheGuard.Unlock()
-
-		self.OnCacheUpdated("add", nil)
-	}
-
-}
-
-func (self *consulDiscovery) queryFromCache(name string) (ret []*discovery.ServiceDesc) {
-	self.fullCacheGuard.RLock()
-	for _, sd := range self.fullCache {
-		if sd.Name == name {
-			ret = append(ret, sd)
-		}
-	}
-	self.fullCacheGuard.RUnlock()
-
-	return
-}
-
 func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc) {
 
-	if raw, ok := self.cache.Load(name); ok {
+	if raw, ok := self.svcCache.Load(name); ok {
 		ret = raw.([]*discovery.ServiceDesc)
 	}
-	return
 
-	//return self.queryFromCache(name)
+	return
 }
 
 func (self *consulDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
