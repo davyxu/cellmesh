@@ -80,7 +80,7 @@ func Filter_MatchSvcID(svcid string) FilterFunc {
 			return QueryResult(desc)
 		}
 
-		return QueryResult((*discovery.ServiceDesc)(nil))
+		return true
 	}
 }
 

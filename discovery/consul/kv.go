@@ -47,6 +47,10 @@ func (self *consulDiscovery) GetRawValue(key string) ([]byte, error) {
 			return nil, err
 		}
 
+		if kvpair == nil {
+			return nil, ErrValueNotExists
+		}
+
 		return kvpair.Value, nil
 	}
 }

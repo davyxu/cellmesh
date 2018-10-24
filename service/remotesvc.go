@@ -10,9 +10,12 @@ type RemoteServiceContext struct {
 	SvcID string
 }
 
+type NotifyFunc func(ctx *RemoteServiceContext, ses cellnet.Session)
+
 var (
 	connBySvcID        = map[string]cellnet.Session{}
 	connBySvcNameGuard sync.RWMutex
+	removeNotify       NotifyFunc
 )
 
 func AddRemoteService(ses cellnet.Session, svcid, name string) {
@@ -27,14 +30,29 @@ func AddRemoteService(ses cellnet.Session, svcid, name string) {
 
 func RemoveRemoteService(ses cellnet.Session) {
 
-	desc := SessionToContext(ses)
-	if desc != nil {
+	ctx := SessionToContext(ses)
+	if ctx != nil {
+
+		if removeNotify != nil {
+			removeNotify(ctx, ses)
+		}
 
 		connBySvcNameGuard.Lock()
-		delete(connBySvcID, desc.SvcID)
+		delete(connBySvcID, ctx.SvcID)
 		connBySvcNameGuard.Unlock()
 
-		log.SetColor("yellow").Debugf("remote service removed '%s'", desc.SvcID)
+		log.SetColor("yellow").Debugf("remote service removed '%s'", ctx.SvcID)
+	}
+}
+
+// 设置服务的通知
+func SetRemoteServiceNotify(mode string, callback NotifyFunc) {
+
+	switch mode {
+	case "remove":
+		removeNotify = callback
+	default:
+		panic("unknown notify mode")
 	}
 }
 
