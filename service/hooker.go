@@ -27,12 +27,11 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 
 		var sd *discovery.ServiceDesc
 		if ctx.FetchContext("sd", &sd) {
-			property := inputEvent.Session().Peer().(cellnet.PeerProperty)
 
 			// 用Connector的名称（一般是ProcName）让远程知道自己是什么服务，用于网关等需要反向发送消息的标识
-			inputEvent.Session().Send(ServiceIdentifyACK{
-				SvcName: property.Name(),
-				SvcID:   MakeLocalSvcID(property.Name()),
+			inputEvent.Session().Send(&ServiceIdentifyACK{
+				SvcName: GetProcName(),
+				SvcID:   GetLocalSvcID(),
 			})
 
 			AddRemoteService(inputEvent.Session(), sd.ID, sd.Name)
