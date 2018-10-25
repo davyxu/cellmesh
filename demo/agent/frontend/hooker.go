@@ -49,17 +49,13 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 
 			switch rule.Mode {
 			case "pass":
-				clientID := proto.ClientID{
-					ID:    inputEvent.Session().ID(),
-					SvcID: model.AgentSvcID,
-				}
 
 				// TODO 挑选一台
 				service.VisitRemoteService(func(ses cellnet.Session, ctx *service.RemoteServiceContext) bool {
 
 					if ctx.Name == rule.SvcName {
 						// 透传消息
-						relay.Relay(ses, incomingMsg, &clientID)
+						relay.Relay(ses, incomingMsg, inputEvent.Session().ID(), model.AgentSvcID)
 					}
 
 					return true

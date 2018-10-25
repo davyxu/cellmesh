@@ -11,7 +11,7 @@ struct ServerInfo{
 }
 
 
-[AutoMsgID Codec:"json" Service: "login"]
+[AutoMsgID Codec:"protoplus" Service: "login"]
 struct LoginREQ {
     Version string
 	Platform string
@@ -19,7 +19,7 @@ struct LoginREQ {
 }
 
 
-[AutoMsgID Codec:"json"]
+[AutoMsgID Codec:"protoplus"]
 struct LoginACK {
 	Result ResultCode
 	Server ServerInfo
@@ -27,24 +27,24 @@ struct LoginACK {
 }
 
 
-[AutoMsgID Codec:"binary" Service: "game" RouteRule: "pass"]
+[AutoMsgID Codec:"protoplus" Service: "game" RouteRule: "pass"]
 struct VerifyREQ {
 	GameToken string
 }
 
 
-[AutoMsgID Codec:"binary"]
+[AutoMsgID Codec:"protoplus"]
 struct VerifyACK {
 	Result ResultCode
 }
 
 
-[AutoMsgID Codec:"binary" Service: "game" RouteRule: "auth"]
+[AutoMsgID Codec:"protoplus" Service: "game" RouteRule: "auth"]
 struct ChatREQ {
 	Content string
 }
 
-[AutoMsgID Codec:"binary"]
+[AutoMsgID Codec:"protoplus"]
 struct ChatACK{
 	Content string
 }

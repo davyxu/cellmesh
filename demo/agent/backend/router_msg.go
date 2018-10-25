@@ -53,32 +53,33 @@ func init() {
 	// 从后端服务器收到的消息
 	relay.SetBroadcaster(func(ev *relay.RecvMsgEvent) {
 
-		switch tgt := ev.PassThrough().(type) {
-		case int64: // 单发
-			ses := model.GetClientSession(tgt)
-			if ses != nil {
-				ses.Send(ev.Msg)
-			}
-		case []int64: // 列表广播
-
-			for _, sesid := range tgt {
+		// 列表广播
+		if value := ev.PassThroughAsInt64Slice(); value != nil {
+			for _, sesid := range value {
 				ses := model.GetClientSession(sesid)
 				if ses != nil {
 					ses.Send(ev.Msg)
 				}
 			}
+		}
 
-		case *proto.ClientID: // 原样回复
-			if tgt.SvcID == model.AgentSvcID {
-				ses := model.GetClientSession(tgt.ID)
+		// 原样回复
+		if svcid := ev.PassThroughAsString(); svcid != "" {
+			if svcid == model.AgentSvcID {
+				ses := model.GetClientSession(ev.PassThroughAsInt64())
 				if ses != nil {
 					ses.Send(ev.Msg)
 				}
 			} else {
-				panic(fmt.Sprintf("Recv backend msg not belong to this agent, expect '%s', got '%s'", model.AgentSvcID, tgt.SvcID))
+				panic(fmt.Sprintf("Recv backend msg not belong to this agent, expect '%s', got '%s'", model.AgentSvcID, svcid))
 			}
-		case nil: // 广播所有
-
+			// 单发
+		} else if clientSesID := ev.PassThroughAsInt64(); clientSesID != 0 {
+			ses := model.GetClientSession(clientSesID)
+			if ses != nil {
+				ses.Send(ev.Msg)
+			}
+		} else {
 			// TODO 只广播给认证用户?
 			model.FrontendSessionManager.VisitSession(func(clientSes cellnet.Session) bool {
 
@@ -87,8 +88,6 @@ func init() {
 				return true
 			})
 
-		default:
-			panic("Invalid backend passthrough format")
 		}
 
 	})

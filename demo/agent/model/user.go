@@ -40,7 +40,7 @@ func (self *User) RelayToService(svcName string, msg interface{}) {
 	backendSes := service.GetRemoteService(backendSvcid)
 
 	if backendSes != nil {
-		relay.Relay(backendSes, msg, &self.CID)
+		relay.Relay(backendSes, msg, self.CID.ID, self.CID.SvcID)
 	} else {
 		log.Warnf("Backend not found, msg: '%s' mode: 'auth'", cellnet.MessageToName(msg))
 	}

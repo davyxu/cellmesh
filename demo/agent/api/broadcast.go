@@ -28,7 +28,7 @@ func BroadcastAll(msg interface{}) {
 	service.VisitRemoteService(func(ses cellnet.Session, ctx *service.RemoteServiceContext) bool {
 
 		if ctx.Name == model.BackendName {
-			relay.Relay(ses, msg, nil)
+			relay.Relay(ses, msg)
 		}
 
 		return true

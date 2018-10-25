@@ -11,10 +11,12 @@ func HandleBackendMessage(userHandler func(ev cellnet.Event, cid proto.ClientID)
 
 	return func(ev cellnet.Event) {
 
-		if cid, ok := service.GetPassThrough(ev).(*proto.ClientID); ok {
-			userHandler(ev, *cid)
+		var cid proto.ClientID
+		if err := service.GetPassThrough(ev, &cid.ID, &cid.SvcID); err != nil {
+			log.Errorf("service.GetPassThrough %s", err)
 		} else {
-			panic("Invalid router upstreaming passthrough")
+			userHandler(ev, cid)
 		}
+
 	}
 }

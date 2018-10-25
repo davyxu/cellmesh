@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
@@ -24,13 +25,34 @@ func init() {
 	})
 }
 
+var (
+	ErrInvalidRelayMessage         = errors.New("invalid relay message")
+	ErrInvalidRelayPassthroughType = errors.New("invalid relay passthrough type")
+)
+
 // 获取Event中relay的透传数据
-func GetPassThrough(ev cellnet.Event) interface{} {
+func GetPassThrough(ev cellnet.Event, ptrList ...interface{}) error {
 	if relayEvent, ok := ev.(*relay.RecvMsgEvent); ok {
-		return relayEvent.PassThrough()
+
+		for _, ptr := range ptrList {
+
+			switch valuePtr := ptr.(type) {
+			case *int64:
+				*valuePtr = relayEvent.PassThroughAsInt64()
+			case *[]int64:
+				*valuePtr = relayEvent.PassThroughAsInt64Slice()
+			case *string:
+				*valuePtr = relayEvent.PassThroughAsString()
+			default:
+				return ErrInvalidRelayPassthroughType
+			}
+		}
+
+		return nil
+	} else {
+		return ErrInvalidRelayMessage
 	}
 
-	return nil
 }
 
 // 回复event来源一个消息

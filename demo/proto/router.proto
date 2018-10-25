@@ -1,30 +1,30 @@
-[AutoMsgID Codec:"binary"]
+[AutoMsgID Codec:"protoplus"]
 struct ClientID {
     ID 		int64	// 客户端在网关上的SessionID
 	SvcID 	string	// 客户端在哪个网关
 }
 
 // backend ->agent 将用户绑定到后台连接
-[AutoMsgID Codec:"binary" Service: "agent"]
+[AutoMsgID Codec:"protoplus" Service: "agent"]
 struct BindBackendACK {
     ID int64	
 }
 
 
 // backend ->agent 切断用户连接
-[AutoMsgID Codec:"binary" Service: "agent"]
+[AutoMsgID Codec:"protoplus" Service: "agent"]
 struct CloseClientACK {
     ID []int64
 	All bool
 }
 
 // agent -> backend 客户端断开
-[AutoMsgID Codec:"binary"]
+[AutoMsgID Codec:"protoplus"]
 struct ClientClosedACK {
     ID 	ClientID
 }
 
 // client -> agent 客户端Ping
-[AutoMsgID Codec:"binary" Service: "agent_frontend"]
+[AutoMsgID Codec:"protoplus" Service: "agent_frontend"]
 struct PingACK {    
 }

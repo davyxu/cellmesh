@@ -16,7 +16,7 @@ func init() {
 
 		fmt.Printf("verfiy: %+v \n", msg.GameToken)
 
-		ev.Session().Send(proto.BindBackendACK{ID: cid.ID})
+		ev.Session().Send(&proto.BindBackendACK{ID: cid.ID})
 
 		service.Reply(ev, &proto.VerifyACK{})
 	})
