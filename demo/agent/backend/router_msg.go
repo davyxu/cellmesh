@@ -53,7 +53,7 @@ func init() {
 	// 从后端服务器收到的消息
 	relay.SetBroadcaster(func(ev *relay.RecvMsgEvent) {
 
-		switch tgt := ev.PassThrough.(type) {
+		switch tgt := ev.PassThrough().(type) {
 		case int64: // 单发
 			ses := model.GetClientSession(tgt)
 			if ses != nil {

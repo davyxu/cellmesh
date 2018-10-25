@@ -27,7 +27,7 @@ func init() {
 // 获取Event中relay的透传数据
 func GetPassThrough(ev cellnet.Event) interface{} {
 	if relayEvent, ok := ev.(*relay.RecvMsgEvent); ok {
-		return relayEvent.PassThrough
+		return relayEvent.PassThrough()
 	}
 
 	return nil

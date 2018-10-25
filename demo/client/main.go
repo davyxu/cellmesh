@@ -43,7 +43,7 @@ func getAgentSession(agentAddr string) (ret cellnet.Session) {
 	log.Debugln("Prepare agent connection...")
 
 	waitGameReady := make(chan struct{})
-	go service.KeepConnection(agentAddr, agentAddr, func(ses cellnet.Session) {
+	go service.KeepConnection("agent", agentAddr, func(ses cellnet.Session) {
 		ret = ses
 		waitGameReady <- struct{}{}
 	}, func() {
