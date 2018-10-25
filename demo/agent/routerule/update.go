@@ -2,6 +2,7 @@ package routerule
 
 import (
 	"github.com/davyxu/cellmesh/demo/agent/model"
+	"github.com/davyxu/cellmesh/demo/table"
 	"github.com/davyxu/cellmesh/discovery"
 )
 
@@ -10,7 +11,7 @@ func Download() error {
 
 	log.Debugf("Download route rule from discovery...")
 
-	var tab model.RouteTable
+	var tab table.RouteTable
 
 	err := discovery.Default.GetValue(model.ConfigPath, &tab)
 	if err != nil {

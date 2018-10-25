@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	agentmodel "github.com/davyxu/cellmesh/demo/agent/model"
+	"github.com/davyxu/cellmesh/demo/table"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/consul"
 	"github.com/davyxu/golog"
@@ -14,15 +14,15 @@ import (
 )
 
 // 从Proto文件中获取路由信息
-func GenRouteTable(dset *model.DescriptorSet) (ret *agentmodel.RouteTable) {
+func GenRouteTable(dset *model.DescriptorSet) (ret *table.RouteTable) {
 
-	ret = new(agentmodel.RouteTable)
+	ret = new(table.RouteTable)
 
 	for _, d := range dset.Structs() {
 
 		if d.TagValueString("RouteRule") != "" && d.TagValueString("Service") != "" {
 
-			ret.Rule = append(ret.Rule, &agentmodel.RouteRule{
+			ret.Rule = append(ret.Rule, &table.RouteRule{
 				MsgName: d.Name,
 				SvcName: d.TagValueString("Service"),
 				Mode:    d.TagValueString("RouteRule"),
@@ -34,7 +34,7 @@ func GenRouteTable(dset *model.DescriptorSet) (ret *agentmodel.RouteTable) {
 }
 
 // 上传路由表到consul KV
-func UploadRouteTable(tab *agentmodel.RouteTable) error {
+func UploadRouteTable(tab *table.RouteTable) error {
 
 	data, err := json.MarshalIndent(tab, "", "\t")
 
@@ -59,7 +59,7 @@ func main() {
 
 	dset := new(model.DescriptorSet)
 
-	var routeTable *agentmodel.RouteTable
+	var routeTable *table.RouteTable
 
 	err := util.ParseFileList(dset)
 

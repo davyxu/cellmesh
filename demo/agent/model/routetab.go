@@ -1,31 +1,22 @@
 package model
 
-import "sync"
+import (
+	"github.com/davyxu/cellmesh/demo/table"
+	"sync"
+)
 
 const (
 	ConfigPath = "cm_demo/config/agent/route_rule"
 )
 
-// 路由规则
-type RouteRule struct {
-	MsgName string
-	SvcName string
-	Mode    string // auth: 需要授权 pass: 可通过
-}
-
-// 路由表，包含多条路由规则
-type RouteTable struct {
-	Rule []*RouteRule
-}
-
 var (
 	// 消息名映射路由规则
-	ruleByMsgName      = map[string]*RouteRule{}
+	ruleByMsgName      = map[string]*table.RouteRule{}
 	ruleByMsgNameGuard sync.RWMutex
 )
 
 // 消息名取路由规则
-func GetTargetService(msgName string) *RouteRule {
+func GetTargetService(msgName string) *table.RouteRule {
 
 	ruleByMsgNameGuard.RLock()
 	defer ruleByMsgNameGuard.RUnlock()
@@ -41,12 +32,12 @@ func GetTargetService(msgName string) *RouteRule {
 func ClearRule() {
 
 	ruleByMsgNameGuard.Lock()
-	ruleByMsgName = map[string]*RouteRule{}
+	ruleByMsgName = map[string]*table.RouteRule{}
 	ruleByMsgNameGuard.Unlock()
 }
 
 // 添加路由规则
-func AddRouteRule(rule *RouteRule) {
+func AddRouteRule(rule *table.RouteRule) {
 
 	ruleByMsgNameGuard.Lock()
 	ruleByMsgName[rule.MsgName] = rule
