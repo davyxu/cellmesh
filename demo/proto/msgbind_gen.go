@@ -19,12 +19,6 @@ var (
 	Handle_Agent_Default        func(ev cellnet.Event)
 )
 
-// agent_frontend
-var (
-	Handle_Agent_frontend_PingACK = func(ev cellnet.Event) { panic("'PingACK' not handled") }
-	Handle_Agent_frontend_Default func(ev cellnet.Event)
-)
-
 // game
 var (
 	Handle_Game_ChatREQ   = func(ev cellnet.Event) { panic("'ChatREQ' not handled") }
@@ -51,17 +45,6 @@ func GetMessageHandler(svcName string) cellnet.EventCallback {
 			default:
 				if Handle_Agent_Default != nil {
 					Handle_Agent_Default(ev)
-				}
-			}
-		}
-	case "agent_frontend":
-		return func(ev cellnet.Event) {
-			switch ev.Message().(type) {
-			case *PingACK:
-				Handle_Agent_frontend_PingACK(ev)
-			default:
-				if Handle_Agent_frontend_Default != nil {
-					Handle_Agent_frontend_Default(ev)
 				}
 			}
 		}

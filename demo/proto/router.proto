@@ -25,6 +25,6 @@ struct ClientClosedACK {
 }
 
 // client -> agent 客户端Ping
-[AutoMsgID Codec:"protoplus" Service: "agent_frontend"]
+[AutoMsgID Codec:"protoplus"]
 struct PingACK {    
 }

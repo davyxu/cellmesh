@@ -10,6 +10,7 @@ import (
 	"github.com/davyxu/cellnet/proc/tcp"
 	"github.com/davyxu/cellnet/relay"
 	"reflect"
+	"time"
 )
 
 type RelayUpMsgHooker struct {
@@ -40,7 +41,14 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 				},
 			})
 		}
+	case *proto.PingACK:
+		u := model.SessionToUser(inputEvent.Session())
+		if u != nil {
+			u.LastPingTime = time.Now()
 
+			// 回消息
+			inputEvent.Session().Send(&proto.PingACK{})
+		}
 	default:
 		msgType := reflect.TypeOf(incomingMsg).Elem()
 

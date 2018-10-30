@@ -6,21 +6,26 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/timer"
 	"github.com/davyxu/golog"
 	"os"
 	"strings"
+	"time"
 )
 
 var log = golog.New("main")
 
+// 登录服务器是一个短连接服务器,获取到网关连接后就断开
 func login() (agentAddr string) {
 
 	log.Debugln("Create login connection...")
 
+	// 这里为了方便,使用服务发现来连接login, 真正的客户端不应该使用服务发现,而是使用固定的登录地址连接登录服务器
 	loginReq := service.CreateConnection("login")
 
 	// TODO 短连接请求完毕关闭
 
+	// 封装连接和接收以及超时的过程,真正的客户端可以添加这套机制
 	service.RemoteCall(loginReq, &proto.LoginREQ{
 		Version:  "1.0",
 		Platform: "demo",
@@ -95,6 +100,12 @@ func main() {
 
 		fmt.Println(ack)
 	})
+
+	//
+	timer.NewLoop(nil, time.Second*5, func(loop *timer.Loop) {
+		agentReq.Send(&proto.PingACK{})
+
+	}, nil).Start()
 
 	ReadConsole(func(s string) {
 
