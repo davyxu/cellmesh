@@ -44,7 +44,11 @@ func (self *localService) Update() {
 
 			// 注意，consul这里有bug https://github.com/hashicorp/consul/issues/1057
 			// 只有在status变化和有服务加入时，status才能及时更新，但是output依然不能及时更新
-			self.agent.UpdateTTL(self.Desc.ID, output, status)
+			if err := self.agent.UpdateTTL(self.Desc.ID, output, status); err != nil {
+
+				// 在服务器休眠后恢复时,尝试重新向Consul注册服务
+				self.sd.Register(self.Desc)
+			}
 
 			time.Sleep(self.sd.config.ServiceTTL)
 		}
