@@ -7,11 +7,11 @@ import (
 	"github.com/davyxu/cellmesh/demo/agent/model"
 	"github.com/davyxu/cellmesh/demo/agent/routerule"
 	"github.com/davyxu/cellmesh/demo/basefx"
+	"github.com/davyxu/cellmesh/demo/basefx/model"
 	_ "github.com/davyxu/cellmesh/demo/proto" // 进入协议
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/kvconfig"
 	"github.com/davyxu/cellmesh/service"
-	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/golog"
 )
 
@@ -19,7 +19,7 @@ var log = golog.New("main")
 
 func main() {
 
-	service.Init("agent")
+	basefx.Init("agent")
 
 	routerule.Download()
 
@@ -28,14 +28,16 @@ func main() {
 	model.AgentSvcID = service.MakeLocalSvcID(model.BackendName)
 
 	// 要连接的服务列表
-	basefx.CreateCommnicateConnector("game", service.DiscoveryOption{
-		MaxCount: -1,
+	basefx.CreateCommnicateConnector(fxmodel.ServiceParameter{
+		SvcName:      "game",
+		MaxConnCount: -1,
 	})
 
 	frontend.Start(kvconfig.String(discovery.Default, "cm_demo/config/addr_agentfrontend", ":8001~8101"))
 
-	util.WaitExit()
+	basefx.StartLoop()
 
 	frontend.Stop()
-	basefx.StopAllPeers()
+
+	basefx.Exit()
 }
