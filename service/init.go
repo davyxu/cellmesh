@@ -8,6 +8,9 @@ import (
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
 	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 )
 
 func Init(name string) {
@@ -22,6 +25,12 @@ func Init(name string) {
 		linkRule = *flagSvcGroup
 	} else {
 		linkRule = *flagLinkRule
+	}
+
+	// 设置文件日志
+	if *flagLogFile != "" {
+		log.Infof("LogFile: %s", *flagLogFile)
+		golog.SetOutputToFile(".", *flagLogFile)
 	}
 
 	workdir, _ := os.Getwd()
@@ -44,8 +53,40 @@ func Init(name string) {
 	discovery.Default = consulsd.NewDiscovery(sdConfig)
 
 	// 彩色日志
-	if *flagColorLog {
+	if *flagLogColor {
 		golog.SetColorDefine(".", msglog.LogColorDefine)
 		golog.EnableColorLogger(".", true)
 	}
+
+	// 设置日志级别
+	if *flagLogLevel != "" {
+
+		if rawstr := strings.Split(*flagLogLevel, "|"); len(rawstr) == 2 {
+
+			if err := golog.SetLevelByString(rawstr[0], rawstr[1]); err != nil {
+				log.Warnln("SetLevelByString:", err)
+			} else {
+				log.Infoln("SetLevelByString:", rawstr[0], rawstr[1])
+			}
+		} else {
+			log.Errorln("Invalid log level cli fomat, require 'name level'")
+		}
+	}
+
+	// 禁用指定消息名的消息日志
+	if *flagMuteMsgLog != "" {
+
+		if err, count := msglog.BlockMessageLog(*flagMuteMsgLog); err != nil {
+			log.Warnln("BlockMessageLog: ", err)
+		} else {
+			log.Infoln("BlockMessageLog:", count)
+		}
+	}
+}
+
+func WaitExitSignal() {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	<-ch
 }

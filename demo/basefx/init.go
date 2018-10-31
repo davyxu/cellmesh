@@ -4,9 +4,6 @@ import (
 	"github.com/davyxu/cellmesh/demo/basefx/model"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 // 初始化框架
@@ -21,10 +18,7 @@ func Init(procName string) {
 
 // 等待退出信号
 func StartLoop() {
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-
-	<-ch
+	service.WaitExitSignal()
 }
 
 // 退出处理
