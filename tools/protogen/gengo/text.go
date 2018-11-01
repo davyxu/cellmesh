@@ -8,11 +8,17 @@ package {{.PackageName}}
 
 import (	
 	"github.com/davyxu/cellnet"	
+	"github.com/davyxu/cellnet/codec"
+	_ "github.com/davyxu/cellnet/codec/protoplus"
+	_ "github.com/davyxu/cellnet/codec/gogopb"
+	"reflect"
 )
 
 // Make compiler import happy
 var(
 	_ cellnet.Event
+	_ codec.CodecRecycler
+	_ reflect.Type
 )
 
 {{range ServiceGroup $}}
@@ -41,4 +47,15 @@ func GetMessageHandler(svcName string) cellnet.EventCallback {
 
 	return nil
 }
+
+
+func init() {
+	{{range .Structs}} {{ if IsMessage . }}
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("{{StructCodec .}}"),	
+		Type:  reflect.TypeOf((*{{.Name}})(nil)).Elem(),
+		ID:    {{StructMsgID .}},
+	}) {{end}} {{end}}
+}
+
 `

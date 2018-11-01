@@ -5,8 +5,13 @@ struct ServerInfo{
     Port    int32
 }
 
+// client -> agent 客户端Ping
+[AutoMsgID Codec:"gogopb"]
+struct PingACK {
+}
 
-[AutoMsgID Codec:"protoplus" Service: "login"]
+
+[AutoMsgID Codec:"gogopb" Service: "login"]
 struct LoginREQ {
     Version string
 	Platform string
@@ -14,7 +19,7 @@ struct LoginREQ {
 }
 
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID Codec:"gogopb"]
 struct LoginACK {
 	Result ResultCode
 	Server ServerInfo
@@ -22,13 +27,13 @@ struct LoginACK {
 }
 
 
-[AutoMsgID Codec:"protoplus" Service: "game" RouteRule: "pass"]
+[AutoMsgID Codec:"gogopb" Service: "game" RouteRule: "pass"]
 struct VerifyREQ {
 	GameToken string
 }
 
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID Codec:"gogopb"]
 struct VerifyACK {
 	Result ResultCode
 }

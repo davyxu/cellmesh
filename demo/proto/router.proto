@@ -24,7 +24,3 @@ struct ClientClosedACK {
     ID 	ClientID
 }
 
-// client -> agent 客户端Ping
-[AutoMsgID Codec:"protoplus"]
-struct PingACK {    
-}

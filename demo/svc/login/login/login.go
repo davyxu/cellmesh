@@ -29,8 +29,10 @@ func init() {
 		// TODO 按照游戏负载选择游戏地址
 		finalDesc := gameList[0]
 
-		ack.Server.IP = finalDesc.Host
-		ack.Server.Port = int32(finalDesc.Port)
+		ack.Server = &proto.ServerInfo{
+			IP:   finalDesc.Host,
+			Port: int32(finalDesc.Port),
+		}
 
 		service.Reply(ev, &ack)
 	}

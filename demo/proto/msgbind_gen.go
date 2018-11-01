@@ -5,11 +5,17 @@ package proto
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
+	_ "github.com/davyxu/cellnet/codec/protoplus"
+	_ "github.com/davyxu/cellnet/codec/gogopb"
+	"reflect"
 )
 
 // Make compiler import happy
 var (
 	_ cellnet.Event
+	_ codec.CodecRecycler
+	_ reflect.Type
 )
 
 // agent
@@ -112,4 +118,78 @@ func GetMessageHandler(svcName string) cellnet.EventCallback {
 	}
 
 	return nil
+}
+
+func init() {
+
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("gogopb"),
+		Type:  reflect.TypeOf((*PingACK)(nil)).Elem(),
+		ID:    16241,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("gogopb"),
+		Type:  reflect.TypeOf((*LoginREQ)(nil)).Elem(),
+		ID:    18837,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("gogopb"),
+		Type:  reflect.TypeOf((*LoginACK)(nil)).Elem(),
+		ID:    46204,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("gogopb"),
+		Type:  reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
+		ID:    13457,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("gogopb"),
+		Type:  reflect.TypeOf((*VerifyACK)(nil)).Elem(),
+		ID:    40824,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("gogopb"),
+		Type:  reflect.TypeOf((*ChatREQ)(nil)).Elem(),
+		ID:    29052,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("gogopb"),
+		Type:  reflect.TypeOf((*ChatACK)(nil)).Elem(),
+		ID:    56419,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*ClientID)(nil)).Elem(),
+		ID:    44352,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*BindBackendACK)(nil)).Elem(),
+		ID:    5768,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*CloseClientACK)(nil)).Elem(),
+		ID:    58040,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*ClientClosedACK)(nil)).Elem(),
+		ID:    50844,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*SubscribeChannelREQ)(nil)).Elem(),
+		ID:    27927,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*SubscribeChannelACK)(nil)).Elem(),
+		ID:    55294,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*SvcStatusACK)(nil)).Elem(),
+		ID:    50227,
+	})
 }

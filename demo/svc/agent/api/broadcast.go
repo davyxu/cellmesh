@@ -52,7 +52,7 @@ func (self *ClientList) CloseClient() {
 
 		agentSes := service.GetRemoteService(agentSvcID)
 		if agentSes != nil {
-			agentSes.Send(proto.CloseClientACK{
+			agentSes.Send(&proto.CloseClientACK{
 				ID: sesList,
 			})
 		}
