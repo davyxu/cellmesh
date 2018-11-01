@@ -1,0 +1,7 @@
+// 添加Service属性的消息会在生成接收代码封装,同时加到路由表中
+
+enum ResultCode
+{
+	NoError = 0
+	GameNotReady = 101
+}

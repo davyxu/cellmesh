@@ -7,11 +7,17 @@ then
 	exit 1
 fi
 
+CURRDIR=`pwd`
+cd ../../../../..
+export GOPATH=`pwd`
+
 # 错误退出
 set -e
 
 # 编译
-go build -v -o=${GOPATH}/bin/${Name} github.com/davyxu/cellmesh/demo/${Name}
+go build -v -o=${GOPATH}/src/github.com/davyxu/cellmesh/demo/bin/${Name} github.com/davyxu/cellmesh/demo/svc/${Name}
+
+mkdir -p ${GOPATH}/src/github.com/davyxu/cellmesh/demo/bin
 
 # 启动
-${GOPATH}/bin/${Name} -colorlog
+${GOPATH}/src/github.com/davyxu/cellmesh/demo/bin/${Name} -logcolor

@@ -42,11 +42,12 @@ func UploadRouteTable(tab *table.RouteTable) error {
 		return err
 	}
 
+	fmt.Printf("Write '%s'", *flagConfigPath)
 	return discovery.Default.SetValue(*flagConfigPath, string(data))
 }
 
 var (
-	flagConfigPath = flag.String("configpath", "config/agent/route_rule", "consul kv config path")
+	flagConfigPath = flag.String("configpath", "config_demo/route_rule", "consul kv config path")
 )
 
 func main() {

@@ -1,0 +1,34 @@
+// 添加Service属性的消息会在生成接收代码封装,同时加到路由表中
+
+struct ServerInfo{
+    IP      string
+    Port    int32
+}
+
+
+[AutoMsgID Codec:"protoplus" Service: "login"]
+struct LoginREQ {
+    Version string
+	Platform string
+	UID string
+}
+
+
+[AutoMsgID Codec:"protoplus"]
+struct LoginACK {
+	Result ResultCode
+	Server ServerInfo
+	GameToken string
+}
+
+
+[AutoMsgID Codec:"protoplus" Service: "game" RouteRule: "pass"]
+struct VerifyREQ {
+	GameToken string
+}
+
+
+[AutoMsgID Codec:"protoplus"]
+struct VerifyACK {
+	Result ResultCode
+}

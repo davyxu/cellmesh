@@ -26,7 +26,12 @@ func CreateCommnicateAcceptor(param fxmodel.ServiceParameter) cellnet.Peer {
 		param.NetProcName = "tcp.svc"
 	}
 
-	p := peer.NewGenericPeer("tcp.Acceptor", param.SvcName, param.ListenAddr, fxmodel.Queue)
+	var q cellnet.EventQueue
+	if !param.NoQueue {
+		q = fxmodel.Queue
+	}
+
+	p := peer.NewGenericPeer("tcp.Acceptor", param.SvcName, param.ListenAddr, q)
 
 	msgFunc := proto.GetMessageHandler(param.SvcName)
 
@@ -63,11 +68,21 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 		MaxCount: param.MaxConnCount,
 	}
 
+	// 强制匹配自己的组
+	if *fxmodel.FlagSelfGroup {
+		opt.MatchSvcGroup = service.GetSvcGroup()
+	}
+
 	opt.Rules = service.LinkRules
+
+	var q cellnet.EventQueue
+	if !param.NoQueue {
+		q = fxmodel.Queue
+	}
 
 	go service.DiscoveryConnector(param.SvcName, opt, func(sd *discovery.ServiceDesc) cellnet.Peer {
 
-		p := peer.NewGenericPeer(param.NetPeerType, param.SvcName, sd.Address(), fxmodel.Queue)
+		p := peer.NewGenericPeer(param.NetPeerType, param.SvcName, sd.Address(), q)
 
 		proc.BindProcessorHandler(p, param.NetProcName, func(ev cellnet.Event) {
 

@@ -1,0 +1,18 @@
+
+[AutoMsgID Codec:"protoplus" Service: "hub"]
+struct SubscribeChannelREQ {
+	Channel string
+}
+
+[AutoMsgID Codec:"protoplus"]
+struct SubscribeChannelACK{
+	Channel string
+}
+
+
+[AutoMsgID Codec:"protoplus" Service: "login|match"]
+struct SvcStatusACK{
+    SvcID       string
+	UserCount   int32
+}
+

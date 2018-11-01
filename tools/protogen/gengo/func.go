@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/protoplus/gen"
 	"github.com/davyxu/protoplus/model"
 	"sort"
+	"strings"
 	"text/template"
 )
 
@@ -21,12 +22,30 @@ func init() {
 
 	FuncMap["ServiceGroup"] = func(ctx *gen.Context) (ret []linq.Group) {
 
-		linq.From(ctx.Structs()).WhereT(func(d *model.Descriptor) bool {
-			return d.TagValueString("Service") != ""
-		}).GroupByT(func(d *model.Descriptor) interface{} {
-			return d.TagValueString("Service")
-		}, func(d *model.Descriptor) interface{} {
-			return d
+		type RecvPair struct {
+			Recv string
+			d    *model.Descriptor
+		}
+
+		var pairs []*RecvPair
+
+		for _, d := range ctx.Structs() {
+
+			recvList := d.TagValueString("Service")
+
+			if recvList == "" {
+				continue
+			}
+
+			for _, recv := range strings.Split(recvList, "|") {
+				pairs = append(pairs, &RecvPair{recv, d})
+			}
+		}
+
+		linq.From(pairs).GroupByT(func(pair *RecvPair) interface{} {
+			return pair.Recv
+		}, func(pair *RecvPair) interface{} {
+			return pair.d
 		}).SortT(func(a, b linq.Group) bool {
 
 			asvc := a.Key.(string)

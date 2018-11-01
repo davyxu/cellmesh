@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 echo "
-demo.proto \
-router.proto
+result.proto \
+router.proto \
+login.proto \
+hub.proto \
+chat.proto
 "

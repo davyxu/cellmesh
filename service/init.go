@@ -19,6 +19,11 @@ func Init(name string) {
 
 	flag.Parse()
 
+	// 开发期优先从LocalFlag作用flag
+	ApplyFlagFromFile(*flagFlagFile)
+
+	flag.Parse()
+
 	var linkRule string
 
 	if *flagLinkRule == "" {
@@ -47,7 +52,7 @@ func Init(name string) {
 
 	LinkRules = ParseMatchRule(linkRule)
 
-	log.Debugln("Connect to consul...")
+	log.Debugln("Connecting to consul...")
 	sdConfig := consulsd.DefaultConfig()
 	sdConfig.Address = *flagDiscoveryAddr
 	discovery.Default = consulsd.NewDiscovery(sdConfig)

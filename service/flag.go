@@ -30,4 +30,7 @@ var (
 
 	// 屏蔽消息日志
 	flagMuteMsgLog = flag.String("mutemsglog", "", "do not show msg log, splite by '|', support regexp")
+
+	// 批量设置flag
+	flagFlagFile = flag.String("flagfile", "../cfg/LocalFlag.cfg", "flagfile to init flag values")
 )

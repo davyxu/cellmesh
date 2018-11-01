@@ -26,10 +26,23 @@ var (
 	Handle_Game_Default   func(ev cellnet.Event)
 )
 
+// hub
+var (
+	Handle_Hub_SubscribeChannelREQ = func(ev cellnet.Event) { panic("'SubscribeChannelREQ' not handled") }
+	Handle_Hub_Default             func(ev cellnet.Event)
+)
+
 // login
 var (
-	Handle_Login_LoginREQ = func(ev cellnet.Event) { panic("'LoginREQ' not handled") }
-	Handle_Login_Default  func(ev cellnet.Event)
+	Handle_Login_LoginREQ     = func(ev cellnet.Event) { panic("'LoginREQ' not handled") }
+	Handle_Login_SvcStatusACK = func(ev cellnet.Event) { panic("'SvcStatusACK' not handled") }
+	Handle_Login_Default      func(ev cellnet.Event)
+)
+
+// match
+var (
+	Handle_Match_SvcStatusACK = func(ev cellnet.Event) { panic("'SvcStatusACK' not handled") }
+	Handle_Match_Default      func(ev cellnet.Event)
 )
 
 func GetMessageHandler(svcName string) cellnet.EventCallback {
@@ -61,14 +74,38 @@ func GetMessageHandler(svcName string) cellnet.EventCallback {
 				}
 			}
 		}
+	case "hub":
+		return func(ev cellnet.Event) {
+			switch ev.Message().(type) {
+			case *SubscribeChannelREQ:
+				Handle_Hub_SubscribeChannelREQ(ev)
+			default:
+				if Handle_Hub_Default != nil {
+					Handle_Hub_Default(ev)
+				}
+			}
+		}
 	case "login":
 		return func(ev cellnet.Event) {
 			switch ev.Message().(type) {
 			case *LoginREQ:
 				Handle_Login_LoginREQ(ev)
+			case *SvcStatusACK:
+				Handle_Login_SvcStatusACK(ev)
 			default:
 				if Handle_Login_Default != nil {
 					Handle_Login_Default(ev)
+				}
+			}
+		}
+	case "match":
+		return func(ev cellnet.Event) {
+			switch ev.Message().(type) {
+			case *SvcStatusACK:
+				Handle_Match_SvcStatusACK(ev)
+			default:
+				if Handle_Match_Default != nil {
+					Handle_Match_Default(ev)
 				}
 			}
 		}

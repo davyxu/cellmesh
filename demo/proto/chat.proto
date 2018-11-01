@@ -1,0 +1,10 @@
+
+[AutoMsgID Codec:"protoplus" Service: "game" RouteRule: "auth"]
+struct ChatREQ {
+	Content string
+}
+
+[AutoMsgID Codec:"protoplus"]
+struct ChatACK{
+	Content string
+}
