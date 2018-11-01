@@ -20,6 +20,19 @@ func init() {
 		return d.TagValueString("Service")
 	}
 
+	FuncMap["ProtoImportList"] = func(ctx *gen.Context) (ret []string) {
+
+		linq.From(ctx.Structs()).WhereT(func(d *model.Descriptor) bool {
+			return d.TagValueString("Codec") != ""
+		}).SelectT(func(d *model.Descriptor) string {
+			return d.TagValueString("Codec")
+		}).DistinctByT(func(d string) string {
+			return d
+		}).ToSlice(&ret)
+
+		return
+	}
+
 	FuncMap["ServiceGroup"] = func(ctx *gen.Context) (ret []linq.Group) {
 
 		type RecvPair struct {

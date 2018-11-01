@@ -6,8 +6,8 @@ package proto
 import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	_ "github.com/davyxu/cellnet/codec/protoplus"
 	_ "github.com/davyxu/cellnet/codec/gogopb"
+	_ "github.com/davyxu/cellnet/codec/protoplus"
 	"reflect"
 )
 

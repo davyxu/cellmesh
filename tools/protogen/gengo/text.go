@@ -8,9 +8,8 @@ package {{.PackageName}}
 
 import (	
 	"github.com/davyxu/cellnet"	
-	"github.com/davyxu/cellnet/codec"
-	_ "github.com/davyxu/cellnet/codec/protoplus"
-	_ "github.com/davyxu/cellnet/codec/gogopb"
+	"github.com/davyxu/cellnet/codec"{{range ProtoImportList $}}
+	_ "github.com/davyxu/cellnet/codec/{{.}}"{{end}}
 	"reflect"
 )
 
