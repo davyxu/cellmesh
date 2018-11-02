@@ -12,41 +12,65 @@ type DiscoveryOption struct {
 }
 
 // 发现一个服务，服务可能拥有多个地址，每个地址返回时，创建一个connector并开启
-func DiscoveryConnector(tgtSvcName string, opt DiscoveryOption, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) {
+// DiscoveryService返回值返回持有多个Peer的peer, 判断Peer的IsReady可以得到所有连接准备好的状态
+func DiscoveryService(tgtSvcName string, opt DiscoveryOption, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) cellnet.Peer {
 
 	// 从发现到连接有一个过程，需要用Map防止还没连上，又创建一个新的连接
-	connectorBySvcID := newConnSet()
+	multiPeer := newMultiPeer()
 
-	notify := discovery.Default.RegisterNotify("add")
-	for {
+	go func() {
 
-		QueryService(tgtSvcName,
-			Filter_MatchRule(opt.Rules),
-			Filter_MatchSvcGroup(opt.MatchSvcGroup),
-			func(desc *discovery.ServiceDesc) interface{} {
+		notify := discovery.Default.RegisterNotify("add")
+		for {
 
-				// 同一个svcid，永久对应一个connector，断开后自动重连
-				if connectorBySvcID.Get(desc.ID) == nil {
+			QueryService(tgtSvcName,
+				Filter_MatchRule(opt.Rules),
+				Filter_MatchSvcGroup(opt.MatchSvcGroup),
+				func(desc *discovery.ServiceDesc) interface{} {
+
+					prePeer := multiPeer.GetPeer(desc.ID)
+
+					// 如果svcid重复汇报, 可能svcid内容有变化
+					if prePeer != nil {
+
+						var preDesc *discovery.ServiceDesc
+						if prePeer.(cellnet.ContextSet).FetchContext("sd", &preDesc) && !preDesc.Equals(desc) {
+
+							log.Infof("service '%s' change desc, %+v -> %+v...", desc.ID, preDesc, desc)
+
+							// 移除之前的连接
+							multiPeer.RemovePeer(desc.ID)
+
+							// 停止重连
+							prePeer.Stop()
+
+						} else {
+							return true
+						}
+
+					}
 
 					// 达到最大连接
-					if opt.MaxCount > 0 && connectorBySvcID.Count() >= opt.MaxCount {
+					if opt.MaxCount > 0 && len(multiPeer.GetPeers()) >= opt.MaxCount {
 						return true
 					}
 
+					// 用户创建peer
 					p := peerCreator(desc)
 
 					if p != nil {
 						contextSet := p.(cellnet.ContextSet)
 						contextSet.SetContext("sd", desc)
-						contextSet.SetContext("connSet", connectorBySvcID)
-						connectorBySvcID.Add(desc.ID, p)
+						multiPeer.AddPeer(desc.ID, p)
 					}
 
-				}
+					return true
+				})
 
-				return true
-			})
+			<-notify
+		}
 
-		<-notify
-	}
+	}()
+
+	return multiPeer
 }

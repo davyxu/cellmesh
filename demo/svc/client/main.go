@@ -113,7 +113,7 @@ func main() {
 			Content: s,
 		}, func(ack *proto.ChatACK) {
 
-			fmt.Println(ack)
+			fmt.Println(ack.Content)
 		})
 
 	})

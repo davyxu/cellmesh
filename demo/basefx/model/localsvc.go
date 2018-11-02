@@ -16,6 +16,18 @@ func AddLocalService(p cellnet.Peer) {
 	localServicesGuard.Unlock()
 }
 
+func RemoveLocalService(p cellnet.Peer) {
+	localServicesGuard.Lock()
+	for index, libp := range localServices {
+		if libp == p {
+			localServices = append(localServices[:index], localServices[index+1:]...)
+			break
+		}
+
+	}
+	localServicesGuard.Unlock()
+}
+
 func GetLocalService(svcName string) cellnet.Peer {
 
 	localServicesGuard.RLock()

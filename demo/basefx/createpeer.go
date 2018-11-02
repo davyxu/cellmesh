@@ -77,11 +77,7 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 		q = fxmodel.Queue
 	}
 
-	mp := fxmodel.NewMultiPeer(param)
-
-	fxmodel.AddLocalService(mp)
-
-	go service.DiscoveryConnector(param.SvcName, opt, func(sd *discovery.ServiceDesc) cellnet.Peer {
+	mp := service.DiscoveryService(param.SvcName, opt, func(sd *discovery.ServiceDesc) cellnet.Peer {
 
 		p := peer.NewGenericPeer(param.NetPeerType, param.SvcName, sd.Address(), q)
 
@@ -100,9 +96,11 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 
 		p.Start()
 
-		mp.Add(p)
-
 		return p
 	})
+
+	mp.(service.MultiPeer).SetContext(param)
+
+	fxmodel.AddLocalService(mp)
 
 }

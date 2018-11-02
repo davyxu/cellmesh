@@ -6,11 +6,9 @@ import (
 	_ "github.com/davyxu/cellmesh/demo/svc/game/chat"
 	_ "github.com/davyxu/cellmesh/demo/svc/game/verify"
 	"github.com/davyxu/cellmesh/demo/svc/hub/api"
-	"github.com/davyxu/cellmesh/demo/svc/hub/status"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/kvconfig"
 	"github.com/davyxu/golog"
-	"time"
 )
 
 var log = golog.New("main")
@@ -27,9 +25,9 @@ func main() {
 	hubapi.ConnectToHub(func() {
 
 		// 开始接收game状态
-		hubstatus.StartSendStatus("game_status", time.Second*3, func() int {
-			return 100
-		})
+		//hubstatus.StartSendStatus("game_status", time.Second*3, func() int {
+		//	return 100
+		//})
 	})
 
 	basefx.StartLoop(nil)

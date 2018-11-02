@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -14,6 +15,35 @@ type ServiceDesc struct {
 	Port int
 	Tags []string          // 分类标签
 	Meta map[string]string // 细节配置
+}
+
+func (self *ServiceDesc) Equals(sd *ServiceDesc) bool {
+
+	if sd.ID != self.ID {
+		return false
+	}
+
+	if sd.Port != self.Port {
+		return false
+	}
+
+	if sd.Name != self.Name {
+		return false
+	}
+
+	if sd.Host != self.Host {
+		return false
+	}
+
+	if !reflect.DeepEqual(self.Tags, sd.Tags) {
+		return false
+	}
+
+	if !reflect.DeepEqual(self.Meta, sd.Meta) {
+		return false
+	}
+
+	return true
 }
 
 func (self *ServiceDesc) ContainTags(tag string) bool {
