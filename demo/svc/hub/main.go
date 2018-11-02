@@ -20,7 +20,7 @@ func main() {
 		ListenAddr: kvconfig.String(discovery.Default, "config_demo/addr_hub", ":0"),
 	})
 
-	basefx.StartLoop()
+	basefx.StartLoop(nil)
 
 	basefx.Exit()
 }

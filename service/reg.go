@@ -45,11 +45,10 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 
 	log.SetColor("green").Debugf("service '%s' listen at port: %d", sd.ID, sd.Port)
 
-	// 有同名的要先解除注册，再注册，防止watch不触发
-	discovery.Default.Deregister(sd.ID)
-
 	p.(cellnet.ContextSet).SetContext("sd", sd)
 
+	// 有同名的要先解除注册，再注册，防止watch不触发
+	discovery.Default.Deregister(sd.ID)
 	err := discovery.Default.Register(sd)
 	if err != nil {
 		log.Errorf("service register failed, %s %s", sd.String(), err.Error())

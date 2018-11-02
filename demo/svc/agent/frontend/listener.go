@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"github.com/davyxu/cellmesh/demo/basefx/model"
 	"github.com/davyxu/cellmesh/demo/svc/agent/model"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/service"
@@ -29,6 +30,8 @@ func Start(addr string) {
 
 	// 服务发现注册服务
 	service.Register(clientListener)
+
+	fxmodel.AddLocalService(clientListener)
 }
 
 func Stop() {

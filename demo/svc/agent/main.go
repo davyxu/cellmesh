@@ -35,7 +35,7 @@ func main() {
 
 	frontend.Start(kvconfig.String(discovery.Default, "config_demo/addr_agentfrontend", ":8001~8101"))
 
-	basefx.StartLoop()
+	basefx.StartLoop(nil)
 
 	frontend.Stop()
 

@@ -25,7 +25,7 @@ func AddRemoteService(ses cellnet.Session, svcid, name string) {
 	connBySvcID[svcid] = ses
 	connBySvcNameGuard.Unlock()
 
-	log.SetColor("green").Debugf("remote service added: '%s'", svcid)
+	log.SetColor("green").Infof("remote service added: '%s' sid: %d", svcid, ses.ID())
 }
 
 func RemoveRemoteService(ses cellnet.Session) {
@@ -41,7 +41,7 @@ func RemoveRemoteService(ses cellnet.Session) {
 		delete(connBySvcID, ctx.SvcID)
 		connBySvcNameGuard.Unlock()
 
-		log.SetColor("yellow").Debugf("remote service removed '%s'", ctx.SvcID)
+		log.SetColor("yellow").Infof("remote service removed '%s' sid: %d", ctx.SvcID, ses.ID())
 	}
 }
 

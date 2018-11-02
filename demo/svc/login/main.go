@@ -5,8 +5,8 @@ import (
 	"github.com/davyxu/cellmesh/demo/basefx/model"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/demo/svc/hub/api"
+	"github.com/davyxu/cellmesh/demo/svc/hub/status"
 	_ "github.com/davyxu/cellmesh/demo/svc/login/login"
-	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
 )
 
@@ -21,17 +21,13 @@ func main() {
 		ListenAddr: ":0",
 	})
 
-	proto.Handle_Login_SvcStatusACK = func(ev cellnet.Event) {
-
-		msg := ev.Message().(*proto.SvcStatusACK)
-		log.Debugln(msg.UserCount)
-	}
-
 	hubapi.ConnectToHub(func() {
-		hubapi.Subscribe("game_status")
+
+		// 开始接收game状态
+		hubstatus.StartRecvStatus("game_status", &proto.Handle_Login_SvcStatusACK)
 	})
 
-	basefx.StartLoop()
+	basefx.StartLoop(nil)
 
 	basefx.Exit()
 }

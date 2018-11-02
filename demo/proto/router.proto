@@ -1,4 +1,3 @@
-[AutoMsgID Codec:"protoplus"]
 struct ClientID {
     ID 		int64	// 客户端在网关上的SessionID
 	SvcID 	string	// 客户端在哪个网关
