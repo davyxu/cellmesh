@@ -22,7 +22,13 @@ type localService struct {
 	lastOutput string
 }
 
+const (
+	MaxReregisterTimes = 5
+)
+
 func (self *localService) Update() {
+
+	var reregisterTimes int
 
 	for {
 
@@ -46,8 +52,16 @@ func (self *localService) Update() {
 			// 只有在status变化和有服务加入时，status才能及时更新，但是output依然不能及时更新
 			if err := self.agent.UpdateTTL(self.Desc.ID, output, status); err != nil {
 
-				// 在服务器休眠后恢复时,尝试重新向Consul注册服务
-				self.sd.Register(self.Desc)
+				if reregisterTimes < MaxReregisterTimes {
+					// 在服务器休眠后恢复时,尝试重新向Consul注册服务
+					self.sd.Register(self.Desc)
+					reregisterTimes++
+				} else {
+					// 可能存在同名的svcid反复交叉注册
+					log.Errorf("Recover service '%s' failed", self.Desc.ID)
+				}
+			} else {
+				reregisterTimes = 0
 			}
 
 			time.Sleep(self.sd.config.ServiceTTL)

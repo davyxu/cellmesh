@@ -11,11 +11,6 @@ import (
 	"time"
 )
 
-var (
-	// 管理Acceptor的peer，方便关闭时去掉服务发现注册
-	peers []cellnet.Peer
-)
-
 func CreateCommnicateAcceptor(param fxmodel.ServiceParameter) cellnet.Peer {
 
 	if param.NetPeerType == "" {
@@ -43,7 +38,11 @@ func CreateCommnicateAcceptor(param fxmodel.ServiceParameter) cellnet.Peer {
 		}
 	})
 
-	peers = append(peers, p)
+	if opt, ok := p.(cellnet.TCPSocketOption); ok {
+		opt.SetSocketBuffer(2048, 2048, true)
+	}
+
+	fxmodel.AddLocalService(p)
 
 	p.Start()
 
@@ -60,9 +59,7 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 		param.NetProcName = "tcp.svc"
 	}
 
-	svcName := service.GetProcName()
-
-	msgFunc := proto.GetMessageHandler(svcName)
+	msgFunc := proto.GetMessageHandler(service.GetProcName())
 
 	opt := service.DiscoveryOption{
 		MaxCount: param.MaxConnCount,
@@ -80,6 +77,10 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 		q = fxmodel.Queue
 	}
 
+	mp := fxmodel.NewMultiPeer(param)
+
+	fxmodel.AddLocalService(mp)
+
 	go service.DiscoveryConnector(param.SvcName, opt, func(sd *discovery.ServiceDesc) cellnet.Peer {
 
 		p := peer.NewGenericPeer(param.NetPeerType, param.SvcName, sd.Address(), q)
@@ -91,18 +92,17 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 			}
 		})
 
+		if opt, ok := p.(cellnet.TCPSocketOption); ok {
+			opt.SetSocketBuffer(2048, 2048, true)
+		}
+
 		p.(cellnet.TCPConnector).SetReconnectDuration(time.Second * 3)
 
 		p.Start()
 
+		mp.Add(p)
+
 		return p
 	})
 
-}
-
-func StopAllPeers() {
-	for _, p := range peers {
-		service.Unregister(p)
-		p.Stop()
-	}
 }

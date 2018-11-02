@@ -17,11 +17,18 @@ func Init(procName string) {
 }
 
 // 等待退出信号
-func StartLoop() {
+func StartLoop(onReady func()) {
+
+	fxmodel.CheckReady()
+
+	if onReady != nil {
+		cellnet.QueuedCall(fxmodel.Queue, onReady)
+	}
+
 	service.WaitExitSignal()
 }
 
 // 退出处理
 func Exit() {
-	StopAllPeers()
+	fxmodel.StopAllService()
 }
