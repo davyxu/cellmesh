@@ -77,7 +77,7 @@ func CreateConnection(serviceName string) (ret cellnet.Session) {
 
 type connector interface {
 	cellnet.TCPConnector
-	IsReady() bool
+	cellnet.PeerReadyChecker
 }
 
 // 保持长连接

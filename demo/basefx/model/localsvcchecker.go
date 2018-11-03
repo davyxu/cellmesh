@@ -9,14 +9,10 @@ import (
 	"time"
 )
 
-type readyChecker interface {
-	IsReady() bool
-}
-
 func getPeerStatus(svc cellnet.Peer) string {
 
 	type myPeer interface {
-		readyChecker
+		cellnet.PeerReadyChecker
 		Name() string
 		Address() string
 		cellnet.Peer
@@ -85,7 +81,7 @@ func LocalServiceStatus() string {
 func IsAllReady() (ret bool) {
 	ret = true
 	VisitLocalService(func(svc cellnet.Peer) bool {
-		if !svc.(readyChecker).IsReady() {
+		if !svc.(cellnet.PeerReadyChecker).IsReady() {
 			ret = false
 			return false
 		}

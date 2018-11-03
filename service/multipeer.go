@@ -12,10 +12,6 @@ type MultiPeer interface {
 	GetContext() interface{}
 }
 
-type readyChecker interface {
-	IsReady() bool
-}
-
 type multiPeer struct {
 	peers      []cellnet.Peer
 	peersGuard sync.RWMutex
@@ -58,7 +54,7 @@ func (self *multiPeer) IsReady() bool {
 	}
 
 	for _, p := range peers {
-		if !p.(readyChecker).IsReady() {
+		if !p.(cellnet.PeerReadyChecker).IsReady() {
 			return false
 		}
 	}
