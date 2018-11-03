@@ -13,7 +13,7 @@ func HandleBackendMessage(userHandler func(ev cellnet.Event, cid proto.ClientID)
 
 		var cid proto.ClientID
 		if err := service.GetPassThrough(ev, &cid.ID, &cid.SvcID); err != nil {
-			log.Errorf("service.GetPassThrough %s", err)
+			log.Errorf("service.GetPassThrough error %s", err)
 		} else {
 			userHandler(ev, cid)
 		}

@@ -104,3 +104,17 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 	fxmodel.AddLocalService(mp)
 
 }
+
+func GetRemoteServiceWANAddress(svcName, svcid string) string {
+
+	result := service.QueryService(svcName,
+		service.Filter_MatchSvcID(svcid))
+
+	if result == nil {
+		return ""
+	}
+
+	desc := result.(*discovery.ServiceDesc)
+
+	return desc.GetMeta("WANAddress")
+}

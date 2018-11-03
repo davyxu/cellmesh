@@ -18,9 +18,11 @@ const (
 	statusUpdateTimeout = time.Second * 3
 )
 
-func StartRecvStatus(channelName string, svcStatusHandler *func(ev cellnet.Event)) {
+func StartRecvStatus(channelNames []string, svcStatusHandler *func(ev cellnet.Event)) {
 
-	hubapi.Subscribe(channelName)
+	for _, channelName := range channelNames {
+		hubapi.Subscribe(channelName)
+	}
 
 	*svcStatusHandler = func(ev cellnet.Event) {
 

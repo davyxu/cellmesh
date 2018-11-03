@@ -13,7 +13,7 @@ import (
 
 func Start(addr string) {
 
-	clientListener := peer.NewGenericPeer("tcp.Acceptor", model.FrontendName, addr, nil)
+	clientListener := peer.NewGenericPeer("tcp.Acceptor", "agent", addr, nil)
 
 	proc.BindProcessorHandler(clientListener, "tcp.frontend", nil)
 

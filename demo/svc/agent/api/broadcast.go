@@ -2,7 +2,6 @@ package agentapi
 
 import (
 	"github.com/davyxu/cellmesh/demo/proto"
-	"github.com/davyxu/cellmesh/demo/svc/agent/model"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/relay"
@@ -13,7 +12,7 @@ func CloseAllClient() {
 
 	service.VisitRemoteService(func(ses cellnet.Session, ctx *service.RemoteServiceContext) bool {
 
-		if ctx.Name == model.BackendName {
+		if ctx.Name == "agent" {
 			ses.Send(&proto.CloseClientACK{
 				All: true,
 			})
@@ -27,7 +26,7 @@ func CloseAllClient() {
 func BroadcastAll(msg interface{}) {
 	service.VisitRemoteService(func(ses cellnet.Session, ctx *service.RemoteServiceContext) bool {
 
-		if ctx.Name == model.BackendName {
+		if ctx.Name == "agent" {
 			relay.Relay(ses, msg)
 		}
 

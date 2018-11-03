@@ -4,10 +4,14 @@ import (
 	"github.com/davyxu/cellmesh/demo/basefx/model"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/msglog"
 )
 
 // 初始化框架
 func Init(procName string) {
+
+	msglog.BlockMessageLog("proto.PingACK")
+	msglog.BlockMessageLog("proto.SvcStatusACK")
 
 	fxmodel.Queue = cellnet.NewEventQueue()
 

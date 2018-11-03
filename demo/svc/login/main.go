@@ -24,7 +24,7 @@ func main() {
 	hubapi.ConnectToHub(func() {
 
 		// 开始接收game状态
-		hubstatus.StartRecvStatus("game_status", &proto.Handle_Login_SvcStatusACK)
+		hubstatus.StartRecvStatus([]string{"game_status", "agent_status"}, &proto.Handle_Login_SvcStatusACK)
 	})
 
 	basefx.StartLoop(nil)

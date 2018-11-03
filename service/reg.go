@@ -41,6 +41,9 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 
 	if GetWANIP() != "" {
 		sd.SetMeta("WANAddress", util.JoinAddress(GetWANIP(), sd.Port))
+	} else {
+		// 没有设外网IP时, 用本地IP
+		sd.SetMeta("WANAddress", util.JoinAddress(util.GetLocalIP(), sd.Port))
 	}
 
 	log.SetColor("green").Debugf("service '%s' listen at port: %d", sd.ID, sd.Port)

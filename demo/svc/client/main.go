@@ -6,6 +6,7 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/timer"
 	"github.com/davyxu/golog"
 	"os"
@@ -81,6 +82,8 @@ func ReadConsole(callback func(string)) {
 }
 
 func main() {
+
+	msglog.BlockMessageLog("proto.PingACK")
 
 	service.Init("client")
 
