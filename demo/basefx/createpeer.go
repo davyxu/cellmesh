@@ -26,7 +26,7 @@ func CreateCommnicateAcceptor(param fxmodel.ServiceParameter) cellnet.Peer {
 		q = fxmodel.Queue
 	}
 
-	p := peer.NewGenericPeer("tcp.Acceptor", param.SvcName, param.ListenAddr, q)
+	p := peer.NewGenericPeer(param.NetPeerType, param.SvcName, param.ListenAddr, q)
 
 	msgFunc := proto.GetMessageHandler(param.SvcName)
 
