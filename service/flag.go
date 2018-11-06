@@ -17,7 +17,7 @@ var (
 	flagSvcIndex = flag.Int("svcindex", 0, "Multi proc in group use index to seperate each other")
 
 	// 设置外网IP
-	flagWANIP = flag.String("wanip", "", "Client connect from extern ip")
+	flagWANIP = flag.String("wanip", "127.0.0.1", "Client connect from extern ip")
 
 	// 对日志上色
 	flagLogColor = flag.Bool("logcolor", false, "Make log in color in *nix")
