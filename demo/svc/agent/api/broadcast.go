@@ -34,12 +34,21 @@ func BroadcastAll(msg interface{}) {
 	})
 }
 
+// 给客户端发消息
+func Send(cid *proto.ClientID, msg interface{}) {
+
+	agentSes := service.GetRemoteService(cid.SvcID)
+	if agentSes != nil {
+		relay.Relay(agentSes, msg, cid.ID)
+	}
+}
+
 type ClientList struct {
 	sesByAgentSvcID map[string][]int64
 }
 
 // 添加客户端
-func (self *ClientList) AddClient(cid proto.ClientID) {
+func (self *ClientList) AddClient(cid *proto.ClientID) {
 	seslist := self.sesByAgentSvcID[cid.SvcID]
 	seslist = append(seslist, cid.ID)
 	self.sesByAgentSvcID[cid.SvcID] = seslist

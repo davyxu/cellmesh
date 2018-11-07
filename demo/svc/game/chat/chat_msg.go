@@ -15,8 +15,14 @@ func init() {
 
 		fmt.Printf("chat: %+v \n", msg.Content)
 
+		// 消息广播到网关并发给客户端
 		agentapi.BroadcastAll(&proto.ChatACK{
 			Content: msg.Content,
+		})
+
+		// 消息单发给客户端
+		agentapi.Send(&cid, &proto.TestACK{
+			Dummy: "single send",
 		})
 	})
 }

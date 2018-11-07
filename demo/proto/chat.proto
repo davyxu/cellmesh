@@ -8,3 +8,10 @@ struct ChatREQ {
 struct ChatACK{
 	Content string
 }
+
+
+
+[AutoMsgID Codec:"gogopb"]
+struct TestACK{
+	Dummy string
+}

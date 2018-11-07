@@ -155,6 +155,11 @@ func init() {
 		ID:    56419,
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("gogopb"),
+		Type:  reflect.TypeOf((*TestACK)(nil)).Elem(),
+		ID:    9315,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),
 		Type:  reflect.TypeOf((*CloseClientACK)(nil)).Elem(),
 		ID:    58040,
