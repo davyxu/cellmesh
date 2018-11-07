@@ -20,7 +20,6 @@ var (
 
 // agent
 var (
-	Handle_Agent_BindBackendACK = func(ev cellnet.Event) { panic("'BindBackendACK' not handled") }
 	Handle_Agent_CloseClientACK = func(ev cellnet.Event) { panic("'CloseClientACK' not handled") }
 	Handle_Agent_Default        func(ev cellnet.Event)
 )
@@ -57,8 +56,6 @@ func GetMessageHandler(svcName string) cellnet.EventCallback {
 	case "agent":
 		return func(ev cellnet.Event) {
 			switch ev.Message().(type) {
-			case *BindBackendACK:
-				Handle_Agent_BindBackendACK(ev)
 			case *CloseClientACK:
 				Handle_Agent_CloseClientACK(ev)
 			default:
@@ -156,11 +153,6 @@ func init() {
 		Codec: codec.MustGetCodec("gogopb"),
 		Type:  reflect.TypeOf((*ChatACK)(nil)).Elem(),
 		ID:    56419,
-	})
-	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec: codec.MustGetCodec("protoplus"),
-		Type:  reflect.TypeOf((*BindBackendACK)(nil)).Elem(),
-		ID:    5768,
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),

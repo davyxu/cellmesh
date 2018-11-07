@@ -3,12 +3,10 @@ package frontend
 import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/demo/svc/agent/model"
-	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
-	"github.com/davyxu/cellnet/relay"
 	"reflect"
 	"time"
 )
@@ -49,6 +47,17 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 			// 回消息
 			inputEvent.Session().Send(&proto.PingACK{})
 		}
+	case *proto.VerifyREQ:
+
+		u, err := bindClientToBackend(incomingMsg.GameSvcID, inputEvent.Session().ID())
+		if err == nil {
+
+			u.RelayToService(incomingMsg.GameSvcID, incomingMsg)
+
+		} else {
+			log.Errorln("bindClientToBackend", err)
+		}
+
 	default:
 		msgType := reflect.TypeOf(incomingMsg).Elem()
 
@@ -56,19 +65,6 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 		if rule := model.GetTargetService(msgType.Name()); rule != nil {
 
 			switch rule.Mode {
-			case "pass":
-
-				// TODO 挑选一台
-				service.VisitRemoteService(func(ses cellnet.Session, ctx *service.RemoteServiceContext) bool {
-
-					if ctx.Name == rule.SvcName {
-						// 透传消息
-						relay.Relay(ses, incomingMsg, inputEvent.Session().ID(), model.AgentSvcID)
-					}
-
-					return true
-				})
-
 			case "auth":
 
 				// 从客户端过来的会话取得绑定的用户
@@ -76,7 +72,7 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 
 				if u != nil {
 
-					u.RelayToService(rule.SvcName, incomingMsg)
+					u.RelayToService(u.GetBackend(rule.SvcName), incomingMsg)
 
 				} else {
 					// 这是一个未授权的用户发授权消息,可以踢掉

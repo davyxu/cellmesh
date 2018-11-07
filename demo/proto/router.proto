@@ -3,13 +3,6 @@ struct ClientID {
 	SvcID 	string	// 客户端在哪个网关
 }
 
-// backend ->agent 将用户绑定到后台连接
-[AutoMsgID Codec:"protoplus" Service: "agent"]
-struct BindBackendACK {
-    ID int64	
-}
-
-
 // backend ->agent 切断用户连接
 [AutoMsgID Codec:"protoplus" Service: "agent"]
 struct CloseClientACK {

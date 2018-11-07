@@ -39,7 +39,7 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 		}
 	}
 
-	if GetWANIP() != "127.0.0.1" {
+	if GetWANIP() != "" {
 		sd.SetMeta("WANAddress", util.JoinAddress(GetWANIP(), sd.Port))
 	}
 

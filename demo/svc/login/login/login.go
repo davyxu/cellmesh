@@ -17,21 +17,21 @@ func init() {
 
 		var ack proto.LoginACK
 
-		gameSvcID := hubstatus.SelectServiceByLowUserCount("agent", "", false)
-		if gameSvcID == "" {
-			ack.Result = proto.ResultCode_ServerNotFound
+		agentSvcID := hubstatus.SelectServiceByLowUserCount("agent", "", false)
+		if agentSvcID == "" {
+			ack.Result = proto.ResultCode_AgentNotFound
 
 			service.Reply(ev, &ack)
 			return
 		}
 
-		gameWAN := basefx.GetRemoteServiceWANAddress("agent", gameSvcID)
+		agentWAN := basefx.GetRemoteServiceWANAddress("agent", agentSvcID)
 
-		host, port, err := util.SpliteAddress(gameWAN)
+		host, port, err := util.SpliteAddress(agentWAN)
 		if err != nil {
-			log.Errorf("invalid address: '%s' %s", gameWAN, err.Error())
+			log.Errorf("invalid address: '%s' %s", agentWAN, err.Error())
 
-			ack.Result = proto.ResultCode_ServerAddressError
+			ack.Result = proto.ResultCode_AgentAddressError
 
 			service.Reply(ev, &ack)
 			return
@@ -40,6 +40,15 @@ func init() {
 		ack.Server = &proto.ServerInfo{
 			IP:   host,
 			Port: int32(port),
+		}
+
+		ack.GameSvcID = hubstatus.SelectServiceByLowUserCount("game", "", false)
+
+		if ack.GameSvcID == "" {
+			ack.Result = proto.ResultCode_GameNotFound
+
+			service.Reply(ev, &ack)
+			return
 		}
 
 		service.Reply(ev, &ack)

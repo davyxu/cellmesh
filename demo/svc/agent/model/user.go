@@ -33,9 +33,7 @@ func (self *User) BroadcastToBackends(msg interface{}) {
 	}
 }
 
-// 将消息发到绑定的某类服务器
-func (self *User) RelayToService(svcName string, msg interface{}) {
-	backendSvcid := self.GetBackend(svcName)
+func (self *User) RelayToService(backendSvcid string, msg interface{}) {
 
 	backendSes := service.GetRemoteService(backendSvcid)
 

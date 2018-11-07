@@ -58,6 +58,10 @@ func SetRemoteServiceNotify(mode string, callback NotifyFunc) {
 
 // 取得其他服务器的会话对应的上下文
 func SessionToContext(ses cellnet.Session) *RemoteServiceContext {
+	if ses == nil {
+		return nil
+	}
+
 	if raw, ok := ses.(cellnet.ContextSet).GetContext("ctx"); ok {
 		return raw.(*RemoteServiceContext)
 	}

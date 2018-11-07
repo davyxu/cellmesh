@@ -3,6 +3,7 @@
 enum ResultCode
 {
 	NoError = 0
-	ServerNotFound = 101
-	ServerAddressError
+	AgentNotFound = 101
+	AgentAddressError
+	GameNotFound
 }

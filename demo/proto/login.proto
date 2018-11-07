@@ -24,12 +24,14 @@ struct LoginACK {
 	Result ResultCode
 	Server ServerInfo
 	GameToken string
+	GameSvcID string // 选中的一台game服务器ID
 }
 
 
-[AutoMsgID Codec:"gogopb" Service: "game" RouteRule: "pass"]
+[AutoMsgID Codec:"gogopb" Service: "game"]
 struct VerifyREQ {
 	GameToken string
+	GameSvcID string
 }
 
 

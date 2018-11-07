@@ -49,36 +49,6 @@ func (self *ClientID) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt prot
 	return proto.ErrUnknownField
 }
 
-type BindBackendACK struct {
-	ID int64
-}
-
-func (self *BindBackendACK) String() string { return proto.CompactTextString(self) }
-
-func (self *BindBackendACK) Size() (ret int) {
-
-	ret += proto.SizeInt64(0, self.ID)
-
-	return
-}
-
-func (self *BindBackendACK) Marshal(buffer *proto.Buffer) error {
-
-	proto.MarshalInt64(buffer, 0, self.ID)
-
-	return nil
-}
-
-func (self *BindBackendACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
-	switch fieldIndex {
-	case 0:
-		return proto.UnmarshalInt64(buffer, wt, &self.ID)
-
-	}
-
-	return proto.ErrUnknownField
-}
-
 type CloseClientACK struct {
 	ID  []int64
 	All bool

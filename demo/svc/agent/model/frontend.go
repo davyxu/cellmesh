@@ -32,6 +32,10 @@ func CreateUser(clientSes cellnet.Session) *User {
 // 用session获取用户
 func SessionToUser(clientSes cellnet.Session) *User {
 
+	if clientSes == nil {
+		return nil
+	}
+
 	if raw, ok := clientSes.(cellnet.ContextSet).GetContext("user"); ok {
 		return raw.(*User)
 	}

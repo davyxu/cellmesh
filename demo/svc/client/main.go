@@ -17,7 +17,7 @@ import (
 var log = golog.New("main")
 
 // 登录服务器是一个短连接服务器,获取到网关连接后就断开
-func login() (agentAddr string) {
+func login() (agentAddr, gameSvcID string) {
 
 	log.Debugln("Create login connection...")
 
@@ -35,6 +35,7 @@ func login() (agentAddr string) {
 
 		if ack.Result == proto.ResultCode_NoError {
 			agentAddr = fmt.Sprintf("%s:%d", ack.Server.IP, ack.Server.Port)
+			gameSvcID = ack.GameSvcID
 		} else {
 			panic(ack.Result.String())
 		}
@@ -87,7 +88,7 @@ func main() {
 
 	service.Init("client")
 
-	agentAddr := login()
+	agentAddr, gameSvcID := login()
 
 	if agentAddr == "" {
 		return
@@ -99,6 +100,7 @@ func main() {
 
 	service.RemoteCall(agentReq, &proto.VerifyREQ{
 		GameToken: "verify",
+		GameSvcID: gameSvcID,
 	}, func(ack *proto.VerifyACK) {
 
 		fmt.Println(ack)
