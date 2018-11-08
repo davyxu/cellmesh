@@ -53,11 +53,9 @@ func init() {
 				if ses != nil {
 					ses.Send(ev.Msg)
 				}
-			}
-		}
-
-		// 原样回复
-		if svcid := ev.PassThroughAsString(); svcid != "" {
+			} 
+			// 原样回复
+		}else if svcid := ev.PassThroughAsString(); svcid != "" {
 			if svcid == model.AgentSvcID {
 				ses := model.GetClientSession(ev.PassThroughAsInt64())
 				if ses != nil {
