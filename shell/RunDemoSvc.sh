@@ -14,10 +14,13 @@ export GOPATH=`pwd`
 # 错误退出
 set -e
 
-# 编译
-go build -v -o=${GOPATH}/src/github.com/davyxu/cellmesh/demo/bin/${Name} github.com/davyxu/cellmesh/demo/svc/${Name}
-
 mkdir -p ${GOPATH}/src/github.com/davyxu/cellmesh/demo/bin
 
-# 启动
-${GOPATH}/src/github.com/davyxu/cellmesh/demo/bin/${Name} -logcolor
+# 工作路径需要在bin下
+cd ${GOPATH}/src/github.com/davyxu/cellmesh/demo/bin
+
+# 编译
+go build -v -o=./${Name} github.com/davyxu/cellmesh/demo/svc/${Name}
+
+# 在bin下启动服务器
+./${Name}
