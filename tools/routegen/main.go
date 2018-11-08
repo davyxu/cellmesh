@@ -9,6 +9,7 @@ import (
 	"github.com/davyxu/cellmesh/discovery/consul"
 	"github.com/davyxu/golog"
 	"github.com/davyxu/protoplus/model"
+	"github.com/davyxu/protoplus/msgidutil"
 	"github.com/davyxu/protoplus/util"
 	"os"
 )
@@ -26,6 +27,7 @@ func GenRouteTable(dset *model.DescriptorSet) (ret *table.RouteTable) {
 				MsgName: d.Name,
 				SvcName: d.TagValueString("Service"),
 				Mode:    d.TagValueString("RouteRule"),
+				MsgID:   msgidutil.StructMsgID(d),
 			})
 		}
 	}
@@ -50,6 +52,10 @@ var (
 	flagConfigPath = flag.String("configpath", "config_demo/route_rule", "consul kv config path")
 )
 
+var (
+	flagPackage = flag.String("package", "", "package name in source files")
+)
+
 func main() {
 
 	flag.Parse()
@@ -59,6 +65,7 @@ func main() {
 	golog.SetLevelByString("consul", "info")
 
 	dset := new(model.DescriptorSet)
+	dset.PackageName = *flagPackage
 
 	var routeTable *table.RouteTable
 

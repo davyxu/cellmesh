@@ -39,4 +39,4 @@ rm -f ./clientmsg_gen.proto
 
 
 echo "更新agent路由表"
-${RouteGen} -configpath=config_demo/route_rule `source ./protolist.sh client`
+${RouteGen} -package=proto -configpath=config_demo/route_rule `source ./protolist.sh client`

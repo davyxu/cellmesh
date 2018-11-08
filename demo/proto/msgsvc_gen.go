@@ -116,6 +116,64 @@ func (self *ClientClosedACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, 
 	return proto.ErrUnknownField
 }
 
+type TransmitACK struct {
+	MsgID        uint32  // 用户消息ID
+	MsgData      []byte  // 用户消息数据
+	ClientID     int64   // 单发
+	ClientIDList []int64 // 列表发
+	All          bool    // 全发
+}
+
+func (self *TransmitACK) String() string { return proto.CompactTextString(self) }
+
+func (self *TransmitACK) Size() (ret int) {
+
+	ret += proto.SizeUInt32(0, self.MsgID)
+
+	ret += proto.SizeBytes(1, self.MsgData)
+
+	ret += proto.SizeInt64(2, self.ClientID)
+
+	ret += proto.SizeInt64Slice(3, self.ClientIDList)
+
+	ret += proto.SizeBool(4, self.All)
+
+	return
+}
+
+func (self *TransmitACK) Marshal(buffer *proto.Buffer) error {
+
+	proto.MarshalUInt32(buffer, 0, self.MsgID)
+
+	proto.MarshalBytes(buffer, 1, self.MsgData)
+
+	proto.MarshalInt64(buffer, 2, self.ClientID)
+
+	proto.MarshalInt64Slice(buffer, 3, self.ClientIDList)
+
+	proto.MarshalBool(buffer, 4, self.All)
+
+	return nil
+}
+
+func (self *TransmitACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+	switch fieldIndex {
+	case 0:
+		return proto.UnmarshalUInt32(buffer, wt, &self.MsgID)
+	case 1:
+		return proto.UnmarshalBytes(buffer, wt, &self.MsgData)
+	case 2:
+		return proto.UnmarshalInt64(buffer, wt, &self.ClientID)
+	case 3:
+		return proto.UnmarshalInt64Slice(buffer, wt, &self.ClientIDList)
+	case 4:
+		return proto.UnmarshalBool(buffer, wt, &self.All)
+
+	}
+
+	return proto.ErrUnknownField
+}
+
 type SubscribeChannelREQ struct {
 	Channel string
 }

@@ -28,7 +28,7 @@ struct LoginACK {
 }
 
 
-[AutoMsgID Codec:"gogopb" Service: "game"]
+[AutoMsgID Codec:"gogopb" Service: "game" RouteRule: "pass"]
 struct VerifyREQ {
 	GameToken string
 	GameSvcID string

@@ -17,8 +17,9 @@ func main() {
 	basefx.Init("login")
 
 	basefx.CreateCommnicateAcceptor(fxmodel.ServiceParameter{
-		SvcName:    "login",
-		ListenAddr: ":0",
+		SvcName:     "login",
+		NetProcName: "tcp.svc",
+		ListenAddr:  ":0",
 	})
 
 	hubapi.ConnectToHub(func() {

@@ -210,14 +210,10 @@ func RemoteCall(target, req interface{}, callback interface{}) error {
 }
 
 func init() {
-	transmitter := new(tcp.TCPMessageTransmitter)
-	typeRPCHooker := new(TypeRPCHooker)
-	msgLogger := new(tcp.MsgHooker)
-
 	proc.RegisterProcessor("cellmesh.tcp", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		bundle.SetTransmitter(transmitter)
-		bundle.SetHooker(proc.NewMultiHooker(msgLogger, typeRPCHooker))
+		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
+		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker), new(TypeRPCHooker)))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 }

@@ -40,14 +40,10 @@ func (self subscriberHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEv
 
 func init() {
 
-	transmitter := new(tcp.TCPMessageTransmitter)
-	svcHooker := new(subscriberHooker)
-	msgHooker := new(tcp.MsgHooker)
-
 	proc.RegisterProcessor("tcp.hub", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		bundle.SetTransmitter(transmitter)
-		bundle.SetHooker(proc.NewMultiHooker(svcHooker, msgHooker))
+		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
+		bundle.SetHooker(proc.NewMultiHooker(new(subscriberHooker), new(tcp.MsgHooker)))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 }

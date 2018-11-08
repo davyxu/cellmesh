@@ -16,3 +16,15 @@ struct ClientClosedACK {
     ID 	ClientID
 }
 
+
+
+// agent <-> backend 在网关和后端服务器之间传输协议
+[AutoMsgID Codec:"protoplus"]
+struct TransmitACK {
+    MsgID uint32  // 用户消息ID
+    MsgData bytes // 用户消息数据
+
+    ClientID int64       // 单发
+    ClientIDList []int64 // 列表发
+    All bool             // 全发
+}

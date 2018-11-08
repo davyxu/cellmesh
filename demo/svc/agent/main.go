@@ -34,6 +34,7 @@ func main() {
 	basefx.CreateCommnicateConnector(fxmodel.ServiceParameter{
 		SvcName:      "game",
 		MaxConnCount: -1,
+		NetProcName:  "agent.backend",
 	})
 
 	frontend.Start(kvconfig.String(discovery.Default, "config_demo/addr_agent", ":8001~8101"))

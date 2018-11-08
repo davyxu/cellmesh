@@ -23,6 +23,7 @@ func main() {
 	var err error
 	var ctx gen.Context
 	ctx.DescriptorSet = new(model.DescriptorSet)
+	ctx.DescriptorSet.PackageName = *flagPackage
 	ctx.PackageName = *flagPackage
 
 	err = util.ParseFileList(ctx.DescriptorSet)

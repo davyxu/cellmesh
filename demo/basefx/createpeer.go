@@ -17,10 +17,6 @@ func CreateCommnicateAcceptor(param fxmodel.ServiceParameter) cellnet.Peer {
 		param.NetPeerType = "tcp.Acceptor"
 	}
 
-	if param.NetProcName == "" {
-		param.NetProcName = "tcp.svc"
-	}
-
 	var q cellnet.EventQueue
 	if !param.NoQueue {
 		q = fxmodel.Queue

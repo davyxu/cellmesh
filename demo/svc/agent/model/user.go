@@ -4,7 +4,7 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/relay"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -33,15 +33,25 @@ func (self *User) BroadcastToBackends(msg interface{}) {
 	}
 }
 
-func (self *User) RelayToService(backendSvcid string, msg interface{}) {
+var (
+	ErrBackendNotFound = errors.New("backend not found")
+)
+
+func (self *User) TransmitToBackend(backendSvcid string, msgID int, msgData []byte) error {
 
 	backendSes := service.GetRemoteService(backendSvcid)
 
-	if backendSes != nil {
-		relay.Relay(backendSes, msg, self.CID.ID, self.CID.SvcID)
-	} else {
-		log.Warnf("Backend not found, msg: '%s' mode: 'auth'", cellnet.MessageToName(msg))
+	if backendSes == nil {
+		return ErrBackendNotFound
 	}
+
+	backendSes.Send(&proto.TransmitACK{
+		MsgID:    uint32(msgID),
+		MsgData:  msgData,
+		ClientID: self.CID.ID,
+	})
+
+	return nil
 }
 
 // 绑定用户后台

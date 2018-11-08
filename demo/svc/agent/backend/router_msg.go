@@ -1,11 +1,9 @@
 package backend
 
 import (
-	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/demo/svc/agent/model"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/relay"
 )
 
 func init() {
@@ -43,44 +41,44 @@ func init() {
 		//}
 	}
 
-	// 从后端服务器收到的消息
-	relay.SetBroadcaster(func(ev *relay.RecvMsgEvent) {
-
-		// 列表广播
-		if value := ev.PassThroughAsInt64Slice(); value != nil {
-			for _, sesid := range value {
-				ses := model.GetClientSession(sesid)
-				if ses != nil {
-					ses.Send(ev.Msg)
-				}
-			} 
-			// 原样回复
-		}else if svcid := ev.PassThroughAsString(); svcid != "" {
-			if svcid == model.AgentSvcID {
-				ses := model.GetClientSession(ev.PassThroughAsInt64())
-				if ses != nil {
-					ses.Send(ev.Msg)
-				}
-			} else {
-				panic(fmt.Sprintf("Recv backend msg not belong to this agent, expect '%s', got '%s'", model.AgentSvcID, svcid))
-			}
-			// 单发
-		} else if clientSesID := ev.PassThroughAsInt64(); clientSesID != 0 {
-			ses := model.GetClientSession(clientSesID)
-			if ses != nil {
-				ses.Send(ev.Msg)
-			}
-		} else {
-			// TODO 只广播给认证用户?
-			model.FrontendSessionManager.VisitSession(func(clientSes cellnet.Session) bool {
-
-				clientSes.Send(ev.Message())
-
-				return true
-			})
-
-		}
-
-	})
+	//// 从后端服务器收到的消息
+	//relay.SetBroadcaster(func(ev *relay.RecvMsgEvent) {
+	//
+	//	// 列表广播
+	//	if value := ev.PassThroughAsInt64Slice(); value != nil {
+	//		for _, sesid := range value {
+	//			ses := model.GetClientSession(sesid)
+	//			if ses != nil {
+	//				ses.Send(ev.Msg)
+	//			}
+	//		}
+	//		// 原样回复
+	//	}else if svcid := ev.PassThroughAsString(); svcid != "" {
+	//		if svcid == model.AgentSvcID {
+	//			ses := model.GetClientSession(ev.PassThroughAsInt64())
+	//			if ses != nil {
+	//				ses.Send(ev.Msg)
+	//			}
+	//		} else {
+	//			panic(fmt.Sprintf("Recv backend msg not belong to this agent, expect '%s', got '%s'", model.AgentSvcID, svcid))
+	//		}
+	//		// 单发
+	//	} else if clientSesID := ev.PassThroughAsInt64(); clientSesID != 0 {
+	//		ses := model.GetClientSession(clientSesID)
+	//		if ses != nil {
+	//			ses.Send(ev.Msg)
+	//		}
+	//	} else {
+	//		// TODO 只广播给认证用户?
+	//		model.FrontendSessionManager.VisitSession(func(clientSes cellnet.Session) bool {
+	//
+	//			clientSes.Send(ev.Message())
+	//
+	//			return true
+	//		})
+	//
+	//	}
+	//
+	//})
 
 }

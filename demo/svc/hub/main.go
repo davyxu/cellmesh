@@ -16,8 +16,9 @@ func main() {
 	basefx.Init("hub")
 
 	basefx.CreateCommnicateAcceptor(fxmodel.ServiceParameter{
-		SvcName:    "hub",
-		ListenAddr: kvconfig.String(discovery.Default, "config_demo/addr_hub", ":0"),
+		SvcName:     "hub",
+		NetProcName: "tcp.svc",
+		ListenAddr:  kvconfig.String(discovery.Default, "config_demo/addr_hub", ":0"),
 	})
 
 	basefx.StartLoop(nil)

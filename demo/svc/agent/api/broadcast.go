@@ -4,7 +4,7 @@ import (
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/relay"
+	"github.com/davyxu/cellnet/codec"
 )
 
 // 关闭所有网关上客户端的连接
@@ -24,10 +24,21 @@ func CloseAllClient() {
 
 // 广播给所有客户端
 func BroadcastAll(msg interface{}) {
+
+	data, meta, err := codec.EncodeMessage(msg, nil)
+	if err != nil {
+		log.Errorf("BroadcastAll.EncodeMessage %s", err)
+		return
+	}
+
 	service.VisitRemoteService(func(ses cellnet.Session, ctx *service.RemoteServiceContext) bool {
 
 		if ctx.Name == "agent" {
-			relay.Relay(ses, msg)
+			ses.Send(&proto.TransmitACK{
+				MsgID:   uint32(meta.ID),
+				MsgData: data,
+				All:     true,
+			})
 		}
 
 		return true
@@ -39,7 +50,17 @@ func Send(cid *proto.ClientID, msg interface{}) {
 
 	agentSes := service.GetRemoteService(cid.SvcID)
 	if agentSes != nil {
-		relay.Relay(agentSes, msg, cid.ID)
+		data, meta, err := codec.EncodeMessage(msg, nil)
+		if err != nil {
+			log.Errorf("Send.EncodeMessage %s", err)
+			return
+		}
+
+		agentSes.Send(&proto.TransmitACK{
+			MsgID:    uint32(meta.ID),
+			MsgData:  data,
+			ClientID: cid.ID,
+		})
 	}
 }
 
@@ -70,12 +91,23 @@ func (self *ClientList) CloseClient() {
 // 将消息广播给列表中的客户端
 func (self *ClientList) Broadcast(msg interface{}) {
 
+	data, meta, err := codec.EncodeMessage(msg, nil)
+	if err != nil {
+		log.Errorf("ClientList.EncodeMessage %s", err)
+		return
+	}
+
 	for agentSvcID, sesList := range self.sesByAgentSvcID {
 
 		agentSes := service.GetRemoteService(agentSvcID)
 		if agentSes != nil {
 
-			relay.Relay(agentSes, msg, sesList)
+			agentSes.Send(&proto.TransmitACK{
+				MsgID:        uint32(meta.ID),
+				MsgData:      data,
+				ClientIDList: sesList,
+			})
+
 		} else {
 			log.Warnf("Agent not ready, ignore msg, svcid: '%s' msg: '%+v'", agentSvcID, msg)
 		}

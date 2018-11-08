@@ -15,7 +15,7 @@ func Start(addr string) {
 
 	clientListener := peer.NewGenericPeer("tcp.Acceptor", "agent", addr, nil)
 
-	proc.BindProcessorHandler(clientListener, "tcp.frontend", nil)
+	proc.BindProcessorHandler(clientListener, "agent.frontend", nil)
 
 	socketOpt := clientListener.(cellnet.TCPSocketOption)
 

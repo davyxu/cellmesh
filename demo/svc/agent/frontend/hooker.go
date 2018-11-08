@@ -1,31 +1,90 @@
 package frontend
 
 import (
+	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/demo/svc/agent/model"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
-	"reflect"
 	"time"
 )
 
-type RelayUpMsgHooker struct {
+var (
+	PingACKMsgID   = cellnet.MessageMetaByFullName("proto.PingACK").ID
+	VerifyREQMsgID = cellnet.MessageMetaByFullName("proto.VerifyREQ").ID
+)
+
+func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg interface{}, err error) {
+	// agent自己的内部消息以及预处理消息
+	switch int(msgID) {
+	case PingACKMsgID, VerifyREQMsgID:
+
+		// 将字节数组和消息ID用户解出消息
+		msg, _, err = codec.DecodeMessage(msgID, msgData)
+		if err != nil {
+			// TODO 接收错误时，返回消息
+			return nil, err
+		}
+
+		switch userMsg := msg.(type) {
+		case *proto.PingACK:
+			u := model.SessionToUser(ses)
+			if u != nil {
+				u.LastPingTime = time.Now()
+
+				// 回消息
+				ses.Send(&proto.PingACK{})
+			} else {
+				ses.Close()
+			}
+
+			// 第一个到网关的消息
+		case *proto.VerifyREQ:
+			u, err := bindClientToBackend(userMsg.GameSvcID, ses.ID())
+			if err == nil {
+				u.TransmitToBackend(userMsg.GameSvcID, msgID, msgData)
+
+			} else {
+				ses.Close()
+				log.Errorln("bindClientToBackend", err)
+			}
+		}
+
+	default:
+		// 在路由规则中查找消息ID是否是路由规则允许的消息
+		rule := model.GetRuleByMsgID(msgID)
+		if rule == nil {
+			return nil, fmt.Errorf("Message not in route table, msgid: %d, use MakeProto.sh!", msgID)
+		}
+
+		// 找到已经绑定的用户
+		u := model.SessionToUser(ses)
+
+		if u != nil {
+
+			// 透传到后台
+			if err = u.TransmitToBackend(u.GetBackend(rule.SvcName), msgID, msgData); err != nil {
+				log.Warnf("TransmitToBackend %s, msg: '%s' svc: %s", err, rule.MsgName, rule.SvcName)
+			}
+
+		} else {
+			// 这是一个未授权的用户发授权消息,可以踢掉
+		}
+	}
+
+	return
 }
 
-/* 网关通过规则
-1. 直接接收，根据消息选择后台服务地址，适用于未绑定用户的消息
-2. 绑定消息，直接获得用户绑定的后台地址转发
+type FrontendEventHooker struct {
+}
 
+// 网关内部抛出的事件
+func (FrontendEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-消息名-> 服务(进程) -> Session
-*/
-
-// 从客户端接收到的消息
-func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
-
-	switch incomingMsg := inputEvent.Message().(type) {
+	switch inputEvent.Message().(type) {
 	case *cellnet.SessionAccepted:
 	case *cellnet.SessionClosed:
 
@@ -39,73 +98,27 @@ func (RelayUpMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 				},
 			})
 		}
-	case *proto.PingACK:
-		u := model.SessionToUser(inputEvent.Session())
-		if u != nil {
-			u.LastPingTime = time.Now()
-
-			// 回消息
-			inputEvent.Session().Send(&proto.PingACK{})
-		}
-	case *proto.VerifyREQ:
-
-		u, err := bindClientToBackend(incomingMsg.GameSvcID, inputEvent.Session().ID())
-		if err == nil {
-
-			u.RelayToService(incomingMsg.GameSvcID, incomingMsg)
-
-		} else {
-			log.Errorln("bindClientToBackend", err)
-		}
-
-	default:
-		msgType := reflect.TypeOf(incomingMsg).Elem()
-
-		// 确定消息所在的服务
-		if rule := model.GetTargetService(msgType.Name()); rule != nil {
-
-			switch rule.Mode {
-			case "auth":
-
-				// 从客户端过来的会话取得绑定的用户
-				u := model.SessionToUser(inputEvent.Session())
-
-				if u != nil {
-
-					u.RelayToService(u.GetBackend(rule.SvcName), incomingMsg)
-
-				} else {
-					// 这是一个未授权的用户发授权消息,可以踢掉
-				}
-
-			}
-
-		} else {
-
-			log.Warnf("Route target not found: %s", msgType.Name())
-		}
 	}
 
 	return inputEvent
 }
 
 // 发送到客户端的消息
-func (RelayUpMsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+func (FrontendEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	return inputEvent
 }
 
 func init() {
 
-	transmitter := new(tcp.TCPMessageTransmitter)
-	routerHooker := new(RelayUpMsgHooker)
-	msgLogger := new(tcp.MsgHooker)
-
 	// 前端的processor
-	proc.RegisterProcessor("tcp.frontend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("agent.frontend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		bundle.SetTransmitter(transmitter)
-		bundle.SetHooker(proc.NewMultiHooker(msgLogger, routerHooker))
+		bundle.SetTransmitter(new(directTransmitter))
+		bundle.SetHooker(proc.NewMultiHooker(
+			new(tcp.MsgHooker),       //  TCP基础消息及日志
+			new(FrontendEventHooker), // 内部消息处理
+		))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 }

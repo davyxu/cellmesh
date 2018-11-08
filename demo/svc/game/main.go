@@ -20,8 +20,9 @@ func main() {
 	basefx.Init("game")
 
 	basefx.CreateCommnicateAcceptor(fxmodel.ServiceParameter{
-		SvcName:    "game",
-		ListenAddr: kvconfig.String(discovery.Default, "config_demo/addr_game", ":0"),
+		SvcName:     "game",
+		NetProcName: "svc.backend",
+		ListenAddr:  kvconfig.String(discovery.Default, "config_demo/addr_game", ":0"),
 	})
 
 	hubapi.ConnectToHub(func() {
