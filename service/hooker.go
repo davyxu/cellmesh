@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/cellnet/proc/gorillaws"
 	"github.com/davyxu/cellnet/proc/tcp"
 )
 
@@ -56,6 +57,13 @@ func init() {
 	proc.RegisterProcessor("tcp.svc", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
+		bundle.SetHooker(proc.NewMultiHooker(new(SvcEventHooker), new(tcp.MsgHooker)))
+		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
+	})
+
+	proc.RegisterProcessor("ws.svc", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+
+		bundle.SetTransmitter(new(gorillaws.WSMessageTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(new(SvcEventHooker), new(tcp.MsgHooker)))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})

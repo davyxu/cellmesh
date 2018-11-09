@@ -11,19 +11,19 @@ import (
 	"time"
 )
 
-func Start(addr string) {
+func Start(param model.FrontendParameter) {
 
-	clientListener := peer.NewGenericPeer("tcp.Acceptor", "agent", addr, nil)
+	clientListener := peer.NewGenericPeer(param.NetPeerType, "agent", param.ListenAddr, nil)
 
-	proc.BindProcessorHandler(clientListener, "agent.frontend", nil)
+	proc.BindProcessorHandler(clientListener, param.NetProcName, nil)
 
-	socketOpt := clientListener.(cellnet.TCPSocketOption)
+	if socketOpt, ok := clientListener.(cellnet.TCPSocketOption); ok {
+		// 无延迟设置缓冲
+		socketOpt.SetSocketBuffer(2048, 2048, true)
 
-	// 无延迟设置缓冲
-	socketOpt.SetSocketBuffer(2048, 2048, true)
-
-	// 40秒无读，20秒无写断开
-	socketOpt.SetSocketDeadline(time.Second*40, time.Second*20)
+		// 40秒无读，20秒无写断开
+		socketOpt.SetSocketDeadline(time.Second*40, time.Second*20)
+	}
 
 	clientListener.Start()
 	model.FrontendSessionManager = clientListener.(peer.SessionManager)

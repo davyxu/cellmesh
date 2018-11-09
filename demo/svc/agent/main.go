@@ -14,6 +14,7 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/kvconfig"
 	"github.com/davyxu/cellmesh/service"
+	_ "github.com/davyxu/cellnet/peer/gorillaws"
 	"github.com/davyxu/golog"
 	"time"
 )
@@ -37,7 +38,22 @@ func main() {
 		NetProcName:  "agent.backend",
 	})
 
-	frontend.Start(kvconfig.String(discovery.Default, "config_demo/addr_agent", ":8001~8101"))
+	switch *fxmodel.FlagCommunicateType {
+	case "tcp":
+		frontend.Start(model.FrontendParameter{
+			SvcName:     "agent",
+			ListenAddr:  kvconfig.String(discovery.Default, "config_demo/addr_agent", ":0"),
+			NetPeerType: "tcp.Acceptor",
+			NetProcName: "agent.frontend.tcp",
+		})
+	case "ws":
+		frontend.Start(model.FrontendParameter{
+			SvcName:     "agent",
+			ListenAddr:  kvconfig.String(discovery.Default, "config_demo/addr_agent", ":0"),
+			NetPeerType: "gorillaws.Acceptor",
+			NetProcName: "agent.frontend.ws",
+		})
+	}
 
 	hubapi.ConnectToHub(func() {
 

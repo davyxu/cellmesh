@@ -7,6 +7,7 @@ import (
 	"github.com/davyxu/cellmesh/demo/svc/hub/api"
 	"github.com/davyxu/cellmesh/demo/svc/hub/status"
 	_ "github.com/davyxu/cellmesh/demo/svc/login/login"
+	_ "github.com/davyxu/cellnet/peer/gorillaws"
 	"github.com/davyxu/golog"
 )
 
@@ -16,11 +17,22 @@ func main() {
 
 	basefx.Init("login")
 
-	basefx.CreateCommnicateAcceptor(fxmodel.ServiceParameter{
-		SvcName:     "login",
-		NetProcName: "tcp.svc",
-		ListenAddr:  ":0",
-	})
+	switch *fxmodel.FlagCommunicateType {
+	case "tcp":
+		basefx.CreateCommnicateAcceptor(fxmodel.ServiceParameter{
+			SvcName:     "login",
+			NetPeerType: "tcp.Acceptor",
+			NetProcName: "tcp.svc",
+			ListenAddr:  ":0",
+		})
+	case "ws":
+		basefx.CreateCommnicateAcceptor(fxmodel.ServiceParameter{
+			SvcName:     "login",
+			NetPeerType: "gorillaws.Acceptor",
+			NetProcName: "ws.svc",
+			ListenAddr:  ":0",
+		})
+	}
 
 	hubapi.ConnectToHub(func() {
 

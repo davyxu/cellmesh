@@ -112,9 +112,20 @@ func (FrontendEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEven
 func init() {
 
 	// 前端的processor
-	proc.RegisterProcessor("agent.frontend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("agent.frontend.tcp", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
-		bundle.SetTransmitter(new(directTransmitter))
+		bundle.SetTransmitter(new(directTCPTransmitter))
+		bundle.SetHooker(proc.NewMultiHooker(
+			new(tcp.MsgHooker),       //  TCP基础消息及日志
+			new(FrontendEventHooker), // 内部消息处理
+		))
+		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
+	})
+
+	// 前端的processor
+	proc.RegisterProcessor("agent.frontend.ws", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+
+		bundle.SetTransmitter(new(directWSMessageTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(
 			new(tcp.MsgHooker),       //  TCP基础消息及日志
 			new(FrontendEventHooker), // 内部消息处理

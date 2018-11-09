@@ -2,11 +2,13 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/msglog"
+	_ "github.com/davyxu/cellnet/peer/gorillaws"
 	"github.com/davyxu/cellnet/timer"
 	"github.com/davyxu/golog"
 	"os"
@@ -16,13 +18,22 @@ import (
 
 var log = golog.New("main")
 
+type ClientParam struct {
+	NetPeerType string
+	NetProcName string
+}
+
+var (
+	flagProtocolType = flag.String("commtype", "tcp", "communicate type, tcp or ws")
+)
+
 // 登录服务器是一个短连接服务器,获取到网关连接后就断开
-func login() (agentAddr, gameSvcID string) {
+func login(param *ClientParam) (agentAddr, gameSvcID string) {
 
 	log.Debugln("Create login connection...")
 
 	// 这里为了方便,使用服务发现来连接login, 真正的客户端不应该使用服务发现,而是使用固定的登录地址连接登录服务器
-	loginReq := service.CreateConnection("login")
+	loginReq := service.CreateConnection("login", param.NetPeerType, param.NetProcName)
 
 	// TODO 短连接请求完毕关闭
 
@@ -45,12 +56,12 @@ func login() (agentAddr, gameSvcID string) {
 	return
 }
 
-func getAgentSession(agentAddr string) (ret cellnet.Session) {
+func getAgentSession(agentAddr string, param *ClientParam) (ret cellnet.Session) {
 
 	log.Debugln("Prepare agent connection...")
 
 	waitGameReady := make(chan struct{})
-	go service.KeepConnection("agent", agentAddr, func(ses cellnet.Session) {
+	go service.KeepConnection("agent", agentAddr, param.NetPeerType, param.NetProcName, func(ses cellnet.Session) {
 		ret = ses
 		waitGameReady <- struct{}{}
 	}, func() {
@@ -88,7 +99,15 @@ func main() {
 
 	service.Init("client")
 
-	agentAddr, gameSvcID := login()
+	var currParam *ClientParam
+	switch *flagProtocolType {
+	case "tcp":
+		currParam = &ClientParam{NetPeerType: "tcp.SyncConnector", NetProcName: "cellmesh.tcp"}
+	case "ws":
+		currParam = &ClientParam{NetPeerType: "gorillaws.SyncConnector", NetProcName: "cellmesh.ws"}
+	}
+
+	agentAddr, gameSvcID := login(currParam)
 
 	if agentAddr == "" {
 		return
@@ -96,7 +115,7 @@ func main() {
 
 	fmt.Println("agent:", agentAddr)
 
-	agentReq := getAgentSession(agentAddr)
+	agentReq := getAgentSession(agentAddr, currParam)
 
 	service.RemoteCall(agentReq, &proto.VerifyREQ{
 		GameToken: "verify",

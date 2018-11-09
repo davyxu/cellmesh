@@ -7,6 +7,7 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/cellnet/proc/gorillaws"
 	"github.com/davyxu/cellnet/proc/tcp"
 	"reflect"
 	"sync"
@@ -35,7 +36,7 @@ func queryServiceAddress(serviceName string) (*discovery.ServiceDesc, error) {
 }
 
 // 建立短连接
-func CreateConnection(serviceName string) (ret cellnet.Session) {
+func CreateConnection(serviceName, netPeerType, netProcName string) (ret cellnet.Session) {
 
 	notify := discovery.Default.RegisterNotify("add")
 
@@ -47,8 +48,8 @@ func CreateConnection(serviceName string) (ret cellnet.Session) {
 
 			if err == nil {
 
-				p := peer.NewGenericPeer("tcp.SyncConnector", serviceName, desc.Address(), nil)
-				proc.BindProcessorHandler(p, "cellmesh.tcp", nil)
+				p := peer.NewGenericPeer(netPeerType, serviceName, desc.Address(), nil)
+				proc.BindProcessorHandler(p, netProcName, nil)
 
 				p.Start()
 
@@ -81,12 +82,12 @@ type connector interface {
 }
 
 // 保持长连接
-func KeepConnection(svcid, addr string, onReady func(cellnet.Session), onClose func()) {
+func KeepConnection(svcid, addr, netPeerType, netProc string, onReady func(cellnet.Session), onClose func()) {
 
 	var stop sync.WaitGroup
 
-	p := peer.NewGenericPeer("tcp.SyncConnector", svcid, addr, nil)
-	proc.BindProcessorHandler(p, "cellmesh.tcp", func(ev cellnet.Event) {
+	p := peer.NewGenericPeer(netPeerType, svcid, addr, nil)
+	proc.BindProcessorHandler(p, netProc, func(ev cellnet.Event) {
 
 		switch ev.Message().(type) {
 		case *cellnet.SessionClosed:
@@ -213,6 +214,13 @@ func init() {
 	proc.RegisterProcessor("cellmesh.tcp", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
+		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker), new(TypeRPCHooker)))
+		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
+	})
+
+	proc.RegisterProcessor("cellmesh.ws", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+
+		bundle.SetTransmitter(new(gorillaws.WSMessageTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker), new(TypeRPCHooker)))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
