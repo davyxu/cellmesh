@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
+	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/gorillaws"
 	"github.com/davyxu/cellnet/proc/tcp"
@@ -54,6 +55,7 @@ func (SvcEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cel
 
 func init() {
 
+	// 服务器间通讯协议
 	proc.RegisterProcessor("tcp.svc", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
@@ -61,10 +63,19 @@ func init() {
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 
-	proc.RegisterProcessor("ws.svc", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	// 与客户端通信的处理器
+	proc.RegisterProcessor("tcp.client", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+
+		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
+		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker)))
+		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
+	})
+
+	// 与客户端通信的处理器
+	proc.RegisterProcessor("ws.client", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(new(gorillaws.WSMessageTransmitter))
-		bundle.SetHooker(proc.NewMultiHooker(new(SvcEventHooker), new(tcp.MsgHooker)))
+		bundle.SetHooker(proc.NewMultiHooker(new(gorillaws.MsgHooker)))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 }

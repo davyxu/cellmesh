@@ -33,12 +33,12 @@ func login(param *ClientParam) (agentAddr, gameSvcID string) {
 	log.Debugln("Create login connection...")
 
 	// 这里为了方便,使用服务发现来连接login, 真正的客户端不应该使用服务发现,而是使用固定的登录地址连接登录服务器
-	loginReq := service.CreateConnection("login", param.NetPeerType, param.NetProcName)
+	loginReq := CreateConnection("login", param.NetPeerType, param.NetProcName)
 
 	// TODO 短连接请求完毕关闭
 
 	// 封装连接和接收以及超时的过程,真正的客户端可以添加这套机制
-	service.RemoteCall(loginReq, &proto.LoginREQ{
+	RemoteCall(loginReq, &proto.LoginREQ{
 		Version:  "1.0",
 		Platform: "demo",
 		UID:      "1234",
@@ -61,7 +61,7 @@ func getAgentSession(agentAddr string, param *ClientParam) (ret cellnet.Session)
 	log.Debugln("Prepare agent connection...")
 
 	waitGameReady := make(chan struct{})
-	go service.KeepConnection("agent", agentAddr, param.NetPeerType, param.NetProcName, func(ses cellnet.Session) {
+	go KeepConnection("agent", agentAddr, param.NetPeerType, param.NetProcName, func(ses cellnet.Session) {
 		ret = ses
 		waitGameReady <- struct{}{}
 	}, func() {
@@ -102,9 +102,9 @@ func main() {
 	var currParam *ClientParam
 	switch *flagProtocolType {
 	case "tcp":
-		currParam = &ClientParam{NetPeerType: "tcp.SyncConnector", NetProcName: "cellmesh.tcp"}
+		currParam = &ClientParam{NetPeerType: "tcp.SyncConnector", NetProcName: "tcp.demo"}
 	case "ws":
-		currParam = &ClientParam{NetPeerType: "gorillaws.SyncConnector", NetProcName: "cellmesh.ws"}
+		currParam = &ClientParam{NetPeerType: "gorillaws.SyncConnector", NetProcName: "ws.demo"}
 	}
 
 	agentAddr, gameSvcID := login(currParam)
@@ -117,7 +117,7 @@ func main() {
 
 	agentReq := getAgentSession(agentAddr, currParam)
 
-	service.RemoteCall(agentReq, &proto.VerifyREQ{
+	RemoteCall(agentReq, &proto.VerifyREQ{
 		GameToken: "verify",
 		GameSvcID: gameSvcID,
 	}, func(ack *proto.VerifyACK) {
@@ -133,7 +133,7 @@ func main() {
 
 	ReadConsole(func(s string) {
 
-		service.RemoteCall(agentReq, &proto.ChatREQ{
+		RemoteCall(agentReq, &proto.ChatREQ{
 			Content: s,
 		}, func(ack *proto.ChatACK) {
 

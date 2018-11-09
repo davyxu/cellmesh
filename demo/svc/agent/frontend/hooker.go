@@ -8,6 +8,7 @@ import (
 	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/cellnet/proc/gorillaws"
 	"github.com/davyxu/cellnet/proc/tcp"
 	"time"
 )
@@ -112,7 +113,7 @@ func (FrontendEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEven
 func init() {
 
 	// 前端的processor
-	proc.RegisterProcessor("agent.frontend.tcp", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("tcp.frontend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(new(directTCPTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(
@@ -123,11 +124,11 @@ func init() {
 	})
 
 	// 前端的processor
-	proc.RegisterProcessor("agent.frontend.ws", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("ws.frontend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(new(directWSMessageTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(
-			new(tcp.MsgHooker),       //  TCP基础消息及日志
+			new(gorillaws.MsgHooker), //  TCP基础消息及日志
 			new(FrontendEventHooker), // 内部消息处理
 		))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))

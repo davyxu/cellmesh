@@ -22,14 +22,14 @@ func main() {
 		basefx.CreateCommnicateAcceptor(fxmodel.ServiceParameter{
 			SvcName:     "login",
 			NetPeerType: "tcp.Acceptor",
-			NetProcName: "tcp.svc",
+			NetProcName: "tcp.client",
 			ListenAddr:  ":0",
 		})
 	case "ws":
 		basefx.CreateCommnicateAcceptor(fxmodel.ServiceParameter{
 			SvcName:     "login",
 			NetPeerType: "gorillaws.Acceptor",
-			NetProcName: "ws.svc",
+			NetProcName: "ws.client",
 			ListenAddr:  ":0",
 		})
 	}

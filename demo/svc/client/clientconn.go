@@ -1,4 +1,4 @@
-package service
+package main
 
 import (
 	"errors"
@@ -211,17 +211,18 @@ func RemoteCall(target, req interface{}, callback interface{}) error {
 }
 
 func init() {
-	proc.RegisterProcessor("cellmesh.tcp", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	// 仅供demo使用的
+	proc.RegisterProcessor("tcp.demo", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker), new(TypeRPCHooker)))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 
-	proc.RegisterProcessor("cellmesh.ws", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("ws.demo", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 
 		bundle.SetTransmitter(new(gorillaws.WSMessageTransmitter))
-		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker), new(TypeRPCHooker)))
+		bundle.SetHooker(proc.NewMultiHooker(new(gorillaws.MsgHooker), new(TypeRPCHooker)))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 }

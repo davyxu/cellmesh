@@ -44,14 +44,14 @@ func main() {
 			SvcName:     "agent",
 			ListenAddr:  kvconfig.String(discovery.Default, "config_demo/addr_agent", ":0"),
 			NetPeerType: "tcp.Acceptor",
-			NetProcName: "agent.frontend.tcp",
+			NetProcName: "tcp.frontend",
 		})
 	case "ws":
 		frontend.Start(model.FrontendParameter{
 			SvcName:     "agent",
 			ListenAddr:  kvconfig.String(discovery.Default, "config_demo/addr_agent", ":0"),
 			NetPeerType: "gorillaws.Acceptor",
-			NetProcName: "agent.frontend.ws",
+			NetProcName: "ws.frontend",
 		})
 	}
 

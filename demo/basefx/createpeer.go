@@ -51,9 +51,6 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 	if param.NetPeerType == "" {
 		param.NetPeerType = "tcp.Connector"
 	}
-	if param.NetProcName == "" {
-		param.NetProcName = "tcp.svc"
-	}
 
 	msgFunc := proto.GetMessageHandler(service.GetProcName())
 
