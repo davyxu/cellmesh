@@ -1,10 +1,10 @@
 package model
 
 import (
+	"errors"
 	"github.com/davyxu/cellmesh/demo/proto"
 	"github.com/davyxu/cellmesh/service"
 	"github.com/davyxu/cellnet"
-	"github.com/pkg/errors"
 	"time"
 )
 
