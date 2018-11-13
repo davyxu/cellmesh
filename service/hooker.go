@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/cellnet/proc/gorillaws"
 	"github.com/davyxu/cellnet/proc/tcp"
 )
 
@@ -68,14 +67,6 @@ func init() {
 
 		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker)))
-		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
-	})
-
-	// 与客户端通信的处理器
-	proc.RegisterProcessor("ws.client", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
-
-		bundle.SetTransmitter(new(gorillaws.WSMessageTransmitter))
-		bundle.SetHooker(proc.NewMultiHooker(new(gorillaws.MsgHooker)))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 }

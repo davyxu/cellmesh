@@ -7,7 +7,10 @@ import (
 	"github.com/davyxu/cellmesh/demo/svc/hub/api"
 	"github.com/davyxu/cellmesh/demo/svc/hub/status"
 	_ "github.com/davyxu/cellmesh/demo/svc/login/login"
+	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/peer/gorillaws"
+	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/cellnet/proc/gorillaws"
 	"github.com/davyxu/golog"
 )
 
@@ -16,6 +19,14 @@ var log = golog.New("main")
 func main() {
 
 	basefx.Init("login")
+
+	// 与客户端通信的处理器
+	proc.RegisterProcessor("ws.client", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+
+		bundle.SetTransmitter(new(gorillaws.WSMessageTransmitter))
+		bundle.SetHooker(proc.NewMultiHooker(new(gorillaws.MsgHooker)))
+		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
+	})
 
 	switch *fxmodel.FlagCommunicateType {
 	case "tcp":

@@ -38,7 +38,7 @@ func (self *consulDiscovery) GetRawValue(key string) ([]byte, error) {
 
 		meta := raw.(*KVMeta)
 
-		return meta.Value, nil
+		return meta.Value(), nil
 	} else {
 
 		// cache中没找到直接获取
@@ -65,7 +65,7 @@ func (self *consulDiscovery) GetRawValueList(prefix string) (ret []discovery.Val
 		if strings.HasPrefix(key, prefix) {
 			ret = append(ret, discovery.ValueMeta{
 				Key:   key,
-				Value: value.Value,
+				Value: value.Value(),
 			})
 		}
 

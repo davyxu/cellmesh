@@ -3,6 +3,7 @@ package consulsd
 import (
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/watch"
+	"sync"
 )
 
 func (self *consulDiscovery) startWatchKV() {
@@ -23,8 +24,22 @@ func (self *consulDiscovery) startWatchKV() {
 }
 
 type KVMeta struct {
-	Value []byte
-	Plan  *watch.Plan
+	value      []byte
+	valueGuard sync.RWMutex
+
+	Plan *watch.Plan
+}
+
+func (self *KVMeta) SetValue(v []byte) {
+	self.valueGuard.Lock()
+	self.value = v
+	self.valueGuard.Unlock()
+}
+
+func (self *KVMeta) Value() []byte {
+	self.valueGuard.RLock()
+	defer self.valueGuard.RUnlock()
+	return self.value
 }
 
 func (self *consulDiscovery) onKVListChanged(u uint64, data interface{}) {
@@ -53,7 +68,7 @@ func (self *consulDiscovery) onKVListChanged(u uint64, data interface{}) {
 			//log.Debugf("add kv : '%s'", kv.Key)
 
 			self.kvCache.Store(kv.Key, &KVMeta{
-				Value: kv.Value,
+				value: kv.Value,
 				Plan:  plan,
 			})
 		}
@@ -110,7 +125,8 @@ func (self *consulDiscovery) onKVChanged(u uint64, data interface{}) {
 	//log.Debugf("modify kv : '%s'", kv.Key)
 
 	if raw, ok := self.kvCache.Load(kv.Key); ok {
-		raw.(*KVMeta).Value = kv.Value
+
+		raw.(*KVMeta).SetValue(kv.Value)
 	}
 
 }
