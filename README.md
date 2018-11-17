@@ -65,7 +65,7 @@ Mac下可直接运行下面的命令
 
 ## 启动demo服务
 
-按照下面shell分别启动login, agent, game, client
+按照下面shell分别启动login, agent, game, hub, client
 ```
     cd github.com/davyxu/cellmesh/shell
 
