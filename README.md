@@ -60,7 +60,7 @@ Mac下可直接运行下面的命令
 执行下面指令更新路由规则到Consul
 ```
     cd github.com/davyxu/cellmesh/demo/proto
-    sh ./Gen.sh
+    sh ./MakeProto.sh
 ```
 
 ## 启动demo服务
