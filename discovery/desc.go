@@ -99,5 +99,5 @@ func (self *ServiceDesc) String() string {
 		sb.WriteString("]")
 	}
 
-	return fmt.Sprintf("%15s port: %5d %s", self.ID, self.Port, sb.String())
+	return fmt.Sprintf("%15s host: %s port: %5d %s", self.ID, self.Host, self.Port, sb.String())
 }
