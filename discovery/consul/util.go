@@ -41,12 +41,7 @@ func existsInServiceList(svclist []*discovery.ServiceDesc, id string) bool {
 
 	return false
 }
-
-var (
-	PrettyMarshalJson bool
-)
-
-func AnyToBytes(data interface{}) ([]byte, error) {
+func AnyToBytes(data interface{}, prettyPrint bool) ([]byte, error) {
 
 	switch v := data.(type) {
 	case int, int32, int64, uint32, uint64, float32, float64, bool:
@@ -55,7 +50,7 @@ func AnyToBytes(data interface{}) ([]byte, error) {
 		return []byte(v), nil
 
 	default:
-		if PrettyMarshalJson {
+		if prettyPrint {
 			raw, err := json.MarshalIndent(data, "", "\t")
 			if err != nil {
 				return nil, err

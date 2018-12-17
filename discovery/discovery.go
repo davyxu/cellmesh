@@ -26,8 +26,9 @@ type Discovery interface {
 
 	// https://www.consul.io/intro/getting-started/kv.html
 	// 设置值
-	SetValue(key string, value interface{}) error
+	SetValue(key string, value interface{}, optList ...interface{}) error
 
+	// 取值，并赋值到变量
 	GetValue(key string, valuePtr interface{}) error
 
 	// 获取原始值
@@ -35,6 +36,9 @@ type Discovery interface {
 
 	// 获取原始值列表
 	GetRawValueList(prefix string) ([]ValueMeta, error)
+
+	// 删除值
+	DeleteValue(key string) error
 }
 
 var (

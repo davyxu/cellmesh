@@ -7,9 +7,26 @@ import (
 	"strings"
 )
 
-func (self *consulDiscovery) SetValue(key string, dataPtr interface{}) error {
+type Option struct {
+	PrettyPrint bool
+}
 
-	raw, err := AnyToBytes(dataPtr)
+func getOpt(optList ...interface{}) Option {
+
+	for _, opt := range optList {
+
+		switch raw := opt.(type) {
+		case Option:
+			return raw
+		}
+	}
+
+	return Option{}
+}
+
+func (self *consulDiscovery) SetValue(key string, dataPtr interface{}, optList ...interface{}) error {
+
+	raw, err := AnyToBytes(dataPtr, getOpt(optList...).PrettyPrint)
 	if err != nil {
 		return err
 	}
@@ -88,6 +105,16 @@ func (self *consulDiscovery) GetRawValueList(prefix string) (ret []discovery.Val
 	}
 
 	return
+}
+
+func (self *consulDiscovery) DeleteValue(key string) error {
+
+	_, err := self.client.KV().Delete(key, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 var (
