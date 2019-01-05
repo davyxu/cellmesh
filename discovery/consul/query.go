@@ -5,13 +5,77 @@ import (
 	"time"
 )
 
+func (self *consulDiscovery) updateFromConsul() {
+
+	newCache := map[string][]*discovery.ServiceDesc{}
+	for _, desc := range self.QueryAll() {
+
+		list := newCache[desc.Name]
+		list = append(list, desc)
+		newCache[desc.Name] = list
+	}
+
+	self.svcCacheFullGuard.Lock()
+	self.svcCacheFull = newCache
+	self.svcCacheFullGuard.Unlock()
+}
+
+func (self *consulDiscovery) queryFromCache(name string) (ret []*discovery.ServiceDesc) {
+
+	self.svcCacheFullGuard.RLock()
+	list := self.svcCacheFull[name]
+
+	ret = make([]*discovery.ServiceDesc, len(list))
+	copy(ret, list)
+	self.svcCacheFullGuard.RUnlock()
+
+	return
+}
+
 func (self *consulDiscovery) Query(name string) (ret []*discovery.ServiceDesc) {
 
-	if raw, ok := self.svcCache.Load(name); ok {
-		ret = raw.([]*discovery.ServiceDesc)
+	//if raw, ok := self.svcCache.Load(name); ok {
+	//	ret = raw.([]*discovery.ServiceDesc)
+	//}
+
+	self.cacheDirtyGuard.Lock()
+	if self.cacheDirty {
+		self.updateFromConsul()
+		self.cacheDirty = true
+	}
+	self.cacheDirtyGuard.Unlock()
+
+	return self.queryFromCache(name)
+}
+
+// from github.com/micro/go-micro/registry/consul_registry.go
+func (self *consulDiscovery) directQuery(name string) (ret []*discovery.ServiceDesc, err error) {
+
+	result, _, err := self.client.Health().Service(name, "", false, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range result {
+
+		if s.Service.Service != name {
+			continue
+		}
+
+		if isServiceHealth(s) {
+
+			sd := consulSvcToService(s.Service)
+
+			log.Debugf("  got servcie, %s", sd.String())
+
+			ret = append(ret, sd)
+		}
+
 	}
 
 	return
+
 }
 
 func (self *consulDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
@@ -51,6 +115,10 @@ func (self *consulDiscovery) DeregisterNotify(mode string, c chan struct{}) {
 }
 
 func (self *consulDiscovery) OnCacheUpdated(eventName string, desc *discovery.ServiceDesc) {
+
+	self.svcCacheFullGuard.Lock()
+	self.cacheDirty = true
+	self.svcCacheFullGuard.Unlock()
 
 	switch eventName {
 	case "add":

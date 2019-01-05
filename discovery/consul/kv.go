@@ -26,7 +26,7 @@ func getOpt(optList ...interface{}) Option {
 
 func (self *consulDiscovery) SetValue(key string, dataPtr interface{}, optList ...interface{}) error {
 
-	raw, err := AnyToBytes(dataPtr, getOpt(optList...).PrettyPrint)
+	raw, err := discovery.AnyToBytes(dataPtr, getOpt(optList...).PrettyPrint)
 	if err != nil {
 		return err
 	}

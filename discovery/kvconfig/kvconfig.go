@@ -2,7 +2,6 @@ package kvconfig
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/consul"
 	"reflect"
 )
 
@@ -13,7 +12,7 @@ func doRaw(d discovery.Discovery, key string, defaultValue, ret interface{}) {
 
 	err := d.GetValue(key, ret)
 
-	if err == consulsd.ErrValueNotExists {
+	if err != nil && err.Error() == "value not exists" {
 
 		reflect.Indirect(reflect.ValueOf(ret)).Set(reflect.ValueOf(defaultValue))
 		// 默认值初始化

@@ -17,6 +17,13 @@ type consulDiscovery struct {
 	svcCacheGuard  sync.Mutex
 	svcNameWatcher sync.Map //map[string]*watch.Plan
 
+	cacheDirty      bool
+	cacheDirtyGuard sync.Mutex
+
+	// 备用
+	svcCacheFull      map[string][]*discovery.ServiceDesc
+	svcCacheFullGuard sync.RWMutex
+
 	kvCache sync.Map // map[string]*KVPair
 
 	// 本地服务的心跳

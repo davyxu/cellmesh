@@ -1,30 +1,36 @@
-package consulsd
+package discovery
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet/util"
 	"reflect"
 )
 
-//Consul的KV中的Value最大不超过512K,
+//KV中的Value最大不超过512K,
 const (
-	// Consul不能直接保存二进制，底层用Json转base64，base64的二进制比原二进制要大最终二进制不到512K就会达到限制
+	// 不能直接保存二进制，底层用Json转base64，base64的二进制比原二进制要大最终二进制不到512K就会达到限制
 	PackedValueSize = 300 * 1024
 )
 
-func getMultiKey(sd discovery.Discovery, key string) (ret []string) {
+type rawGetter interface {
+	// 获取原始值
+	GetRawValue(key string) ([]byte, error)
+}
+
+func getMultiKey(sd Discovery, key string) (ret []string) {
 
 	mainKey := key
 
 	ret = append(ret, mainKey)
 
+	rg := sd.(rawGetter)
+
 	for i := 1; ; i++ {
 
 		key = fmt.Sprintf("%s.%d", mainKey, i)
 
-		_, err := sd.GetRawValue(key)
-		if err == ErrValueNotExists {
+		_, err := rg.GetRawValue(key)
+		if err != nil && err.Error() == "value not exists" {
 			return
 		}
 
@@ -34,7 +40,7 @@ func getMultiKey(sd discovery.Discovery, key string) (ret []string) {
 }
 
 // compress value按 key, key.1, key.2 ... 保存
-func SafeSetValue(sd discovery.Discovery, key string, value interface{}, compress bool) error {
+func SafeSetValue(sd Discovery, key string, value interface{}, compress bool) error {
 	if compress {
 		cData, err := util.CompressBytes(value.([]byte))
 		if err != nil {
@@ -85,20 +91,18 @@ func SafeSetValue(sd discovery.Discovery, key string, value interface{}, compres
 		}
 
 	} else {
-		return sd.SetValue(key, value, Option{
-			PrettyPrint: true,
-		})
+		return sd.SetValue(key, value)
 	}
 }
 
-func SafeGetValue(sd discovery.Discovery, key string, valuePtr interface{}, decompress bool) error {
+func SafeGetValue(sd Discovery, key string, valuePtr interface{}, decompress bool) error {
 	if decompress {
 
 		var data []byte
 		for _, multiKey := range getMultiKey(sd, key) {
 
 			var partData []byte
-			err := discovery.Default.GetValue(multiKey, &partData)
+			err := Default.GetValue(multiKey, &partData)
 			if err != nil {
 				return err
 			}

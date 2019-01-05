@@ -3,7 +3,8 @@ package service
 import (
 	"flag"
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/consul"
+	"github.com/davyxu/cellmesh/discovery/memsd/api"
+	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
@@ -20,7 +21,7 @@ func Init(name string) {
 	flag.Parse()
 
 	// 开发期优先从LocalFlag作用flag
-	ApplyFlagFromFile(*flagFlagFile)
+	meshutil.ApplyFlagFromFile(*flagFlagFile)
 
 	flag.Parse()
 
@@ -52,10 +53,11 @@ func Init(name string) {
 
 	LinkRules = ParseMatchRule(linkRule)
 
-	log.Debugln("Connecting to consul...")
-	sdConfig := consulsd.DefaultConfig()
+	log.Debugf("Connecting to discovery '%s' ...", *flagDiscoveryAddr)
+	sdConfig := memsd.DefaultConfig()
 	sdConfig.Address = *flagDiscoveryAddr
-	discovery.Default = consulsd.NewDiscovery(sdConfig)
+	discovery.Default = memsd.NewDiscovery(sdConfig)
+	log.Infoln("Discovery ready!")
 
 	// 彩色日志
 	if *flagLogColor {

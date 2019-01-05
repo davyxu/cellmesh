@@ -19,14 +19,14 @@ func TestSafeGetValue(t *testing.T) {
 	sdConfig.Address = GetDiscoveryAddr()
 	discovery.Default = consulsd.NewDiscovery(sdConfig)
 
-	err := consulsd.SafeSetValue(discovery.Default, "config/test", origin, true)
+	err := discovery.SafeSetValue(discovery.Default, "config/test", origin, true)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
 
 	var outData []byte
-	err = consulsd.SafeGetValue(discovery.Default, "config/test", &outData, true)
+	err = discovery.SafeGetValue(discovery.Default, "config/test", &outData, true)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()

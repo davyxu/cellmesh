@@ -7,12 +7,15 @@ export GOPATH=`pwd`
 set -e
 Protoc=${GOPATH}/bin/protoc
 
+# cellmesh服务绑定
 CellMeshProtoGen=${GOPATH}/bin/cmprotogen
 go build -v -o ${CellMeshProtoGen} github.com/davyxu/cellmesh/tools/protogen
 
+# 协议生成
 ProtoPlusGen=${GOPATH}/bin/protoplus
 go build -v -o ${ProtoPlusGen} github.com/davyxu/protoplus
 
+# 路由工具
 RouteGen=${GOPATH}/bin/routegen
 go build -v -o ${RouteGen} github.com/davyxu/cellmesh/tools/routegen
 

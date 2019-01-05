@@ -31,12 +31,6 @@ type Discovery interface {
 	// 取值，并赋值到变量
 	GetValue(key string, valuePtr interface{}) error
 
-	// 获取原始值
-	GetRawValue(key string) ([]byte, error)
-
-	// 获取原始值列表
-	GetRawValueList(prefix string) ([]ValueMeta, error)
-
 	// 删除值
 	DeleteValue(key string) error
 }

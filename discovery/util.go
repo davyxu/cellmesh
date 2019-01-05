@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strconv"
 )
@@ -70,4 +71,30 @@ func ValueMetaToSlice(pairs []ValueMeta, dataPtr interface{}) error {
 
 	return nil
 
+}
+
+func AnyToBytes(data interface{}, prettyPrint bool) ([]byte, error) {
+
+	switch v := data.(type) {
+	case int, int32, int64, uint32, uint64, float32, float64, bool:
+		return []byte(fmt.Sprint(data)), nil
+	case string:
+		return []byte(v), nil
+
+	default:
+		if prettyPrint {
+			raw, err := json.MarshalIndent(data, "", "\t")
+			if err != nil {
+				return nil, err
+			}
+
+			return raw, nil
+		} else {
+			raw, err := json.Marshal(data)
+			if err != nil {
+				return nil, err
+			}
+			return raw, nil
+		}
+	}
 }

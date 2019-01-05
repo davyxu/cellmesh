@@ -1,8 +1,6 @@
 package consulsd
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/hashicorp/consul/api"
 )
@@ -40,29 +38,4 @@ func existsInServiceList(svclist []*discovery.ServiceDesc, id string) bool {
 	}
 
 	return false
-}
-func AnyToBytes(data interface{}, prettyPrint bool) ([]byte, error) {
-
-	switch v := data.(type) {
-	case int, int32, int64, uint32, uint64, float32, float64, bool:
-		return []byte(fmt.Sprint(data)), nil
-	case string:
-		return []byte(v), nil
-
-	default:
-		if prettyPrint {
-			raw, err := json.MarshalIndent(data, "", "\t")
-			if err != nil {
-				return nil, err
-			}
-
-			return raw, nil
-		} else {
-			raw, err := json.Marshal(data)
-			if err != nil {
-				return nil, err
-			}
-			return raw, nil
-		}
-	}
 }

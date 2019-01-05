@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
+	"github.com/davyxu/cellmesh/util"
 	"strings"
 )
 
@@ -11,7 +12,7 @@ type MatchRule struct {
 
 func matchTarget(rule *MatchRule, desc *discovery.ServiceDesc) bool {
 
-	return rule.Target == desc.GetMeta("SvcGroup")
+	return meshutil.WildcardPatternMatch(desc.GetMeta("SvcGroup"), rule.Target)
 }
 func ParseMatchRule(rule string) (ret []MatchRule) {
 

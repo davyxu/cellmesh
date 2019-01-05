@@ -85,7 +85,7 @@ func newLocalService(sd *consulDiscovery, svc *discovery.ServiceDesc, agent *api
 		sd:     sd,
 	}
 
-	go self.Update()
+	//go self.Update()
 
 	return self
 }

@@ -20,10 +20,11 @@ func (self *consulDiscovery) Register(svc *discovery.ServiceDesc) error {
 		Address:           svc.Host,
 		Port:              svc.Port,
 		Tags:              svc.Tags,
-		Check:             &checker,
 		Meta:              svc.Meta,
 		EnableTagOverride: true,
 	})
+
+	//Check:             &checker,
 
 	if err != nil {
 		return err
