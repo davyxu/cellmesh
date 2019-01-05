@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# Consul服务发现
-go get -v github.com/hashicorp/consul
-
 # linq查询
 go get -v github.com/ahmetb/go-linq
 

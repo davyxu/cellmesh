@@ -131,6 +131,8 @@ func main() {
 
 	}, nil).Start()
 
+	fmt.Println("Start chat now !")
+
 	ReadConsole(func(s string) {
 
 		RemoteCall(agentReq, &proto.ChatREQ{

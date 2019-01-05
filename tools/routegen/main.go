@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"github.com/davyxu/cellmesh/demo/table"
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/consul"
-	"github.com/davyxu/golog"
+	"github.com/davyxu/cellmesh/discovery/memsd/api"
 	"github.com/davyxu/protoplus/model"
 	"github.com/davyxu/protoplus/msgidutil"
 	"github.com/davyxu/protoplus/util"
@@ -49,7 +48,7 @@ func UploadRouteTable(tab *table.RouteTable) error {
 }
 
 var (
-	flagConfigPath = flag.String("configpath", "config_demo/route_rule", "consul kv config path")
+	flagConfigPath = flag.String("configpath", "config_demo/route_rule", "discovery kv config path")
 )
 
 var (
@@ -60,9 +59,7 @@ func main() {
 
 	flag.Parse()
 
-	discovery.Default = consulsd.NewDiscovery(nil)
-
-	golog.SetLevelByString("consul", "info")
+	discovery.Default = memsd.NewDiscovery(nil)
 
 	dset := new(model.DescriptorSet)
 	dset.PackageName = *flagPackage

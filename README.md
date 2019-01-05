@@ -9,7 +9,7 @@
 
 ## Zero Config File(零配置文件)
 
-   任何服务器配置均通过Consul的KV存取,无任何配置文件.
+   任何服务器配置均通过服务发现的KV存取,无任何配置文件.
 
 ## Code Generation(代码生成)
 
@@ -43,17 +43,10 @@
     # 转到cellmesh的shell目录
     cd github.com/davyxu/cellmesh/shell
 
-    # 这里会自动编译和运行consul
-    sh ./StartConsul.sh
+    # 这里会自动编译和运行服务发现服务
+    sh ./StartDiscovery.sh
 ```
 
-在浏览器里访问http://localhost:8500 地址可查看当前Consul状态
-
-Mac下可直接运行下面的命令
-```
-    cd github.com/davyxu/cellmesh/shell
-    sh ./ShowUI.sh
-```
 
 ## 更新协议及上传路由规则
 

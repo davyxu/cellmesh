@@ -24,7 +24,6 @@ type Discovery interface {
 	// 解除服务变化通知
 	DeregisterNotify(mode string, c chan struct{})
 
-	// https://www.consul.io/intro/getting-started/kv.html
 	// 设置值
 	SetValue(key string, value interface{}, optList ...interface{}) error
 

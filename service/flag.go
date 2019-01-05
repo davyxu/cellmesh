@@ -5,7 +5,7 @@ import "flag"
 var (
 
 	// 服务发现地址
-	flagDiscoveryAddr = flag.String("sdaddr", "127.0.0.1:8500", "Discovery address")
+	flagDiscoveryAddr = flag.String("sdaddr", "127.0.0.1:8900", "Discovery address")
 
 	// 服务发现规则
 	flagLinkRule = flag.String("linkrule", "", "Discovery other node then connect it, format like: 'svcname:tgtnode|defaultnode'")
