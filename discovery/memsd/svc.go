@@ -36,7 +36,7 @@ func startSvc() {
 	})
 
 	p.(cellnet.TCPSocketOption).SetSocketBuffer(1024*1024, 1024*1024, true)
-
+	p.(cellnet.PeerCaptureIOPanic).EnableCaptureIOPanic(true)
 	p.Start()
 	service.WaitExitSignal()
 }

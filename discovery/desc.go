@@ -3,6 +3,7 @@ package discovery
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -86,9 +87,9 @@ func (self *ServiceDesc) Address() string {
 }
 
 func (self *ServiceDesc) String() string {
-
 	var sb strings.Builder
 	if len(self.Meta) > 0 {
+
 		sb.WriteString("meta: [ ")
 		for key, value := range self.Meta {
 			sb.WriteString(key)
@@ -99,5 +100,39 @@ func (self *ServiceDesc) String() string {
 		sb.WriteString("]")
 	}
 
-	return fmt.Sprintf("%15s host: %s port: %5d %s", self.ID, self.Host, self.Port, sb.String())
+	return fmt.Sprintf("%s host: %s port: %d %s", self.ID, self.Host, self.Port, sb.String())
+}
+
+func (self *ServiceDesc) FormatString() string {
+
+	var sb strings.Builder
+	if len(self.Meta) > 0 {
+
+		type pair struct {
+			key   string
+			value string
+		}
+
+		var pairs []pair
+
+		for key, value := range self.Meta {
+			pairs = append(pairs, pair{key, value})
+		}
+
+		sort.Slice(pairs, func(i, j int) bool {
+
+			return pairs[i].key < pairs[j].key
+		})
+
+		sb.WriteString("meta: [ ")
+		for _, kv := range pairs {
+			sb.WriteString(kv.key)
+			sb.WriteString("=")
+			sb.WriteString(kv.value)
+			sb.WriteString(" ")
+		}
+		sb.WriteString("]")
+	}
+
+	return fmt.Sprintf("%25s host: %15s port: %5d %s", self.ID, self.Host, self.Port, sb.String())
 }

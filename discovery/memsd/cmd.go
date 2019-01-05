@@ -17,6 +17,10 @@ func viewSvc() {
 		a := list[i]
 		b := list[j]
 
+		if a.GetMeta("SvcGroup") != b.GetMeta("SvcGroup") {
+			return a.GetMeta("SvcGroup") < b.GetMeta("SvcGroup")
+		}
+
 		if a.Port != b.Port {
 			return a.Port < b.Port
 		}
@@ -30,7 +34,7 @@ func viewSvc() {
 
 	for _, desc := range list {
 
-		fmt.Println(desc.String())
+		fmt.Println(desc.FormatString())
 	}
 }
 
