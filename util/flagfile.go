@@ -5,12 +5,12 @@ import (
 	"github.com/davyxu/cellnet/util"
 )
 
-func ApplyFlagFromFile(filename string) error {
+func ApplyFlagFromFile(fs *flag.FlagSet, filename string) error {
 
 	return util.ReadKVFile(filename, func(key, value string) bool {
 
-		// 设置flag
-		fg := flag.Lookup(key)
+		// 设置flagm
+		fg := fs.Lookup(key)
 		if fg != nil {
 			log.Infof("ApplyFlagFromFile: %s=%s", key, value)
 			fg.Value.Set(value)

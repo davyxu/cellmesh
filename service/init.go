@@ -1,7 +1,6 @@
 package service
 
 import (
-	"flag"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/memsd/api"
 	"github.com/davyxu/cellmesh/util"
@@ -18,12 +17,12 @@ func Init(name string) {
 
 	procName = name
 
-	flag.Parse()
+	CommandLine.Parse(os.Args[1:])
 
 	// 开发期优先从LocalFlag作用flag
-	meshutil.ApplyFlagFromFile(*flagFlagFile)
+	meshutil.ApplyFlagFromFile(CommandLine, *flagFlagFile)
 
-	flag.Parse()
+	CommandLine.Parse(os.Args[1:])
 
 	var linkRule string
 
