@@ -3,7 +3,6 @@ package memsd
 import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/memsd/model"
-	"github.com/davyxu/cellmesh/discovery/memsd/proto"
 	"github.com/davyxu/cellnet"
 	"sync"
 )
@@ -21,6 +20,10 @@ type memDiscovery struct {
 	svcCacheGuard sync.RWMutex
 
 	notifyMap sync.Map // key=mode+c value=string
+
+	initWg *sync.WaitGroup
+
+	token string
 }
 
 func NewDiscovery(config interface{}) discovery.Discovery {
@@ -39,26 +42,14 @@ func NewDiscovery(config interface{}) discovery.Discovery {
 	model.Queue.EnableCapturePanic(true)
 	model.Queue.StartLoop()
 
+	self.initWg = new(sync.WaitGroup)
+	self.initWg.Add(1)
+
 	self.connect(self.config.Address)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	pullErr := self.remoteCall(&proto.PullValueREQ{}, func(ack *proto.PullValueACK) {
-
-		model.Queue.Post(func() {
-
-			// Pull的消息还要在queue里处理，这里确认处理完成后才算初始化完成
-			wg.Done()
-		})
-	})
-
-	if pullErr != nil {
-		log.Errorf("Pull value failed: %s", pullErr.Error())
-	} else {
-
-		wg.Wait()
-	}
+	// 等待拉取初始值
+	self.initWg.Wait()
+	self.initWg = nil
 
 	return self
 }

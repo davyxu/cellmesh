@@ -15,19 +15,22 @@ var (
 type ResultCode int32
 
 const (
-	ResultCode_Result_OK        ResultCode = 0
-	ResultCode_Result_NotExists ResultCode = 1
+	ResultCode_Result_OK          ResultCode = 0
+	ResultCode_Result_NotExists   ResultCode = 1
+	ResultCode_Result_AuthRequire ResultCode = 2
 )
 
 var (
 	ResultCodeMapperValueByName = map[string]int32{
-		"Result_OK":        0,
-		"Result_NotExists": 1,
+		"Result_OK":          0,
+		"Result_NotExists":   1,
+		"Result_AuthRequire": 2,
 	}
 
 	ResultCodeMapperNameByValue = map[int32]string{
 		0: "Result_OK",
 		1: "Result_NotExists",
+		2: "Result_AuthRequire",
 	}
 )
 
@@ -331,46 +334,60 @@ func (self *ValueDeleteNotifyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uin
 	return proto.ErrUnknownField
 }
 
-type PullValueREQ struct {
+type AuthREQ struct {
+	Token string
 }
 
-func (self *PullValueREQ) String() string { return proto.CompactTextString(self) }
+func (self *AuthREQ) String() string { return proto.CompactTextString(self) }
 
-func (self *PullValueREQ) Size() (ret int) {
+func (self *AuthREQ) Size() (ret int) {
+
+	ret += proto.SizeString(0, self.Token)
 
 	return
 }
 
-func (self *PullValueREQ) Marshal(buffer *proto.Buffer) error {
+func (self *AuthREQ) Marshal(buffer *proto.Buffer) error {
+
+	proto.MarshalString(buffer, 0, self.Token)
 
 	return nil
 }
 
-func (self *PullValueREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *AuthREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
+	case 0:
+		return proto.UnmarshalString(buffer, wt, &self.Token)
 
 	}
 
 	return proto.ErrUnknownField
 }
 
-type PullValueACK struct {
+type AuthACK struct {
+	Token string
 }
 
-func (self *PullValueACK) String() string { return proto.CompactTextString(self) }
+func (self *AuthACK) String() string { return proto.CompactTextString(self) }
 
-func (self *PullValueACK) Size() (ret int) {
+func (self *AuthACK) Size() (ret int) {
+
+	ret += proto.SizeString(0, self.Token)
 
 	return
 }
 
-func (self *PullValueACK) Marshal(buffer *proto.Buffer) error {
+func (self *AuthACK) Marshal(buffer *proto.Buffer) error {
+
+	proto.MarshalString(buffer, 0, self.Token)
 
 	return nil
 }
 
-func (self *PullValueACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *AuthACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
+	case 0:
+		return proto.UnmarshalString(buffer, wt, &self.Token)
 
 	}
 
@@ -401,22 +418,29 @@ func (self *ClearSvcREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt p
 }
 
 type ClearSvcACK struct {
+	Code ResultCode
 }
 
 func (self *ClearSvcACK) String() string { return proto.CompactTextString(self) }
 
 func (self *ClearSvcACK) Size() (ret int) {
 
+	ret += proto.SizeInt32(0, int32(self.Code))
+
 	return
 }
 
 func (self *ClearSvcACK) Marshal(buffer *proto.Buffer) error {
+
+	proto.MarshalInt32(buffer, 0, int32(self.Code))
 
 	return nil
 }
 
 func (self *ClearSvcACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
+	case 0:
+		return proto.UnmarshalInt32(buffer, wt, (*int32)(&self.Code))
 
 	}
 
@@ -447,22 +471,29 @@ func (self *ClearKeyREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt p
 }
 
 type ClearKeyACK struct {
+	Code ResultCode
 }
 
 func (self *ClearKeyACK) String() string { return proto.CompactTextString(self) }
 
 func (self *ClearKeyACK) Size() (ret int) {
 
+	ret += proto.SizeInt32(0, int32(self.Code))
+
 	return
 }
 
 func (self *ClearKeyACK) Marshal(buffer *proto.Buffer) error {
+
+	proto.MarshalInt32(buffer, 0, int32(self.Code))
 
 	return nil
 }
 
 func (self *ClearKeyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
+	case 0:
+		return proto.UnmarshalInt32(buffer, wt, (*int32)(&self.Code))
 
 	}
 

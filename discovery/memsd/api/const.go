@@ -3,8 +3,7 @@ package memsd
 import "errors"
 
 const (
-	servicePrefix = "_svcdesc_"
-	MaxValueSize  = 512 * 1024
+	MaxValueSize = 512 * 1024
 )
 
 var (

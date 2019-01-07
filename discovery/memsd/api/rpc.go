@@ -17,13 +17,15 @@ type typeRPCHooker struct {
 
 func (typeRPCHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	outputEvent, _, err := resolveInboundEvent(inputEvent)
-	if err != nil {
-		log.Errorln("rpc.resolveInboundEvent", err)
-		return
+	incomingMsgType := reflect.TypeOf(inputEvent.Message()).Elem()
+
+	if rawFeedback, ok := callByType.Load(incomingMsgType); ok {
+		feedBack := rawFeedback.(chan interface{})
+		feedBack <- inputEvent.Message()
+		return inputEvent
 	}
 
-	return outputEvent
+	return inputEvent
 }
 
 func (typeRPCHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
@@ -31,16 +33,11 @@ func (typeRPCHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cell
 	return inputEvent
 }
 
-func resolveInboundEvent(inputEvent cellnet.Event) (ouputEvent cellnet.Event, handled bool, err error) {
-	incomingMsgType := reflect.TypeOf(inputEvent.Message()).Elem()
-
-	if rawFeedback, ok := callByType.Load(incomingMsgType); ok {
-		feedBack := rawFeedback.(chan interface{})
-		feedBack <- inputEvent.Message()
-		return inputEvent, true, nil
-	}
-
-	return inputEvent, false, nil
+func (self *memDiscovery) Session() (ses cellnet.Session) {
+	self.sesGuard.RLock()
+	ses = self.ses
+	self.sesGuard.RUnlock()
+	return
 }
 
 // callback =func(ack *YouMsgACK)
@@ -51,9 +48,7 @@ func (self *memDiscovery) remoteCall(req interface{}, callback interface{}) erro
 		panic("callback require 'func'")
 	}
 
-	self.sesGuard.RLock()
-	ses := self.ses
-	self.sesGuard.RUnlock()
+	ses := self.Session()
 
 	if ses == nil {
 		return errors.New("memsd not connected")
@@ -84,8 +79,8 @@ func (self *memDiscovery) remoteCall(req interface{}, callback interface{}) erro
 	case ack := <-feedBack:
 
 		vCall := reflect.ValueOf(callback)
-
 		vCall.Call([]reflect.Value{reflect.ValueOf(ack)})
+
 		return nil
 	case <-time.After(self.config.RequestTimeout):
 

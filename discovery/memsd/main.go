@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/memsd/api"
+	"github.com/davyxu/cellmesh/discovery/memsd/model"
 	"os"
 )
 
 var (
-	flagCmd  = flag.String("cmd", "", "sub command, empty to launch memsd service")
-	flagAddr = flag.String("addr", "", "service discovery address")
+	flagCmd      = flag.String("cmd", "", "sub command, empty to launch memsd service")
+	flagAddr     = flag.String("addr", "", "service discovery address")
+	flagDataFile = flag.String("datafile", "", "persist values to file")
+	flagDebug    = flag.Bool("debug", false, "show debug info")
 )
 
 type DiscoveryExtend interface {
@@ -37,6 +40,15 @@ func initSD() DiscoveryExtend {
 func main() {
 
 	flag.Parse()
+
+	model.Debug = *flagDebug
+
+	go startCheckRedundantValue()
+
+	if *flagDataFile != "" {
+		loadPersistFile(*flagDataFile)
+		go startPersistCheck(*flagDataFile)
+	}
 
 	switch *flagCmd {
 	case "": // addr

@@ -3,14 +3,15 @@ package model
 import (
 	"encoding/json"
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellnet"
+	"io"
+	"sort"
 )
 
 type ValueMeta struct {
 	Key     string
 	Value   []byte
-	SvcName string          // 服务才有此名字
-	Ses     cellnet.Session // 来源的连接
+	SvcName string // 服务才有此名字
+	Token   string
 }
 
 var ErrDesc = discovery.ServiceDesc{Name: "invalid desc"}
@@ -28,10 +29,12 @@ func (self *ValueMeta) ValueAsServiceDesc() *discovery.ServiceDesc {
 
 var (
 	valueByKey = map[string]*ValueMeta{}
+
+	ValueDirty bool
 )
 
 func SetValue(key string, meta *ValueMeta) {
-
+	ValueDirty = true
 	valueByKey[key] = meta
 }
 
@@ -41,10 +44,15 @@ func GetValue(key string) *ValueMeta {
 }
 
 func DeleteValue(key string) *ValueMeta {
+	ValueDirty = true
 	ret := valueByKey[key]
 	delete(valueByKey, key)
 
 	return ret
+}
+
+func ValueCount() int {
+	return len(valueByKey)
 }
 
 func VisitValue(callback func(*ValueMeta) bool) {
@@ -53,4 +61,57 @@ func VisitValue(callback func(*ValueMeta) bool) {
 			return
 		}
 	}
+}
+
+type PersistFile struct {
+	Version int
+	Values  []*ValueMeta
+}
+
+var (
+	fileVersion = 1
+)
+
+func SaveValue(writer io.Writer) error {
+
+	encoder := json.NewEncoder(writer)
+	encoder.SetIndent("", "\t")
+
+	var file PersistFile
+	file.Version = fileVersion
+	for _, vmeta := range valueByKey {
+		file.Values = append(file.Values, vmeta)
+	}
+
+	sort.SliceStable(file.Values, func(i, j int) bool {
+
+		return file.Values[i].Key < file.Values[j].Key
+	})
+
+	err := encoder.Encode(&file)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func LoadValue(reader io.Reader) error {
+
+	decoder := json.NewDecoder(reader)
+
+	var file PersistFile
+	err := decoder.Decode(&file)
+	if err != nil {
+		return err
+	}
+
+	valueByKey = map[string]*ValueMeta{}
+
+	for _, v := range file.Values {
+		valueByKey[v.Key] = v
+	}
+
+	return nil
 }

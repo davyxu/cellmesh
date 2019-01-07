@@ -56,7 +56,6 @@ func Init(name string) {
 	sdConfig := memsd.DefaultConfig()
 	sdConfig.Address = *flagDiscoveryAddr
 	discovery.Default = memsd.NewDiscovery(sdConfig)
-	log.Infoln("Discovery ready!")
 
 	// 彩色日志
 	if *flagLogColor {

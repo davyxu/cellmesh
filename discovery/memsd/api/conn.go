@@ -1,14 +1,25 @@
 package memsd
 
 import (
+	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/memsd/model"
 	"github.com/davyxu/cellmesh/discovery/memsd/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
-	"strings"
 	"time"
 )
+
+func (self *memDiscovery) clearCache() {
+
+	self.svcCacheGuard.Lock()
+	self.svcCache = map[string][]*discovery.ServiceDesc{}
+	self.svcCacheGuard.Unlock()
+
+	self.kvCacheGuard.Lock()
+	self.kvCache = map[string][]byte{}
+	self.kvCacheGuard.Unlock()
+}
 
 func (self *memDiscovery) connect(addr string) {
 	p := peer.NewGenericPeer("tcp.Connector", "memsd", addr, model.Queue)
@@ -17,12 +28,32 @@ func (self *memDiscovery) connect(addr string) {
 
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionConnected:
+
 			self.sesGuard.Lock()
-			self.ses = p.(cellnet.TCPConnector).Session()
+			self.ses = ev.Session()
 			self.sesGuard.Unlock()
+
+			self.clearCache()
+			ev.Session().Send(&proto.AuthREQ{
+				Token: self.token,
+			})
+		case *cellnet.SessionClosed:
+			log.Errorf("memsd discovery lost!")
+
+		case *proto.AuthACK:
+
+			self.token = msg.Token
+
+			if self.initWg != nil {
+				// Pull的消息还要在queue里处理，这里确认处理完成后才算初始化完成
+				self.initWg.Done()
+			}
+
+			log.Infof("memsd discovery ready!")
+
 		case *proto.ValueChangeNotifyACK:
 
-			if strings.HasPrefix(msg.Key, servicePrefix) {
+			if model.IsServiceKey(msg.Key) {
 				self.updateSvcCache(msg.SvcName, msg.Value)
 			} else {
 				self.updateKVCache(msg.Key, msg.Value)
@@ -30,8 +61,8 @@ func (self *memDiscovery) connect(addr string) {
 
 		case *proto.ValueDeleteNotifyACK:
 
-			if strings.HasPrefix(msg.Key, servicePrefix) {
-				svcid := msg.Key[len(servicePrefix):]
+			if model.IsServiceKey(msg.Key) {
+				svcid := model.GetSvcIDByServiceKey(msg.Key)
 				self.deleteSvcCache(svcid, msg.SvcName)
 			} else {
 				self.deleteKVCache(msg.Key)

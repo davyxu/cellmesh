@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/davyxu/cellmesh/discovery"
+	"github.com/davyxu/cellmesh/discovery/memsd/model"
 	"github.com/davyxu/cellmesh/discovery/memsd/proto"
 	"github.com/davyxu/cellnet/util"
 	"time"
@@ -25,7 +26,7 @@ func (self *memDiscovery) Register(svc *discovery.ServiceDesc) (retErr error) {
 	}
 
 	callErr := self.remoteCall(&proto.SetValueREQ{
-		Key:     servicePrefix + svc.ID,
+		Key:     model.ServiceKeyPrefix + svc.ID,
 		Value:   data,
 		SvcName: svc.Name,
 	}, func(ack *proto.SetValueACK) {
@@ -41,7 +42,7 @@ func (self *memDiscovery) Register(svc *discovery.ServiceDesc) (retErr error) {
 
 func (self *memDiscovery) Deregister(svcid string) error {
 
-	return self.DeleteValue(servicePrefix + svcid)
+	return self.DeleteValue(model.ServiceKeyPrefix + svcid)
 }
 
 func (self *memDiscovery) Query(name string) (ret []*discovery.ServiceDesc) {

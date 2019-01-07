@@ -19,11 +19,11 @@ var (
 
 // memsd
 var (
+	Handle_Memsd_AuthREQ        = func(ev cellnet.Event) { panic("'AuthREQ' not handled") }
 	Handle_Memsd_ClearKeyREQ    = func(ev cellnet.Event) { panic("'ClearKeyREQ' not handled") }
 	Handle_Memsd_ClearSvcREQ    = func(ev cellnet.Event) { panic("'ClearSvcREQ' not handled") }
 	Handle_Memsd_DeleteValueREQ = func(ev cellnet.Event) { panic("'DeleteValueREQ' not handled") }
 	Handle_Memsd_GetValueREQ    = func(ev cellnet.Event) { panic("'GetValueREQ' not handled") }
-	Handle_Memsd_PullValueREQ   = func(ev cellnet.Event) { panic("'PullValueREQ' not handled") }
 	Handle_Memsd_SetValueREQ    = func(ev cellnet.Event) { panic("'SetValueREQ' not handled") }
 	Handle_Memsd_Default        func(ev cellnet.Event)
 )
@@ -34,6 +34,8 @@ func GetMessageHandler(svcName string) cellnet.EventCallback {
 	case "memsd":
 		return func(ev cellnet.Event) {
 			switch ev.Message().(type) {
+			case *AuthREQ:
+				Handle_Memsd_AuthREQ(ev)
 			case *ClearKeyREQ:
 				Handle_Memsd_ClearKeyREQ(ev)
 			case *ClearSvcREQ:
@@ -42,8 +44,6 @@ func GetMessageHandler(svcName string) cellnet.EventCallback {
 				Handle_Memsd_DeleteValueREQ(ev)
 			case *GetValueREQ:
 				Handle_Memsd_GetValueREQ(ev)
-			case *PullValueREQ:
-				Handle_Memsd_PullValueREQ(ev)
 			case *SetValueREQ:
 				Handle_Memsd_SetValueREQ(ev)
 			default:
@@ -101,13 +101,13 @@ func init() {
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),
-		Type:  reflect.TypeOf((*PullValueREQ)(nil)).Elem(),
-		ID:    24438,
+		Type:  reflect.TypeOf((*AuthREQ)(nil)).Elem(),
+		ID:    7726,
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),
-		Type:  reflect.TypeOf((*PullValueACK)(nil)).Elem(),
-		ID:    51805,
+		Type:  reflect.TypeOf((*AuthACK)(nil)).Elem(),
+		ID:    35093,
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),

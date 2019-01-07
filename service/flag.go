@@ -10,7 +10,7 @@ var (
 	CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	// 服务发现地址
-	flagDiscoveryAddr = CommandLine.String("sdaddr", "127.0.0.1:8500", "Discovery address")
+	flagDiscoveryAddr = CommandLine.String("sdaddr", "127.0.0.1:8900", "Discovery address")
 
 	// 服务发现规则
 	flagLinkRule = CommandLine.String("linkrule", "", "Discovery other node then connect it, format like: 'svcname:tgtnode|defaultnode'")
