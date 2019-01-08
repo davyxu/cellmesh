@@ -11,8 +11,6 @@ import (
 	"github.com/davyxu/cellmesh/demo/svc/agent/routerule"
 	"github.com/davyxu/cellmesh/demo/svc/hub/api"
 	"github.com/davyxu/cellmesh/demo/svc/hub/status"
-	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/kvconfig"
 	"github.com/davyxu/cellmesh/service"
 	_ "github.com/davyxu/cellnet/peer/gorillaws"
 	"github.com/davyxu/golog"
@@ -42,14 +40,14 @@ func main() {
 	case "tcp":
 		frontend.Start(model.FrontendParameter{
 			SvcName:     "agent",
-			ListenAddr:  kvconfig.String(discovery.Default, "config_demo/addr_agent", ":0"),
+			ListenAddr:  ":0",
 			NetPeerType: "tcp.Acceptor",
 			NetProcName: "tcp.frontend",
 		})
 	case "ws":
 		frontend.Start(model.FrontendParameter{
 			SvcName:     "agent",
-			ListenAddr:  kvconfig.String(discovery.Default, "config_demo/addr_agent", ":0"),
+			ListenAddr:  ":0",
 			NetPeerType: "gorillaws.Acceptor",
 			NetProcName: "ws.frontend",
 		})
