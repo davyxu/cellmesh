@@ -1,8 +1,10 @@
 package fxmodel
 
-import "flag"
+import (
+	"github.com/davyxu/cellmesh/service"
+)
 
 var (
-	FlagSelfGroup       = flag.Bool("forceselfgroup", false, "Force match curr svcgroup")
-	FlagCommunicateType = flag.String("commtype", "tcp", "Communicate type, tcp or ws")
+	FlagSelfGroup       = service.CommandLine.Bool("forceselfgroup", false, "Force match curr svcgroup")
+	FlagCommunicateType = service.CommandLine.String("commtype", "tcp", "Communicate type, tcp or ws")
 )
