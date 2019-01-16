@@ -3,27 +3,20 @@ package service
 import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/peer"
 	"sync"
 )
 
 type MultiPeer interface {
 	GetPeers() []cellnet.Peer
-	SetContext(c interface{})
-	GetContext() interface{}
+	cellnet.ContextSet
 }
 
 type multiPeer struct {
+	peer.CoreContextSet
 	peers      []cellnet.Peer
 	peersGuard sync.RWMutex
 	context    interface{}
-}
-
-func (self *multiPeer) SetContext(c interface{}) {
-	self.context = c
-}
-
-func (self *multiPeer) GetContext() interface{} {
-	return self.context
 }
 
 func (self *multiPeer) Start() cellnet.Peer {

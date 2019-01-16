@@ -92,7 +92,7 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 		return p
 	})
 
-	mp.(service.MultiPeer).SetContext(param)
+	mp.(service.MultiPeer).SetContext("multi", param)
 
 	fxmodel.AddLocalService(mp)
 

@@ -43,7 +43,12 @@ func getPeerStatus(svc cellnet.Peer) string {
 
 func MultiPeerString(ms service.MultiPeer) string {
 
-	param := ms.GetContext().(ServiceParameter)
+	raw, ok := ms.GetContext("multi")
+	if !ok {
+		return ""
+	}
+
+	param := raw.(ServiceParameter)
 
 	return fmt.Sprintf("%13s %15s", param.SvcName, param.NetPeerType)
 }
