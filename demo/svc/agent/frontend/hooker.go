@@ -58,7 +58,7 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 		// 在路由规则中查找消息ID是否是路由规则允许的消息
 		rule := model.GetRuleByMsgID(msgID)
 		if rule == nil {
-			return nil, fmt.Errorf("Message not in route table, msgid: %d, use MakeProto.sh!", msgID)
+			return nil, fmt.Errorf("Message not in route table, msgid: %d, execute MakeProto.sh and restart agent", msgID)
 		}
 
 		// 找到已经绑定的用户

@@ -38,6 +38,8 @@ ${ProtoPlusGen} --package=proto -pb_out=clientmsg_gen.proto `source ./protolist.
 
 echo "生成客户端协议的protobuf的go消息...."
 ${Protoc} --plugin=protoc-gen-gogofaster=${GOPATH}/bin/protoc-gen-gogofaster${EXESUFFIX} --gogofaster_out=. --proto_path=. clientmsg_gen.proto
+
+# 不使用protobuf协议文件,只使用生成后的go文件,删除之
 rm -f ./clientmsg_gen.proto
 
 

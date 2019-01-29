@@ -58,11 +58,6 @@ func CreateCommnicateConnector(param fxmodel.ServiceParameter) {
 		MaxCount: param.MaxConnCount,
 	}
 
-	// 强制匹配自己的组
-	if *fxmodel.FlagSelfGroup {
-		opt.MatchSvcGroup = service.GetSvcGroup()
-	}
-
 	opt.Rules = service.LinkRules
 
 	var q cellnet.EventQueue
