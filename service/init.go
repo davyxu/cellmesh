@@ -34,8 +34,24 @@ func Init(name string) {
 
 	// 设置文件日志
 	if *flagLogFile != "" {
-		log.Infof("LogFile: %s", *flagLogFile)
-		golog.SetOutputToFile(".", *flagLogFile)
+
+		if *flagLogFileSize == "" {
+			log.Infof("LogFile: %s", *flagLogFile)
+			golog.SetOutputToFile(*flagLogFile)
+
+		} else {
+
+			size, err := meshutil.ParseSizeString(*flagLogFileSize)
+			if err == nil {
+				log.Infof("LogFile: %s Size: %s", *flagLogFile, *flagLogFileSize)
+				golog.SetOutputToFile(*flagLogFile, golog.OutputFileOption{
+					MaxFileSize: size,
+				})
+			} else {
+				log.Errorf("log file size err: %s", err)
+			}
+
+		}
 	}
 
 	workdir, _ := os.Getwd()

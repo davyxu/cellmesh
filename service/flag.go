@@ -30,6 +30,9 @@ var (
 	// 将日志输出到文件
 	flagLogFile = CommandLine.String("logfile", "", "Print log to file by file name")
 
+	// 单个日志文件大小, 超过设定值时创建新文件, 0表示单文件
+	flagLogFileSize = CommandLine.String("logfilesize", "", "log max file size, can use B M G to represent size")
+
 	// 设置日志级别，格式: 日志名称 日志级别， 名称支持正则表达式
 	flagLogLevel = CommandLine.String("loglevel", "", "Set log level, format: 'name|level', name support regexp, level can be error, info")
 
