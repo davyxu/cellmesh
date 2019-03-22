@@ -26,7 +26,7 @@
 ## 下载cellmesh源码
 
 ```
-    go get -v github.com/davyxu/cellmesh
+    go get -u -v github.com/davyxu/cellmesh
 ```
 
 ## 准备第三方包

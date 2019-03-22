@@ -1,7 +1,7 @@
 language: go
 
 install:
-  - go get -v github.com/davyxu/cellmesh
+  - go get -u -v github.com/davyxu/cellmesh
 
 go:
   - 1.11.x
