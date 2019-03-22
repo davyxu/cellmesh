@@ -7,4 +7,4 @@ go:
   - 1.11.x
 
 script:
-  - bash ./src/github.com/davyxu/cellmesh/shell/DownloadThirdParty.sh
+  - cd $GOPATH && sh src/github.com/davyxu/cellmesh/shell/DownloadThirdParty.sh
