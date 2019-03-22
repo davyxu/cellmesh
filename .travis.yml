@@ -7,12 +7,4 @@ go:
   - 1.11.x
 
 script:
-  - sh github.com/davyxu/cellmesh/shell/DownloadThirdParty.sh
-  - go install -v github.com/davyxu/cellmesh/svc/agent
-  - go install -v github.com/davyxu/cellmesh/svc/client
-  - go install -v github.com/davyxu/cellmesh/svc/game
-  - go install -v github.com/davyxu/cellmesh/svc/hub
-  - go install -v github.com/davyxu/cellmesh/svc/login
-
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - sh src/github.com/davyxu/cellmesh/shell/DownloadThirdParty.sh
