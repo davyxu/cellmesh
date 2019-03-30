@@ -7,6 +7,12 @@ export GOPATH=`pwd`
 set -e
 Protoc=${GOPATH}/bin/protoc
 
+# https://github.com/golang/protobuf/blob/master/.travis.yml
+if [[ ! -f ${Protoc} ]]; then
+    echo "Google protocol buffer compiler is not installed, download from https://github.com/google/protobuf/releases/download/v3.6.1/protoc-3.6.1-linux-x86_64.zip and place at ${GOPATH}/bin/protoc"
+    exit 1
+fi
+
 # cellmesh服务绑定
 CellMeshProtoGen=${GOPATH}/bin/cmprotogen
 go build -v -o ${CellMeshProtoGen} github.com/davyxu/cellmesh/tools/protogen
@@ -22,7 +28,7 @@ go build -v -o ${RouteGen} github.com/davyxu/cellmesh/tools/routegen
 cd ${CURRDIR}
 
 # windows下时，添加后缀名
-if [ `go env GOHOSTOS` == "windows" ];then
+if [[ `go env GOHOSTOS` == "windows" ]];then
 	EXESUFFIX=.exe
 fi
 
