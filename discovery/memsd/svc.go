@@ -25,6 +25,7 @@ func startSvc() {
 	model.Queue.StartLoop()
 
 	p := peer.NewGenericPeer("tcp.Acceptor", "memsd", config.Address, model.Queue)
+	p.(cellnet.PeerCaptureIOPanic).EnableCaptureIOPanic(true)
 	model.Listener = p
 	msgFunc := proto.GetMessageHandler("memsd")
 
