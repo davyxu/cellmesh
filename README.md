@@ -1,3 +1,14 @@
+ [![Build Status][3]][4] [![Go Report Card][5]][6] [![MIT licensed][11]][12] [![GoDoc][1]][2]
+
+[1]: https://godoc.org/github.com/davyxu/cellmesh?status.svg
+[2]: https://godoc.org/github.com/davyxu/cellmesh
+[3]: https://travis-ci.org/davyxu/cellmesh.svg?branch=master
+[4]: https://travis-ci.org/davyxu/cellmesh
+[5]: https://goreportcard.com/badge/github.com/davyxu/cellmesh
+[6]: https://goreportcard.com/report/github.com/davyxu/cellmesh
+[11]: https://img.shields.io/badge/license-MIT-blue.svg
+[12]: LICENSE
+
 # cellmesh
 基于cellnet的游戏服务框架
 
@@ -166,6 +177,55 @@ util
 
 ```
 
+# 服务参数
+ service包为服务进程提供命令行参数支持。服务进程的命令行参数同时也可以使用FlagFile像使用配置文件一样批量设置进程配置(参考demo/cfg/LocalFlag.cfg)
+
+ 详细参数说明如下：
+
+- sdaddr
+
+   指定服务发现服务器(memsd)地址, 通过服务发现,服务器可以快速获取配置以及其他可连接服务器地址,实现服务互联.
+
+- svcgroup
+
+   指定服务器分组. 一般情况下,认为一台物理机归属于一个svcgroup. 当然,也可以在一台物理机上放置多个分组,比如开发阶段.
+
+   服务器分组也能方便服务器打包以及定位服务器位置.
+
+- svcindex
+
+   指定服务器索引, 标识同类服务器的多个不同进程,同类中的svcindex必须唯一,逻辑上,svcindex还会与uuid关联.
+
+- wanip
+
+   指定服务器所在物理机的外网IP,方便通知客户端要连接的IP,例如:login通知客户端game的外网IP.
+
+- logcolor
+
+   对日志着色, 规则参见github/davyxu/golog中的color.go, 写入文件时,请关闭此选项,避免日志中出现着色字符.
+
+- logfile
+
+   将日志写入文件,并不再输出到控制台.
+
+- logfilesize
+
+   指定输出日志文件单个大小,可使用B/M/G标识, 注意: golog默认不是rolling方式,日志会写入到尾数最大的日志文件.
+
+- loglevel
+
+   指定日志输出级别, 格式 日志名|级别, 日志名支持正则表达式, 级别可以为error, info等
+
+- mutemsglog
+
+   屏蔽指定消息的日志,多个消息使用'|'分割
+
+- flagfile
+
+   使用FlagFile格式(参考demo/cfg/LocalFlag.cfg),作为进程的命令行参数
+
+
+
 # 开发进度
 - [x] 基于Consul的服务发现及Watch机制
 - [x] 网关基本逻辑
@@ -203,3 +263,14 @@ util
 
 友情提示：
     demo工程仅是随框架附带的实例代码，建议将demo为蓝本建立自己的工程蓝本。
+
+
+# 备注
+
+感觉不错请star, 谢谢!
+
+开源讨论群: 527430600 验证请发cellmesh
+
+知乎: http://www.zhihu.com/people/sunicdavy
+
+提交bug及特性: https://github.com/davyxu/cellmesh/issues
