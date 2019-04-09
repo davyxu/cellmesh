@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 Name=$1
 
-if [ "${Name}" == "" ]
+if [[ "${Name}" == "" ]]
 then
 	echo "Usage: RunDemoSvc.sh name"
 	exit 1
