@@ -97,10 +97,10 @@ func Init(name string) {
 	// 禁用指定消息名的消息日志
 	if *flagMuteMsgLog != "" {
 
-		if err, count := msglog.BlockMessageLog(*flagMuteMsgLog); err != nil {
-			log.Warnln("BlockMessageLog: ", err)
+		if err := msglog.SetMsgLogRule(*flagMuteMsgLog, msglog.MsgLogRule_BlackList); err != nil {
+			log.Errorln("BlockMessageLog: ", err)
 		} else {
-			log.Infoln("BlockMessageLog:", count)
+			log.Infoln("BlockMessageLog:", *flagMuteMsgLog)
 		}
 	}
 }

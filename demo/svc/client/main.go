@@ -95,7 +95,7 @@ func ReadConsole(callback func(string)) {
 
 func main() {
 
-	msglog.BlockMessageLog("proto.PingACK")
+	msglog.SetMsgLogRule("proto.PingACK", msglog.MsgLogRule_BlackList)
 
 	service.Init("client")
 

@@ -10,8 +10,8 @@ import (
 // 初始化框架
 func Init(procName string) {
 
-	msglog.BlockMessageLog("proto.PingACK")
-	msglog.BlockMessageLog("proto.SvcStatusACK")
+	msglog.SetMsgLogRule("proto.PingACK", msglog.MsgLogRule_BlackList)
+	msglog.SetMsgLogRule("proto.SvcStatusACK", msglog.MsgLogRule_BlackList)
 
 	fxmodel.Queue = cellnet.NewEventQueue()
 

@@ -124,7 +124,7 @@ func (broadcasterHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent 
 
 func writeAgentLog(ses cellnet.Session, dir string, ack *proto.TransmitACK) {
 
-	if msglog.IsBlockedMessageByID(int(ack.MsgID)) {
+	if !msglog.IsMsgLogValid(int(ack.MsgID)) {
 		return
 	}
 
@@ -157,7 +157,7 @@ func writeAgentLog(ses cellnet.Session, dir string, ack *proto.TransmitACK) {
 func init() {
 
 	// 避免默认消息日志显示本条消息
-	msglog.BlockMessageLog("proto.TransmitACK")
+	msglog.SetMsgLogRule("proto.TransmitACK", msglog.MsgLogRule_BlackList)
 
 	// 适用于后端服务的处理器
 	proc.RegisterProcessor("svc.backend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
