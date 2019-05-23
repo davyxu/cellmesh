@@ -18,6 +18,8 @@ func Init(procName string) {
 	fxmodel.Queue.StartLoop()
 
 	service.Init(procName)
+
+	service.ConnectDiscovery()
 }
 
 // 等待退出信号
