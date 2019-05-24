@@ -7,9 +7,13 @@ import (
 	"sync"
 )
 
+// 一类服务发起多个连接(不是同一地址), 比如 login1 login2
 type MultiPeer interface {
 	GetPeers() []cellnet.Peer
+
 	cellnet.ContextSet
+
+	AddPeer(sd *discovery.ServiceDesc, p cellnet.Peer)
 }
 
 type multiPeer struct {
@@ -55,7 +59,12 @@ func (self *multiPeer) IsReady() bool {
 	return true
 }
 
-func (self *multiPeer) AddPeer(svcid string, p cellnet.Peer) {
+// 保证AddPeer在Peer  Start之前调用, 否则在连接上时因为没有sd,会导致不汇报服务信息
+func (self *multiPeer) AddPeer(sd *discovery.ServiceDesc, p cellnet.Peer) {
+
+	contextSet := p.(cellnet.ContextSet)
+	contextSet.SetContext("sd", sd)
+
 	self.peersGuard.Lock()
 	self.peers = append(self.peers, p)
 	self.peersGuard.Unlock()

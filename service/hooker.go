@@ -36,6 +36,9 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 			})
 
 			AddRemoteService(inputEvent.Session(), sd.ID, sd.Name)
+		} else {
+
+			log.Errorf("Make sure call multi.AddPeer before peer.Start, peer: %s", inputEvent.Session().Peer().TypeName())
 		}
 
 	case *cellnet.SessionClosed:

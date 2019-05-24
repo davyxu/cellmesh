@@ -13,7 +13,7 @@ type DiscoveryOption struct {
 
 // 发现一个服务，服务可能拥有多个地址，每个地址返回时，创建一个connector并开启
 // DiscoveryService返回值返回持有多个Peer的peer, 判断Peer的IsReady可以得到所有连接准备好的状态
-func DiscoveryService(tgtSvcName string, opt DiscoveryOption, peerCreator func(*discovery.ServiceDesc) cellnet.Peer) cellnet.Peer {
+func DiscoveryService(tgtSvcName string, opt DiscoveryOption, peerCreator func(MultiPeer, *discovery.ServiceDesc)) cellnet.Peer {
 
 	// 从发现到连接有一个过程，需要用Map防止还没连上，又创建一个新的连接
 	multiPeer := newMultiPeer()
@@ -27,6 +27,8 @@ func DiscoveryService(tgtSvcName string, opt DiscoveryOption, peerCreator func(*
 				Filter_MatchRule(opt.Rules),
 				Filter_MatchSvcGroup(opt.MatchSvcGroup),
 				func(desc *discovery.ServiceDesc) interface{} {
+
+					log.Infof("found '%s' address '%s' ", tgtSvcName, desc.Address())
 
 					prePeer := multiPeer.GetPeer(desc.ID)
 
@@ -56,13 +58,7 @@ func DiscoveryService(tgtSvcName string, opt DiscoveryOption, peerCreator func(*
 					}
 
 					// 用户创建peer
-					p := peerCreator(desc)
-
-					if p != nil {
-						contextSet := p.(cellnet.ContextSet)
-						contextSet.SetContext("sd", desc)
-						multiPeer.AddPeer(desc.ID, p)
-					}
+					peerCreator(multiPeer, desc)
 
 					return true
 				})
