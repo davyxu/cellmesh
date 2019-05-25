@@ -10,6 +10,7 @@ import (
 // 初始化框架
 func Init(procName string) {
 
+	msglog.SetCurrMsgLogMode(msglog.MsgLogMode_BlackList)
 	msglog.SetMsgLogRule("proto.PingACK", msglog.MsgLogRule_BlackList)
 	msglog.SetMsgLogRule("proto.SvcStatusACK", msglog.MsgLogRule_BlackList)
 

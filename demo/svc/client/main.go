@@ -98,6 +98,7 @@ func main() {
 	msglog.SetMsgLogRule("proto.PingACK", msglog.MsgLogRule_BlackList)
 
 	service.Init("client")
+	service.ConnectDiscovery()
 
 	var currParam *ClientParam
 	switch *flagProtocolType {
