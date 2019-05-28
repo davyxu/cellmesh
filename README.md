@@ -224,6 +224,28 @@ util
 
    使用FlagFile格式(参考demo/cfg/LocalFlag.cfg),作为进程的命令行参数
 
+# demo工程架构
+![arch](demo/doc/architecture.png)
+
+- login
+
+    登录服, 短连接获取服务器列表及平台验证, 通过JWT生成token交由客户端
+
+- game
+
+    养成服, 网关后负责养成逻辑,使用客户端上传的JWT token验证客户端身份
+
+- agent
+
+    网关, 负责与客户端保持长连接,通过心跳处理客户端连接生命期, 客户端消息转发
+
+- hub
+
+    中转, 处理服务器人数负载, 使用模式为订阅分发模式,处理跨服通知
+
+- client
+
+    模拟客户端, 模拟客户端逻辑
 
 
 # 开发进度
