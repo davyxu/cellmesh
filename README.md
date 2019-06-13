@@ -18,9 +18,9 @@
 
    通过服务发现自动实现服务互联,探测,挂接.无需配置服务器间的端口.
 
-## Zero Config File(零配置文件)
+## Cloud Config File(云配置文件)
 
-   任何服务器配置均通过服务发现的KV存取,无任何配置文件.
+   任何服务器配置均通过服务发现的KV存取,本地不保存配置，更新配置更为方便
 
 ## Code Generation(代码生成)
 
@@ -48,6 +48,53 @@
  https://github.com/davyxu/cellmesh_demo
  
  Demo包含服务进程及工具配套等
+ 
+# 服务发现（memsd）
+
+## 服务启动方法
+
+```
+    go run github.com/davyxu/cellmesh/discovery/memsd
+```
+
+## 服务启动参数
+
+- datafile
+    开启持久化，默认每隔1分钟将内存数据落地到指定的datafile中，格式为JSON
+
+- addr
+    按给定的地址侦听，例如memsd -addr=localhost:9099
+    
+
+## memsd客户端功能
+
+客户端通用参数
+- addr
+    连接指定地址的服务发现, 例如:-addr=localhost:9099
+    
+### 查看注册的服务
+
+```
+   go run github.com/davyxu/cellmesh/discovery/memsd -viewsvc
+```
+
+### 清空注册的服务
+
+```
+   go run github.com/davyxu/cellmesh/discovery/memsd -clearsvc
+```
+ 
+### 查看配置的key
+
+```
+   go run github.com/davyxu/cellmesh/discovery/memsd -viewkey
+```  
+
+### 清空配置的key
+
+```
+   go run github.com/davyxu/cellmesh/discovery/memsd -clearkey
+```
 
 # 概念
 
@@ -76,13 +123,9 @@ discovery
       面向游戏优化的服务发现实现。
 service
    服务通信基础，以及服务发现封装。
-shell
-   框架通用的shell脚本。
-tools
+tool
    protogen
-      协议生成器，生成Go的消息绑定以及消息响应入口。
-   routegen
-      路由配置生成器。生成的配置可由agent动态读取并更新路由规则。
+      协议生成器，生成Go的消息绑定以及消息响应入口。   
 util
    所有框架通用的工具代码。
 
@@ -133,7 +176,7 @@ util
 
 - flagfile
 
-   使用FlagFile格式(参考demo/cfg/LocalFlag.cfg),作为进程的命令行参数
+   使用FlagFile格式(参考 [LocalFlag](https://github.com/davyxu/cellmesh_demo/blob/master/cfg/LocalFlag.cfg)),作为进程的命令行参数
 
 
 # Tips
