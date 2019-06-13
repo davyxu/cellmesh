@@ -27,6 +27,7 @@ func init() {
 
 		agentWAN := basefx.GetRemoteServiceWANAddress("agent", agentSvcID)
 
+
 		host, port, err := util.SpliteAddress(agentWAN)
 		if err != nil {
 			log.Errorf("invalid address: '%s' %s", agentWAN, err.Error())

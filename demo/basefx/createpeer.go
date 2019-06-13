@@ -105,5 +105,13 @@ func GetRemoteServiceWANAddress(svcName, svcid string) string {
 
 	desc := result.(*discovery.ServiceDesc)
 
-	return desc.GetMeta("WANAddress")
+	wanAddr := desc.GetMeta("WANAddress")
+
+
+	if wanAddr != ""{
+		return wanAddr
+	}
+
+	// 开发阶段， 返回内网IP
+	return desc.Address()
 }

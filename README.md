@@ -34,6 +34,8 @@
 
 # 运行Demo
 
+    cellmesh 使用go module管理源码依赖， 所以确保go版本在1.12以上
+
 ## 下载cellmesh源码
 
 ```
