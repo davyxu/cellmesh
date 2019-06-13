@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/davyxu/cellmesh/tools/protogen/gengo"
+	"github.com/davyxu/cellmesh/tool/protogen/gengo"
 	"github.com/davyxu/protoplus/gen"
 	"github.com/davyxu/protoplus/model"
 	_ "github.com/davyxu/protoplus/msgidutil"

@@ -1,7 +1,7 @@
 package discovery
 
 import (
-	"github.com/davyxu/cellmesh/discovery/consul"
+	memsd "github.com/davyxu/cellmesh/discovery/memsd/api"
 	"github.com/davyxu/cellmesh/service"
 	"reflect"
 	"testing"
@@ -15,9 +15,9 @@ func TestSafeGetValue(t *testing.T) {
 		origin = append(origin, byte(i))
 	}
 
-	sdConfig := consulsd.DefaultConfig()
+	sdConfig := memsd.DefaultConfig()
 	sdConfig.Address = service.GetDiscoveryAddr()
-	Default = consulsd.NewDiscovery(sdConfig)
+	Default = memsd.NewDiscovery(sdConfig)
 
 	err := SafeSetValue(Default, "config/test", origin, true)
 	if err != nil {

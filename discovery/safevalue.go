@@ -53,7 +53,7 @@ func SafeSetValue(sd Discovery, key string, value interface{}, compress bool) er
 
 				err := sd.DeleteValue(multiKey)
 				if err != nil {
-					fmt.Printf("consul delete kv error, %s\n", err)
+					fmt.Printf("delete kv error, %s\n", err)
 				}
 			}
 

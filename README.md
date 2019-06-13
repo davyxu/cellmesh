@@ -32,55 +32,15 @@
 
    提供强大的扩展及适配能力.
 
-# 运行Demo
+# 使用cellmesh
 
     cellmesh 使用go module管理源码依赖， 所以确保go版本在1.12以上
 
 ## 下载cellmesh源码
 
 ```
-    go get -u -v github.com/davyxu/cellmesh
+    go get github.com/davyxu/cellmesh
 ```
-
-## 准备第三方包
-
-```
-    # 转到cellmesh的shell目录
-    cd github.com/davyxu/cellmesh/shell
-    sh ./DownloadThirdParty.sh
-```
-
-## 准备服务发现
-    服务发现系统用于记录已经运行的服务的基本信息,如: IP、内网端口、外网端口等。
-
-    服务器发现同时也是一个高性能的KV数据库，可以用于保存配置，实现配置的自动分发。
-```
-    # 转到cellmesh的shell目录
-    cd github.com/davyxu/cellmesh/shell
-
-    # 这里会自动编译和运行服务发现服务
-    sh ./StartDiscovery.sh
-```
-
-
-## 更新协议及上传路由规则
-
-执行下面指令更新路由规则到Consul
-```
-    cd github.com/davyxu/cellmesh/demo/proto
-    sh ./MakeProto.sh
-```
-
-## 启动demo服务
-
-按照下面shell分别启动login, agent, game, hub, client
-```
-    cd github.com/davyxu/cellmesh/shell
-
-    sh ./RunDemoSvc.sh login
-```
-
-启动client后,可在命令行中输入文字作为聊天内容发送
 
 # 概念
 
@@ -94,46 +54,6 @@
 
   其他Service发现新的服务进入网络时，根据需要自动连接服务
 
-
-## Agent（网关）
-
-frontend(前端)
-
-与客户端连接的前端通信的侦听器
-
-- 使用心跳+底层断开通知确认User断开
-
-- 客户端断开时通知后台服务器(ClientClosedACK消息)
-
-backend(后端)
-
-与后台服务器通信的侦听器
-
-- 后台认证
-
-  后台服务通过BindBackendACK消息,将后台连接与客户端绑定,客户端固定将对应消息发送到绑定的后台服务器.
-
-- 后台断线重连
-
-  后台服务断开重连时，自动维护连接，保证客户端正常收发后台消息
-
-routerule(路由规则)
-
-在proto文件中,消息的RouteRule属性描述如何路由消息到指定的后台服务器
-
-- 阻断(不填写RouteRule)
-
-   消息被路由阻断,无法发送到后台服务器
-
-- 通透(RouteRule=pass)
-
-  消息始终被路由到后台服务器
-
-- 后台认证(RouteRule=auth)
-
-  消息需要后台认证后才可被路由
-
-
 ## Connection Management（连接维护）
 
 从服务发现的服务信息，创建到不同服务间的长连接。同时在这些连接断开时维护连接
@@ -142,25 +62,7 @@ routerule(路由规则)
 
 # 目录结构
 ```
-demo
-   basefx
-     项目专有框架封装，不跨项目共享
-   cfg
-     开发阶段的快速配置
-   proto
-     协议文件，协议生成代码。
-   svc
-     login
-       登录，用户的固定接入入口，通过login拿到agent地址，让用户连接到agent（做了一个负载均衡的简易策略，获取人数最少的agent）。
-     agent
-       代理，可以启动多个，agent后面有挂载的服务，如game。
-     hub
-       中心服务，各服务的状态，通过发布和订阅的形式，由hub做中转共享，如在线人数等。
-     game
-       业务逻辑服务，处理通过agent转发过来的协议。
 discovery
-   consul
-      consul的服务发现实现及底层封装（不再维护，请换用memsd）。
    kvconfig
       配置的快速获取接口。
    memsd
