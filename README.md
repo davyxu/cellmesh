@@ -42,6 +42,13 @@
     go get github.com/davyxu/cellmesh
 ```
 
+# cellmesh demo
+ demo工程请参见
+ 
+ https://github.com/davyxu/cellmesh_demo
+ 
+ Demo包含服务进程及工具配套等
+
 # 概念
 
 ## Service（服务）
