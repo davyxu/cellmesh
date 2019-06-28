@@ -86,7 +86,7 @@ func init() {
 			return
 		}
 
-		deleteNotify(msg.Key, "api")
+		deleteValueRecurse(msg.Key, "api")
 
 		ev.Session().Send(&proto.DeleteValueACK{
 			Key: msg.Key,
@@ -158,7 +158,7 @@ func init() {
 			return
 		}
 
-		log.Infoln("ClearKey")
+		log.Infoln("ClearValue")
 
 		var svcToDelete []*model.ValueMeta
 		model.VisitValue(func(meta *model.ValueMeta) bool {

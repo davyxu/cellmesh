@@ -6,7 +6,7 @@ import (
 	"sort"
 )
 
-func viewSvc() {
+func ViewSvc() {
 
 	sd := initSD()
 
@@ -38,7 +38,7 @@ func viewSvc() {
 	}
 }
 
-func viewKey() {
+func ViewKey() {
 	sd := initSD()
 	list := sd.GetRawValueList("")
 	sort.Slice(list, func(i, j int) bool {
@@ -54,7 +54,7 @@ func viewKey() {
 	}
 }
 
-func getValue(key string) {
+func GetValue(key string) {
 	sd := initSD()
 	var value string
 	err := sd.GetValue(key, &value)
@@ -66,7 +66,7 @@ func getValue(key string) {
 	fmt.Println(value)
 }
 
-func setValue(key, value string) {
+func SetValue(key, value string) {
 	sd := initSD()
 	err := sd.SetValue(key, value)
 	if err != nil {
@@ -75,14 +75,20 @@ func setValue(key, value string) {
 	}
 }
 
-func clearSvc() {
+func ClearSvc() {
 
 	sd := initSD()
 	sd.ClearService()
 }
 
-func clearKey() {
+func ClearValue() {
 
 	sd := initSD()
 	sd.ClearKey()
+}
+
+func DeleteValue(key string) {
+
+	sd := initSD()
+	sd.DeleteValue(key)
 }

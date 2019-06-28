@@ -58,7 +58,7 @@ func (SvcEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cel
 func init() {
 
 	// 服务器间通讯协议
-	proc.RegisterProcessor("tcp.svc", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("tcp.svc", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
 
 		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(new(SvcEventHooker), new(tcp.MsgHooker)))
@@ -66,7 +66,7 @@ func init() {
 	})
 
 	// 与客户端通信的处理器
-	proc.RegisterProcessor("tcp.client", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("tcp.client", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
 
 		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker)))

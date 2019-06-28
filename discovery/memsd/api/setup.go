@@ -10,7 +10,7 @@ import (
 
 func init() {
 	// 仅供demo使用的
-	proc.RegisterProcessor("memsd.cli", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("memsd.cli", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
 
 		bundle.SetTransmitter(new(TCPMessageTransmitter))
 
@@ -23,7 +23,7 @@ func init() {
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 
-	proc.RegisterProcessor("memsd.svc", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
+	proc.RegisterProcessor("memsd.svc", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
 
 		bundle.SetTransmitter(new(TCPMessageTransmitter))
 		if model.Debug {

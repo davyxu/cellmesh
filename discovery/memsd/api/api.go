@@ -7,6 +7,11 @@ import (
 	"sync"
 )
 
+type notifyContext struct {
+	stack string
+	mode  string
+}
+
 type memDiscovery struct {
 	config *Config
 

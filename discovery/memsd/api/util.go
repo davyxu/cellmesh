@@ -14,5 +14,5 @@ func codeToError(code proto.ResultCode) error {
 		return ErrValueNotExists
 	}
 
-	return fmt.Errorf("unknown error %d", code)
+	return fmt.Errorf("error %s", code.String())
 }

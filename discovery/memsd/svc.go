@@ -9,6 +9,7 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/golog"
+	"strings"
 )
 
 var log = golog.New("memsd")
@@ -40,6 +41,23 @@ func startSvc() {
 	p.(cellnet.PeerCaptureIOPanic).EnableCaptureIOPanic(true)
 	p.Start()
 	service.WaitExitSignal()
+}
+
+func deleteValueRecurse(key, reason string) {
+
+	var keyToDelete []string
+	model.VisitValue(func(meta *model.ValueMeta) bool {
+
+		if strings.HasPrefix(meta.Key, key) {
+			keyToDelete = append(keyToDelete, meta.Key)
+		}
+
+		return true
+	})
+
+	for _, key := range keyToDelete {
+		deleteNotify(key, reason)
+	}
 }
 
 func deleteNotify(key, reason string) {

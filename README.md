@@ -88,12 +88,31 @@
 
 ```
    go run github.com/davyxu/cellmesh/discovery/memsd -viewkey
-```  
+```
 
-### 清空配置的key
+### 获取配置值
+ 
+```
+    go run github.com/davyxu/cellmesh/discovery/memsd -getvalue <key>
+```
+ 
+### 设置配置值
 
 ```
-   go run github.com/davyxu/cellmesh/discovery/memsd -clearkey
+   go run github.com/davyxu/cellmesh/discovery/memsd -setvalue <key> <value>
+```  
+  
+### 删除配置值
+
+```
+   go run github.com/davyxu/cellmesh/discovery/memsd -deletevalue <key>
+```  
+  
+  
+### 清空配置
+
+```
+   go run github.com/davyxu/cellmesh/discovery/memsd -clearvalue
 ```
 
 # 概念

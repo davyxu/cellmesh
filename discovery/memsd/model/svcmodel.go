@@ -16,6 +16,8 @@ var (
 
 	Listener cellnet.Peer
 	Debug    bool
+
+	Version = "0.1.0"
 )
 
 func IsServiceKey(rawkey string) bool {

@@ -32,12 +32,12 @@ func (self *memDiscovery) connect(addr string) {
 			self.sesGuard.Lock()
 			self.ses = ev.Session()
 			self.sesGuard.Unlock()
-
 			self.clearCache()
 			ev.Session().Send(&proto.AuthREQ{
 				Token: self.token,
 			})
 		case *cellnet.SessionClosed:
+			self.token = ""
 			log.Errorf("memsd discovery lost!")
 
 		case *proto.AuthACK:
@@ -50,6 +50,8 @@ func (self *memDiscovery) connect(addr string) {
 			}
 
 			log.Infof("memsd discovery ready!")
+
+			self.triggerNotify("ready", 0)
 
 		case *proto.ValueChangeNotifyACK:
 

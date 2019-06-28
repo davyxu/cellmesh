@@ -14,6 +14,7 @@ var (
 	flagAddr     = flag.String("addr", "", "service discovery address")
 	flagDataFile = flag.String("datafile", "", "persist values to file")
 	flagDebug    = flag.Bool("debug", false, "show debug info")
+	flagVersion  = flag.Bool("version", false, "show version")
 )
 
 type DiscoveryExtend interface {
@@ -41,6 +42,11 @@ func main() {
 
 	flag.Parse()
 
+	if *flagVersion {
+		fmt.Println("version", model.Version)
+		return
+	}
+
 	model.Debug = *flagDebug
 
 	go startCheckRedundantValue()
@@ -54,26 +60,32 @@ func main() {
 	case "": // addr
 		startSvc()
 	case "viewsvc": // addr
-		viewSvc()
+		ViewSvc()
 	case "viewkey": // addr
-		viewKey()
+		ViewKey()
 	case "clearsvc": // addr
-		clearSvc()
-	case "clearkey": // addr
-		clearKey()
+		ClearSvc()
+	case "clearvalue": // addr
+		ClearValue()
+	case "deletevalue":
+		if flag.NArg() < 1 {
+			fmt.Println("deletevalue <key>")
+			os.Exit(1)
+		}
+		DeleteValue(flag.Arg(0))
 	case "getvalue":
 		if flag.NArg() < 1 {
 			fmt.Println("getvalue <key>")
 			os.Exit(1)
 		}
-		getValue(flag.Arg(0))
+		GetValue(flag.Arg(0))
 	case "setvalue":
 		if flag.NArg() < 2 {
 			fmt.Println("setvalue <key> <value>")
 			os.Exit(1)
 		}
 
-		setValue(flag.Arg(0), flag.Arg(1))
+		SetValue(flag.Arg(0), flag.Arg(1))
 	default:
 		fmt.Printf("Unknown command '%s'\n", *flagCmd)
 		os.Exit(1)

@@ -69,23 +69,36 @@ func (self *memDiscovery) ClearService() {
 	self.remoteCall(&proto.ClearSvcREQ{}, func(ack *proto.ClearSvcACK) {})
 }
 
-func notify(c chan struct{}, stackString string) {
-
-	select {
-	case c <- struct{}{}:
-	case <-time.After(10 * time.Second):
-		// 接收通知阻塞太久，或者没有释放侦听的channel
-		log.Errorf("addNotify timeout, not free? regstack: %s", stackString)
-	}
-
-}
-
-func (self *memDiscovery) notifySvcChanged() {
+func (self *memDiscovery) triggerNotify(mode string, timeout time.Duration) {
 
 	self.notifyMap.Range(func(key, value interface{}) bool {
 
-		if value != nil {
-			notify(key.(chan struct{}), value.(string))
+		if value == nil {
+			return true
+		}
+
+		ctx := value.(*notifyContext)
+
+		if ctx.mode != mode {
+			return true
+		}
+
+		c := key.(chan struct{})
+
+		if timeout == 0 {
+
+			select {
+			case c <- struct{}{}:
+			default:
+			}
+
+		} else {
+			select {
+			case c <- struct{}{}:
+			case <-time.After(timeout):
+				// 接收通知阻塞太久，或者没有释放侦听的channel
+				log.Errorf("notify(%s) timeout, not free? regstack: %s", ctx.mode, ctx.stack)
+			}
 		}
 
 		return true
@@ -97,9 +110,13 @@ func (self *memDiscovery) RegisterNotify(mode string) (ret chan struct{}) {
 	ret = make(chan struct{}, 10)
 
 	switch mode {
-	case "add":
-		self.notifyMap.Store(ret, util.StackToString(5))
-	case "remove":
+	case "add", "ready":
+		self.notifyMap.Store(ret, &notifyContext{
+			mode:  mode,
+			stack: util.StackToString(5),
+		})
+	default:
+		panic("unknown notify mode: " + mode)
 	}
 
 	return
@@ -108,9 +125,10 @@ func (self *memDiscovery) RegisterNotify(mode string) (ret chan struct{}) {
 func (self *memDiscovery) DeregisterNotify(mode string, c chan struct{}) {
 
 	switch mode {
-	case "add":
+	case "add", "ready":
 		self.notifyMap.Store(c, nil)
-	case "remove":
+	default:
+		panic("unknown notify mode: " + mode)
 	}
 }
 
@@ -143,7 +161,7 @@ func (self *memDiscovery) updateSvcCache(svcName string, value []byte) {
 	self.svcCache[svcName] = list
 	self.svcCacheGuard.Unlock()
 
-	self.notifySvcChanged()
+	self.triggerNotify("add", time.Second*10)
 }
 
 func (self *memDiscovery) deleteSvcCache(svcid, svcName string) {

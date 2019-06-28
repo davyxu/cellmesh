@@ -30,6 +30,10 @@ func AddRemoteService(ses cellnet.Session, svcid, name string) {
 
 func RemoveRemoteService(ses cellnet.Session) {
 
+	if ses == nil {
+		return
+	}
+
 	ctx := SessionToContext(ses)
 	if ctx != nil {
 
@@ -42,6 +46,8 @@ func RemoveRemoteService(ses cellnet.Session) {
 		connBySvcNameGuard.Unlock()
 
 		log.SetColor("yellow").Infof("remote service removed '%s' sid: %d", ctx.SvcID, ses.ID())
+	} else {
+		log.SetColor("yellow").Infof("remote service removed sid: %d, context lost", ses.ID())
 	}
 }
 
