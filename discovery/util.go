@@ -41,6 +41,9 @@ func BytesToAny(data []byte, dataPtr interface{}) error {
 	case *string:
 		*ret = string(data)
 		return nil
+	case *[]byte:
+		*ret = data
+		return nil
 	default:
 		return json.Unmarshal(data, dataPtr)
 	}
