@@ -102,7 +102,7 @@ func SafeGetValue(sd Discovery, key string, valuePtr interface{}, decompress boo
 		for _, multiKey := range getMultiKey(sd, key) {
 
 			var partData []byte
-			err := Default.GetValue(multiKey, &partData)
+			err := sd.GetValue(multiKey, &partData)
 			if err != nil {
 				return err
 			}
