@@ -87,11 +87,26 @@ func (self *UUID64Generator) LeftNumF() (ret uint) {
 }
 
 // 序列号组件
-func (self *UUID64Generator) AddSeqComponent(numF uint) {
+func (self *UUID64Generator) AddSeqComponent(numF uint, init uint64) {
+	self.seqGen = init
 	self.AddComponent(&UUID64Component{
 		ValueSrc: func() uint64 {
 			self.seqGen++
 			return self.seqGen
+		},
+
+		NumF: numF,
+	})
+
+}
+
+// 固定值组件
+func (self *UUID64Generator) AddConstComponent(numF uint, constNumber uint64) {
+
+	uconst := uint64(constNumber)
+	self.AddComponent(&UUID64Component{
+		ValueSrc: func() uint64 {
+			return uconst
 		},
 
 		NumF: numF,
