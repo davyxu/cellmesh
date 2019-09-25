@@ -6,7 +6,7 @@ enum ResultCode
 }
 
 
-[AutoMsgID Codec:"protoplus" Service: "memsd"]
+[AutoMsgID]
 struct SetValueREQ{
 	Key string
 	Value bytes
@@ -15,19 +15,19 @@ struct SetValueREQ{
 }
 
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID]
 struct SetValueACK{
     Code ResultCode
 }
 
 
-[AutoMsgID Codec:"protoplus" Service: "memsd"]
+[AutoMsgID]
 struct GetValueREQ{
 	Key string
 }
 
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID]
 struct GetValueACK{
     Code ResultCode
 	Key string
@@ -36,22 +36,20 @@ struct GetValueACK{
 
 
 
-[AutoMsgID Codec:"protoplus" Service: "memsd"]
+[AutoMsgID]
 struct DeleteValueREQ{
 	Key string
 }
 
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID]
 struct DeleteValueACK{
     Code ResultCode
 	Key string
-
-
 }
 
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID]
 struct ValueChangeNotifyACK{
 	Key string
 	Value bytes
@@ -59,7 +57,7 @@ struct ValueChangeNotifyACK{
 	SvcName string
 }
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID]
 struct ValueDeleteNotifyACK{
 	Key string
 
@@ -68,32 +66,37 @@ struct ValueDeleteNotifyACK{
 
 
 
-[AutoMsgID Codec:"protoplus" Service: "memsd"]
+[AutoMsgID]
 struct AuthREQ{
 	Token string
 }
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID]
 struct AuthACK{
 	Token string
 }
 
 
-[AutoMsgID Codec:"protoplus" Service: "memsd"]
+[AutoMsgID]
 struct ClearSvcREQ{
 }
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID]
 struct ClearSvcACK{
 	Code ResultCode
 }
 
 
-[AutoMsgID Codec:"protoplus" Service: "memsd"]
+[AutoMsgID]
 struct ClearKeyREQ{
 }
 
-[AutoMsgID Codec:"protoplus"]
+[AutoMsgID]
 struct ClearKeyACK{
 	Code ResultCode
+}
+
+
+[AutoMsgID]
+struct SDPingACK{
 }

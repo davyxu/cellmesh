@@ -1,15 +1,17 @@
 package main
 
 import (
-	"github.com/davyxu/cellmesh/discovery/memsd/api"
+	memsd "github.com/davyxu/cellmesh/discovery/memsd/api"
 	"github.com/davyxu/cellmesh/discovery/memsd/model"
-	"github.com/davyxu/cellmesh/discovery/memsd/proto"
-	"github.com/davyxu/cellmesh/service"
+	sdproto "github.com/davyxu/cellmesh/discovery/memsd/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/golog"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 var log = golog.New("memsd")
@@ -28,19 +30,16 @@ func startSvc() {
 	p := peer.NewGenericPeer("tcp.Acceptor", "memsd", config.Address, model.Queue)
 	p.(cellnet.PeerCaptureIOPanic).EnableCaptureIOPanic(true)
 	model.Listener = p
-	msgFunc := proto.GetMessageHandler("memsd")
-
-	proc.BindProcessorHandler(p, "memsd.svc", func(ev cellnet.Event) {
-
-		if msgFunc != nil {
-			msgFunc(ev)
-		}
-	})
+	proc.BindProcessorHandler(p, "memsd.svc", msgHandler)
 
 	p.(cellnet.TCPSocketOption).SetSocketBuffer(1024*1024, 1024*1024, true)
 	p.(cellnet.PeerCaptureIOPanic).EnableCaptureIOPanic(true)
 	p.Start()
-	service.WaitExitSignal()
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	<-ch
 }
 
 func deleteValueRecurse(key, reason string) {
@@ -63,7 +62,7 @@ func deleteValueRecurse(key, reason string) {
 func deleteNotify(key, reason string) {
 	valueMeta := model.DeleteValue(key)
 
-	var ack proto.ValueDeleteNotifyACK
+	var ack sdproto.ValueDeleteNotifyACK
 	ack.Key = key
 
 	if valueMeta != nil {

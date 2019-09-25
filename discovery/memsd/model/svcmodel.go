@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/davyxu/cellmesh/util"
+	meshutil "github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"strings"
 )
@@ -15,9 +15,8 @@ var (
 	IDGen = meshutil.NewUUID64Generator()
 
 	Listener cellnet.Peer
-	Debug    bool
 
-	Version = "0.1.0"
+	Version = "0.2.0"
 )
 
 func IsServiceKey(rawkey string) bool {

@@ -53,10 +53,10 @@ func (self *memDiscovery) SetValue(key string, dataPtr interface{}, optList ...i
 		return ErrValueTooLarge
 	}
 
-	callErr := self.remoteCall(&proto.SetValueREQ{
+	callErr := self.remoteCall(&sdproto.SetValueREQ{
 		Key:   key,
 		Value: raw,
-	}, func(ack *proto.SetValueACK) {
+	}, func(ack *sdproto.SetValueACK) {
 		retErr = codeToError(ack.Code)
 	})
 
@@ -82,9 +82,9 @@ func (self *memDiscovery) GetValue(key string, valuePtr interface{}) error {
 
 func (self *memDiscovery) GetRawValue(key string) (retData []byte, retErr error) {
 
-	callErr := self.remoteCall(&proto.GetValueREQ{
+	callErr := self.remoteCall(&sdproto.GetValueREQ{
 		Key: key,
-	}, func(ack *proto.GetValueACK) {
+	}, func(ack *sdproto.GetValueACK) {
 		retData = ack.Value
 		retErr = codeToError(ack.Code)
 	})
@@ -100,9 +100,9 @@ func (self *memDiscovery) GetRawValue(key string) (retData []byte, retErr error)
 
 func (self *memDiscovery) DeleteValue(key string) (ret error) {
 
-	callErr := self.remoteCall(&proto.DeleteValueREQ{
+	callErr := self.remoteCall(&sdproto.DeleteValueREQ{
 		Key: key,
-	}, func(ack *proto.DeleteValueACK) {
+	}, func(ack *sdproto.DeleteValueACK) {
 		ret = codeToError(ack.Code)
 	})
 
@@ -134,5 +134,5 @@ func (self *memDiscovery) GetRawValueList(prefix string) (ret []discovery.ValueM
 }
 
 func (self *memDiscovery) ClearKey() {
-	self.remoteCall(&proto.ClearKeyREQ{}, func(ack *proto.ClearKeyACK) {})
+	self.remoteCall(&sdproto.ClearKeyREQ{}, func(ack *sdproto.ClearKeyACK) {})
 }

@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-type TCPMessageTransmitter struct {
+type tcpMessageTransmitter struct {
 }
 
 type socketOpt interface {
@@ -15,7 +15,7 @@ type socketOpt interface {
 	ApplySocketWriteTimeout(conn net.Conn, callback func())
 }
 
-func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
+func (tcpMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}, err error) {
 
 	reader, ok := ses.Raw().(io.Reader)
 
@@ -31,7 +31,7 @@ func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 		// 有读超时时，设置超时
 		opt.ApplySocketReadTimeout(conn, func() {
 
-			msg, err = RecvLTVPacket(reader, opt.MaxPacketSize())
+			msg, err = recvLTVPacket(reader, opt.MaxPacketSize())
 
 		})
 	}
@@ -39,7 +39,7 @@ func (TCPMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg interface{}
 	return
 }
 
-func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) (err error) {
+func (tcpMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{}) (err error) {
 
 	writer, ok := ses.Raw().(io.Writer)
 
@@ -53,7 +53,7 @@ func (TCPMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interface{})
 	// 有写超时时，设置超时
 	opt.ApplySocketWriteTimeout(writer.(net.Conn), func() {
 
-		err = SendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
+		err = sendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
 
 	})
 

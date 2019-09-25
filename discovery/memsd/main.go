@@ -4,8 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/memsd/api"
+	memsd "github.com/davyxu/cellmesh/discovery/memsd/api"
 	"github.com/davyxu/cellmesh/discovery/memsd/model"
+	"github.com/davyxu/golog"
 	"os"
 )
 
@@ -13,7 +14,6 @@ var (
 	flagCmd      = flag.String("cmd", "", "sub command, empty to launch memsd service")
 	flagAddr     = flag.String("addr", "", "service discovery address")
 	flagDataFile = flag.String("datafile", "", "persist values to file")
-	flagDebug    = flag.Bool("debug", false, "show debug info")
 	flagVersion  = flag.Bool("version", false, "show version")
 )
 
@@ -35,7 +35,9 @@ func initSD() DiscoveryExtend {
 		config.Address = *flagAddr
 	}
 
-	return memsd.NewDiscovery(config).(DiscoveryExtend)
+	sd := memsd.NewDiscovery().(DiscoveryExtend)
+	sd.Start(config)
+	return sd
 }
 
 func main() {
@@ -47,14 +49,14 @@ func main() {
 		return
 	}
 
-	model.Debug = *flagDebug
-
 	go startCheckRedundantValue()
 
 	if *flagDataFile != "" {
 		loadPersistFile(*flagDataFile)
 		go startPersistCheck(*flagDataFile)
 	}
+
+	golog.SetLevelByString("memsdapi", "info")
 
 	switch *flagCmd {
 	case "": // addr

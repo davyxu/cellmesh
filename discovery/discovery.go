@@ -5,9 +5,11 @@ type ValueMeta struct {
 	Value []byte
 }
 
-type CheckerFunc func() (output, status string)
+type NotifyFunc func(evType string, args ...interface{})
 
+// 基础服务发现
 type Discovery interface {
+	Start(config interface{})
 
 	// 注册服务
 	Register(*ServiceDesc) error
@@ -18,12 +20,12 @@ type Discovery interface {
 	// 根据服务名查到可用的服务
 	Query(name string) (ret []*ServiceDesc)
 
-	// 注册服务变化通知
-	RegisterNotify(mode string) (ret chan struct{})
+	// 在服务发现内部逻辑线程, 通知回调, 多个事件将顺序通知
+	SetNotify(callback NotifyFunc)
+}
 
-	// 解除服务变化通知
-	DeregisterNotify(mode string, c chan struct{})
-
+// KV接口, 可由Discovery转换
+type KVStorage interface {
 	// 设置值
 	SetValue(key string, value interface{}, optList ...interface{}) error
 

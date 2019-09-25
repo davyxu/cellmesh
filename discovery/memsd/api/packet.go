@@ -21,7 +21,7 @@ const (
 )
 
 // 接收Length-Type-Value格式的封包流程
-func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err error) {
+func recvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err error) {
 
 	// Size为uint16，占2字节
 	var sizeBuffer = make([]byte, bodySize)
@@ -75,7 +75,7 @@ func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err er
 }
 
 // 发送Length-Type-Value格式的封包流程
-func SendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interface{}) error {
+func sendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interface{}) error {
 
 	var (
 		msgData []byte

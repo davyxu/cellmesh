@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/davyxu/cellmesh/discovery"
 	"os"
 	"sort"
 )
@@ -17,10 +18,6 @@ func ViewSvc() {
 		a := list[i]
 		b := list[j]
 
-		if a.GetMeta("SvcGroup") != b.GetMeta("SvcGroup") {
-			return a.GetMeta("SvcGroup") < b.GetMeta("SvcGroup")
-		}
-
 		if a.Port != b.Port {
 			return a.Port < b.Port
 		}
@@ -34,7 +31,7 @@ func ViewSvc() {
 
 	for _, desc := range list {
 
-		fmt.Println(desc.FormatString())
+		fmt.Println(desc.VisualString())
 	}
 }
 
@@ -55,7 +52,7 @@ func ViewKey() {
 }
 
 func GetValue(key string) {
-	sd := initSD()
+	sd := initSD().(discovery.KVStorage)
 	var value string
 	err := sd.GetValue(key, &value)
 	if err != nil {
@@ -67,7 +64,7 @@ func GetValue(key string) {
 }
 
 func SetValue(key, value string) {
-	sd := initSD()
+	sd := initSD().(discovery.KVStorage)
 	err := sd.SetValue(key, value)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -89,6 +86,6 @@ func ClearValue() {
 
 func DeleteValue(key string) {
 
-	sd := initSD()
+	sd := initSD().(discovery.KVStorage)
 	sd.DeleteValue(key)
 }

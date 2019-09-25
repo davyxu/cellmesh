@@ -6,8 +6,6 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/discovery/memsd/model"
 	"github.com/davyxu/cellmesh/discovery/memsd/proto"
-	"github.com/davyxu/cellnet/util"
-	"time"
 )
 
 func (self *memDiscovery) Register(svc *discovery.ServiceDesc) (retErr error) {
@@ -25,11 +23,11 @@ func (self *memDiscovery) Register(svc *discovery.ServiceDesc) (retErr error) {
 		return err
 	}
 
-	callErr := self.remoteCall(&proto.SetValueREQ{
+	callErr := self.remoteCall(&sdproto.SetValueREQ{
 		Key:     model.ServiceKeyPrefix + svc.ID,
 		Value:   data,
 		SvcName: svc.Name,
-	}, func(ack *proto.SetValueACK) {
+	}, func(ack *sdproto.SetValueACK) {
 		retErr = codeToError(ack.Code)
 	})
 
@@ -66,70 +64,7 @@ func (self *memDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
 }
 
 func (self *memDiscovery) ClearService() {
-	self.remoteCall(&proto.ClearSvcREQ{}, func(ack *proto.ClearSvcACK) {})
-}
-
-func (self *memDiscovery) triggerNotify(mode string, timeout time.Duration) {
-
-	self.notifyMap.Range(func(key, value interface{}) bool {
-
-		if value == nil {
-			return true
-		}
-
-		ctx := value.(*notifyContext)
-
-		if ctx.mode != mode {
-			return true
-		}
-
-		c := key.(chan struct{})
-
-		if timeout == 0 {
-
-			select {
-			case c <- struct{}{}:
-			default:
-			}
-
-		} else {
-			select {
-			case c <- struct{}{}:
-			case <-time.After(timeout):
-				// 接收通知阻塞太久，或者没有释放侦听的channel
-				log.Errorf("notify(%s) timeout, not free? regstack: %s", ctx.mode, ctx.stack)
-			}
-		}
-
-		return true
-	})
-
-}
-
-func (self *memDiscovery) RegisterNotify(mode string) (ret chan struct{}) {
-	ret = make(chan struct{}, 10)
-
-	switch mode {
-	case "add", "ready":
-		self.notifyMap.Store(ret, &notifyContext{
-			mode:  mode,
-			stack: util.StackToString(5),
-		})
-	default:
-		panic("unknown notify mode: " + mode)
-	}
-
-	return
-}
-
-func (self *memDiscovery) DeregisterNotify(mode string, c chan struct{}) {
-
-	switch mode {
-	case "add", "ready":
-		self.notifyMap.Store(c, nil)
-	default:
-		panic("unknown notify mode: " + mode)
-	}
+	self.remoteCall(&sdproto.ClearSvcREQ{}, func(ack *sdproto.ClearSvcACK) {})
 }
 
 func (self *memDiscovery) updateSvcCache(svcName string, value []byte) {
@@ -161,7 +96,7 @@ func (self *memDiscovery) updateSvcCache(svcName string, value []byte) {
 	self.svcCache[svcName] = list
 	self.svcCacheGuard.Unlock()
 
-	self.triggerNotify("add", time.Second*10)
+	self.triggerNotify("add", &desc)
 }
 
 func (self *memDiscovery) deleteSvcCache(svcid, svcName string) {

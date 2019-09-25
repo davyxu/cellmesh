@@ -2,15 +2,9 @@ package memsd
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/memsd/model"
 	"github.com/davyxu/cellnet"
 	"sync"
 )
-
-type notifyContext struct {
-	stack string
-	mode  string
-}
 
 type memDiscovery struct {
 	config *Config
@@ -24,28 +18,33 @@ type memDiscovery struct {
 	svcCache      map[string][]*discovery.ServiceDesc
 	svcCacheGuard sync.RWMutex
 
-	notifyMap sync.Map // key=mode+c value=string
+	notifyFunc discovery.NotifyFunc
 
 	initWg *sync.WaitGroup
 
 	token string
+
+	q cellnet.EventQueue
 }
 
-func NewDiscovery(config interface{}) discovery.Discovery {
+func (self *memDiscovery) triggerNotify(evType string, args ...interface{}) {
+
+	if self.notifyFunc != nil {
+		self.notifyFunc(evType, args...)
+	}
+}
+func (self *memDiscovery) SetNotify(callback discovery.NotifyFunc) {
+
+	self.notifyFunc = callback
+}
+
+func (self *memDiscovery) Start(config interface{}) {
 
 	if config == nil {
 		config = DefaultConfig()
 	}
 
-	self := &memDiscovery{
-		config:   config.(*Config),
-		kvCache:  make(map[string][]byte),
-		svcCache: make(map[string][]*discovery.ServiceDesc),
-	}
-
-	model.Queue = cellnet.NewEventQueue()
-	model.Queue.EnableCapturePanic(true)
-	model.Queue.StartLoop()
+	self.config = config.(*Config)
 
 	self.initWg = new(sync.WaitGroup)
 	self.initWg.Add(1)
@@ -55,6 +54,17 @@ func NewDiscovery(config interface{}) discovery.Discovery {
 	// 等待拉取初始值
 	self.initWg.Wait()
 	self.initWg = nil
+}
+
+func NewDiscovery() discovery.Discovery {
+
+	self := &memDiscovery{
+		kvCache:  make(map[string][]byte),
+		svcCache: make(map[string][]*discovery.ServiceDesc),
+		q:        cellnet.NewEventQueue(),
+	}
+	self.q.EnableCapturePanic(true)
+	self.q.StartLoop()
 
 	return self
 }

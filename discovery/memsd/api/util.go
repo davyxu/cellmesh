@@ -5,12 +5,12 @@ import (
 	"github.com/davyxu/cellmesh/discovery/memsd/proto"
 )
 
-func codeToError(code proto.ResultCode) error {
+func codeToError(code sdproto.ResultCode) error {
 
 	switch code {
-	case proto.ResultCode_Result_OK:
+	case sdproto.ResultCode_Result_OK:
 		return nil
-	case proto.ResultCode_Result_NotExists:
+	case sdproto.ResultCode_Result_NotExists:
 		return ErrValueNotExists
 	}
 

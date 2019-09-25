@@ -22,7 +22,7 @@ func (self *memDiscovery) clearCache() {
 }
 
 func (self *memDiscovery) connect(addr string) {
-	p := peer.NewGenericPeer("tcp.Connector", "memsd", addr, model.Queue)
+	p := peer.NewGenericPeer("tcp.Connector", "memsd", addr, self.q)
 
 	proc.BindProcessorHandler(p, "memsd.cli", func(ev cellnet.Event) {
 
@@ -33,14 +33,14 @@ func (self *memDiscovery) connect(addr string) {
 			self.ses = ev.Session()
 			self.sesGuard.Unlock()
 			self.clearCache()
-			ev.Session().Send(&proto.AuthREQ{
+			ev.Session().Send(&sdproto.AuthREQ{
 				Token: self.token,
 			})
 		case *cellnet.SessionClosed:
 			self.token = ""
 			log.Errorf("memsd discovery lost!")
 
-		case *proto.AuthACK:
+		case *sdproto.AuthACK:
 
 			self.token = msg.Token
 
@@ -49,11 +49,11 @@ func (self *memDiscovery) connect(addr string) {
 				self.initWg.Done()
 			}
 
-			log.Infof("memsd discovery ready!")
+			log.Debugf("memsd discovery ready!")
 
-			self.triggerNotify("ready", 0)
+			self.triggerNotify("ready")
 
-		case *proto.ValueChangeNotifyACK:
+		case *sdproto.ValueChangeNotifyACK:
 
 			if model.IsServiceKey(msg.Key) {
 				self.updateSvcCache(msg.SvcName, msg.Value)
@@ -61,7 +61,7 @@ func (self *memDiscovery) connect(addr string) {
 				self.updateKVCache(msg.Key, msg.Value)
 			}
 
-		case *proto.ValueDeleteNotifyACK:
+		case *sdproto.ValueDeleteNotifyACK:
 
 			if model.IsServiceKey(msg.Key) {
 				svcid := model.GetSvcIDByServiceKey(msg.Key)
@@ -88,5 +88,16 @@ func (self *memDiscovery) connect(addr string) {
 
 		time.Sleep(time.Millisecond * 500)
 	}
+
+	go func() {
+
+		ticker := time.NewTicker(time.Second * 5)
+		for {
+			<-ticker.C
+
+			self.ses.Send(&sdproto.SDPingACK{})
+		}
+
+	}()
 
 }

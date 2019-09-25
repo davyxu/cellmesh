@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"fmt"
+	"github.com/davyxu/cellnet/util"
 	"reflect"
 	"sort"
 	"strconv"
@@ -88,6 +89,17 @@ func (self *ServiceDesc) Address() string {
 
 func (self *ServiceDesc) String() string {
 	var sb strings.Builder
+	if len(self.Tags) > 0 {
+		sb.WriteString("tags: [")
+		for index, tag := range self.Tags {
+			if index > 0 {
+				sb.WriteString(",")
+			}
+			sb.WriteString(tag)
+		}
+		sb.WriteString("]")
+	}
+
 	if len(self.Meta) > 0 {
 
 		sb.WriteString("meta: [ ")
@@ -103,9 +115,21 @@ func (self *ServiceDesc) String() string {
 	return fmt.Sprintf("%s host: %s port: %d %s", self.ID, self.Host, self.Port, sb.String())
 }
 
-func (self *ServiceDesc) FormatString() string {
+func (self *ServiceDesc) VisualString() string {
 
 	var sb strings.Builder
+
+	if len(self.Tags) > 0 {
+		sb.WriteString("tags: [")
+		for index, tag := range self.Tags {
+			if index > 0 {
+				sb.WriteString(",")
+			}
+			sb.WriteString(tag)
+		}
+		sb.WriteString("]")
+	}
+
 	if len(self.Meta) > 0 {
 
 		type pair struct {
@@ -134,5 +158,5 @@ func (self *ServiceDesc) FormatString() string {
 		sb.WriteString("]")
 	}
 
-	return fmt.Sprintf("%25s host: %15s port: %5d %s", self.ID, self.Host, self.Port, sb.String())
+	return fmt.Sprintf("%10s |%10s |%20s | %s", self.Name, self.ID, util.JoinAddress(self.Host, self.Port), sb.String())
 }

@@ -86,7 +86,7 @@ func (self *UUID64Generator) LeftNumF() (ret uint) {
 	return MaxNumFInt64 - self.UsedNumF()
 }
 
-// 序列号组件
+// 序列号组件, init为初始值
 func (self *UUID64Generator) AddSeqComponent(numF uint, init uint64) {
 	self.seqGen = init
 	self.AddComponent(&UUID64Component{
