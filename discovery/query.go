@@ -1,6 +1,4 @@
-package service
-
-import "github.com/davyxu/cellmesh/discovery"
+package discovery
 
 type QueryServiceOp int
 
@@ -17,12 +15,12 @@ type QueryResult interface{}
 // 2. false等效于QueryServiceOp_NextDesc, 转到下一个外层循环
 // 3. QueryServiceOp_End: 终止所有遍历循环
 // 4. Filter中将类型转为QueryResult,则在QueryService函数返回
-type FilterFunc func(*discovery.ServiceDesc) interface{}
+type FilterFunc func(*ServiceDesc) interface{}
 
 // 根据给定的查询服务名,将结果经过各种过滤器处理后输出
 func QueryService(svcName string, filterList ...FilterFunc) (ret interface{}) {
 
-	for _, desc := range discovery.Default.Query(svcName) {
+	for _, desc := range Default.Query(svcName) {
 
 		for _, filter := range filterList {
 
@@ -61,7 +59,7 @@ func QueryService(svcName string, filterList ...FilterFunc) (ret interface{}) {
 // 匹配指定的服务组,服务组空时,匹配所有
 func Filter_MatchSvcGroup(svcGroup string) FilterFunc {
 
-	return func(desc *discovery.ServiceDesc) interface{} {
+	return func(desc *ServiceDesc) interface{} {
 
 		if svcGroup == "" {
 			return true
@@ -74,7 +72,7 @@ func Filter_MatchSvcGroup(svcGroup string) FilterFunc {
 // 匹配指定的服务ID
 func Filter_MatchSvcID(svcid string) FilterFunc {
 
-	return func(desc *discovery.ServiceDesc) interface{} {
+	return func(desc *ServiceDesc) interface{} {
 
 		if desc.ID == svcid {
 			return QueryResult(desc)
@@ -87,7 +85,7 @@ func Filter_MatchSvcID(svcid string) FilterFunc {
 // 匹配指定的规则,一般由命令行指定
 func Filter_MatchRule(rules []MatchRule) FilterFunc {
 
-	return func(desc *discovery.ServiceDesc) interface{} {
+	return func(desc *ServiceDesc) interface{} {
 
 		// 任意规则满足即可
 		for _, rule := range rules {

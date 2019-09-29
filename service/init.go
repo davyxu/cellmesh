@@ -24,7 +24,7 @@ func Init(name string) {
 
 	CommandLine.Parse(os.Args[1:])
 
-	LinkRules = ParseMatchRule(getLinkRule())
+	LinkRules = discovery.ParseMatchRule(getLinkRule())
 
 	// 设置文件日志
 	if *flagLogFile != "" {
@@ -108,7 +108,8 @@ func ConnectDiscovery() {
 	log.Debugf("Connecting to discovery '%s' ...", *flagDiscoveryAddr)
 	sdConfig := memsd.DefaultConfig()
 	sdConfig.Address = *flagDiscoveryAddr
-	discovery.Default = memsd.NewDiscovery(sdConfig)
+	discovery.Default = memsd.NewDiscovery()
+	discovery.Default.Start(sdConfig)
 }
 
 func WaitExitSignal() {

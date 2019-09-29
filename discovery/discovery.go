@@ -1,41 +1,82 @@
 package discovery
 
-type ValueMeta struct {
-	Key   string
-	Value []byte
-}
-
-type NotifyFunc func(evType string, args ...interface{})
-
-// 基础服务发现
-type Discovery interface {
-	Start(config interface{})
-
-	// 注册服务
-	Register(*ServiceDesc) error
-
-	// 解注册服务
-	Deregister(svcid string) error
-
-	// 根据服务名查到可用的服务
-	Query(name string) (ret []*ServiceDesc)
-
-	// 在服务发现内部逻辑线程, 通知回调, 多个事件将顺序通知
-	SetNotify(callback NotifyFunc)
-}
-
-// KV接口, 可由Discovery转换
-type KVStorage interface {
-	// 设置值
-	SetValue(key string, value interface{}, optList ...interface{}) error
-
-	// 取值，并赋值到变量
-	GetValue(key string, valuePtr interface{}) error
-
-	// 删除值
-	DeleteValue(key string) error
-}
-
-var (
-	Default Discovery
+import (
+	"github.com/davyxu/cellnet"
 )
+
+type DiscoveryOption struct {
+	Rules         []MatchRule
+	MaxCount      int    // 连接数，默认发起多条连接
+	MatchSvcGroup string // 空时，匹配所有同类服务，否则找指定组的服务
+}
+
+// 发现一个服务，服务可能拥有多个地址，每个地址返回时，创建一个connector并开启
+// DiscoveryService返回值返回持有多个Peer的peer, 判断Peer的IsReady可以得到所有连接准备好的状态
+func DiscoveryService(tgtSvcName string, opt DiscoveryOption, peerCreator func(cellnet.Peer, *ServiceDesc)) cellnet.Peer {
+
+	Default.SetNotify(func(evType string, args ...interface{}) {
+
+		if evType == "add" {
+			QueryService(tgtSvcName, func(desc *ServiceDesc) interface{} {
+
+				return true
+			})
+		}
+
+	})
+
+	// 从发现到连接有一个过程，需要用Map防止还没连上，又创建一个新的连接
+	multiPeer := newMultiPeer()
+
+	go func() {
+
+		notify := Default.RegisterNotify("add")
+		for {
+
+			QueryService(tgtSvcName,
+				Filter_MatchRule(opt.Rules),
+				Filter_MatchSvcGroup(opt.MatchSvcGroup),
+				func(desc *ServiceDesc) interface{} {
+
+					//log.Infof("found '%s' address '%s' ", tgtSvcName, desc.Address())
+
+					prePeer := multiPeer.GetPeer(desc.ID)
+
+					// 如果svcid重复汇报, 可能svcid内容有变化
+					if prePeer != nil {
+
+						var preDesc *ServiceDesc
+						if prePeer.(cellnet.ContextSet).FetchContext("sd", &preDesc) && !preDesc.Equals(desc) {
+
+							log.Infof("service '%s' change desc, %+v -> %+v...", desc.ID, preDesc, desc)
+
+							// 移除之前的连接
+							multiPeer.RemovePeer(desc.ID)
+
+							// 停止重连
+							prePeer.Stop()
+
+						} else {
+							return true
+						}
+
+					}
+
+					// 达到最大连接
+					if opt.MaxCount > 0 && len(multiPeer.GetPeers()) >= opt.MaxCount {
+						return true
+					}
+
+					// 用户创建peer
+					peerCreator(multiPeer, desc)
+
+					return true
+				})
+
+			<-notify
+		}
+
+	}()
+
+	return multiPeer
+}

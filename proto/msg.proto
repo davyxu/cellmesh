@@ -1,0 +1,6 @@
+
+[AutoMsgID]
+struct ServiceIdentifyACK
+{
+	SvcID   string
+}

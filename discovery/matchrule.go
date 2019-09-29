@@ -1,7 +1,6 @@
-package service
+package discovery
 
 import (
-	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/util"
 	"strings"
 )
@@ -10,7 +9,7 @@ type MatchRule struct {
 	Target string
 }
 
-func matchTarget(rule *MatchRule, desc *discovery.ServiceDesc) bool {
+func matchTarget(rule *MatchRule, desc *ServiceDesc) bool {
 
 	return meshutil.WildcardPatternMatch(desc.GetMeta("SvcGroup"), rule.Target)
 }
