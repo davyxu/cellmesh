@@ -2,8 +2,8 @@ package memsd
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/memsd/model"
-	"github.com/davyxu/cellmesh/discovery/memsd/proto"
+	"github.com/davyxu/cellmesh/svc/memsd/model"
+	"github.com/davyxu/cellmesh/svc/memsd/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
@@ -49,7 +49,7 @@ func (self *memDiscovery) connect(addr string) {
 				self.initWg.Done()
 			}
 
-			log.Debugf("memsd discovery ready!")
+			log.SetColor("green").Debugf("memsd discovery ready!")
 
 			self.triggerNotify("ready")
 

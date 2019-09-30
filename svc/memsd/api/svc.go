@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/memsd/model"
-	"github.com/davyxu/cellmesh/discovery/memsd/proto"
+	"github.com/davyxu/cellmesh/svc/memsd/model"
+	"github.com/davyxu/cellmesh/svc/memsd/proto"
 )
 
 func (self *memDiscovery) Register(svc *discovery.ServiceDesc) (retErr error) {

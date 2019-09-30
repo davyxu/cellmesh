@@ -1,6 +1,7 @@
-package service
+package linkmgr
 
 import (
+	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
@@ -20,14 +21,14 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 	property := p.(cellnet.PeerProperty)
 
 	sd := &discovery.ServiceDesc{
-		ID:   MakeLocalSvcID(property.Name()),
+		ID:   cellmesh.MakeLocalSvcID(property.Name()),
 		Name: property.Name(),
 		Host: host,
 		Port: p.(peerListener).Port(),
 	}
 
-	sd.SetMeta("SvcGroup", GetSvcGroup())
-	sd.SetMeta("SvcIndex", strconv.Itoa(GetSvcIndex()))
+	sd.SetMeta(cellmesh.SDMetaKey_SvcGroup, cellmesh.GetSvcGroup())
+	sd.SetMeta(cellmesh.SDMetaKey_SvcIndex, strconv.Itoa(cellmesh.GetSvcIndex()))
 
 	for _, opt := range options {
 
@@ -39,8 +40,8 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 		}
 	}
 
-	if GetWANIP() != "" {
-		sd.SetMeta("WANAddress", util.JoinAddress(GetWANIP(), sd.Port))
+	if cellmesh.GetWANIP() != "" {
+		sd.SetMeta(cellmesh.SDMetaKey_WANAddress, util.JoinAddress(cellmesh.GetWANIP(), sd.Port))
 	}
 
 	log.SetColor("green").Debugf("service '%s' listen at port: %d", sd.ID, sd.Port)
@@ -60,5 +61,5 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 // 解除peer注册
 func Unregister(p cellnet.Peer) {
 	property := p.(cellnet.PeerProperty)
-	discovery.Default.Deregister(MakeLocalSvcID(property.Name()))
+	discovery.Default.Deregister(cellmesh.MakeLocalSvcID(property.Name()))
 }

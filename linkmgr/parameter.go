@@ -1,0 +1,39 @@
+package linkmgr
+
+import (
+	"github.com/davyxu/cellmesh"
+	"github.com/davyxu/cellnet"
+)
+
+type ServiceParameter struct {
+	SvcName  string // 服务名,注册到服务发现
+	PeerType string // cellnet的PeerType
+	NetProc  string // cellnet处理器名称
+
+	ListenAddress string // socket侦听地址
+	Queue         cellnet.EventQueue
+	EventCallback cellnet.EventCallback
+}
+
+func (self *ServiceParameter) MakeServiceDefault() {
+	if self.SvcName == "" {
+		self.SvcName = cellmesh.GetProcName()
+	}
+
+	if self.PeerType == "" {
+		self.PeerType = "tcp.Acceptor"
+	}
+
+	if self.NetProc == "" {
+		self.NetProc = "tcp.svc"
+	}
+}
+
+func (self *ServiceParameter) MakeConnectorDefault() {
+	if self.PeerType == "" {
+		self.PeerType = "tcp.Connector"
+	}
+	if self.NetProc == "" {
+		self.NetProc = "tcp.svc"
+	}
+}

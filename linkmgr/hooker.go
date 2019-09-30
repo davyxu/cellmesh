@@ -1,7 +1,8 @@
-package service
+package linkmgr
 
 import (
-	"github.com/davyxu/cellmesh/discovery"
+	"github.com/davyxu/cellmesh"
+	meshproto "github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
@@ -15,35 +16,23 @@ type SvcEventHooker struct {
 func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch msg := inputEvent.Message().(type) {
-	case *ServiceIdentifyACK:
+	case *meshproto.ServiceIdentifyACK: // 服务方收到连接方的服务标识
 
-		if pre := GetRemoteService(msg.SvcID); pre == nil {
+		if pre := GetRemoteSession(msg.SvcID); pre == nil {
 
 			// 添加连接上来的对方服务
-			AddRemoteService(inputEvent.Session(), msg.SvcID, msg.SvcName)
+			AddRemoteSession(inputEvent.Session(), msg.SvcID)
 		}
 	case *cellnet.SessionConnected:
 
-		ctx := inputEvent.Session().Peer().(cellnet.ContextSet)
-
-		var sd *discovery.ServiceDesc
-		if ctx.FetchContext("sd", &sd) {
-
-			// 用Connector的名称（一般是ProcName）让远程知道自己是什么服务，用于网关等需要反向发送消息的标识
-			inputEvent.Session().Send(&ServiceIdentifyACK{
-				SvcName: GetProcName(),
-				SvcID:   GetLocalSvcID(),
-			})
-
-			AddRemoteService(inputEvent.Session(), sd.ID, sd.Name)
-		} else {
-
-			log.Errorf("Make sure call multi.AddPeer before peer.Start, peer: %s", inputEvent.Session().Peer().TypeName())
-		}
+		// 用Connector的名称（一般是ProcName）让远程知道自己是什么服务，用于网关等需要反向发送消息的标识
+		inputEvent.Session().Send(&meshproto.ServiceIdentifyACK{
+			SvcID: cellmesh.GetLocalSvcID(),
+		})
 
 	case *cellnet.SessionClosed:
 
-		RemoveRemoteService(inputEvent.Session())
+		RemoveRemoteSession(inputEvent.Session())
 	}
 
 	return inputEvent

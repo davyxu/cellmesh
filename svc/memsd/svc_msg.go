@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/davyxu/cellmesh/discovery/memsd/model"
-	"github.com/davyxu/cellmesh/discovery/memsd/proto"
+	"github.com/davyxu/cellmesh/svc/memsd/model"
+	"github.com/davyxu/cellmesh/svc/memsd/proto"
 	"github.com/davyxu/cellnet"
 	"strconv"
 )

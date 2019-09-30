@@ -2,7 +2,7 @@ package memsd
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/memsd/proto"
+	"github.com/davyxu/cellmesh/svc/memsd/proto"
 	"strings"
 )
 

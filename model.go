@@ -1,10 +1,7 @@
-package service
-
-import "github.com/davyxu/cellmesh/discovery"
+package cellmesh
 
 var (
-	procName  string
-	LinkRules []discovery.MatchRule // 互联发现规则
+	procName string
 )
 
 // 获取当前服务进程名称

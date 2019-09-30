@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
-	memsd "github.com/davyxu/cellmesh/discovery/memsd/api"
-	"github.com/davyxu/cellmesh/discovery/memsd/model"
+	memsd "github.com/davyxu/cellmesh/svc/memsd/api"
+	"github.com/davyxu/cellmesh/svc/memsd/model"
 	"github.com/davyxu/golog"
 	"os"
 )

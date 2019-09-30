@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/davyxu/cellmesh/discovery/memsd/model"
+	"github.com/davyxu/cellmesh/svc/memsd/model"
 	"os"
 	"time"
 )

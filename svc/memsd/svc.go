@@ -1,9 +1,9 @@
 package main
 
 import (
-	memsd "github.com/davyxu/cellmesh/discovery/memsd/api"
-	"github.com/davyxu/cellmesh/discovery/memsd/model"
-	sdproto "github.com/davyxu/cellmesh/discovery/memsd/proto"
+	memsd "github.com/davyxu/cellmesh/svc/memsd/api"
+	"github.com/davyxu/cellmesh/svc/memsd/model"
+	sdproto2 "github.com/davyxu/cellmesh/svc/memsd/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
@@ -62,7 +62,7 @@ func deleteValueRecurse(key, reason string) {
 func deleteNotify(key, reason string) {
 	valueMeta := model.DeleteValue(key)
 
-	var ack sdproto.ValueDeleteNotifyACK
+	var ack sdproto2.ValueDeleteNotifyACK
 	ack.Key = key
 
 	if valueMeta != nil {

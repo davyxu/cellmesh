@@ -2,7 +2,7 @@ package memsd
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh/discovery/memsd/proto"
+	"github.com/davyxu/cellmesh/svc/memsd/proto"
 )
 
 func codeToError(code sdproto.ResultCode) error {

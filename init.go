@@ -1,8 +1,8 @@
-package service
+package cellmesh
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/discovery/memsd/api"
+	"github.com/davyxu/cellmesh/svc/memsd/api"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/util"
@@ -23,8 +23,6 @@ func Init(name string) {
 	meshutil.ApplyFlagFromFile(CommandLine, *flagFlagFile)
 
 	CommandLine.Parse(os.Args[1:])
-
-	LinkRules = discovery.ParseMatchRule(getLinkRule())
 
 	// 设置文件日志
 	if *flagLogFile != "" {

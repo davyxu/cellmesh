@@ -56,19 +56,6 @@ func QueryService(svcName string, filterList ...FilterFunc) (ret interface{}) {
 	return
 }
 
-// 匹配指定的服务组,服务组空时,匹配所有
-func Filter_MatchSvcGroup(svcGroup string) FilterFunc {
-
-	return func(desc *ServiceDesc) interface{} {
-
-		if svcGroup == "" {
-			return true
-		}
-
-		return desc.GetMeta("SvcGroup") == svcGroup
-	}
-}
-
 // 匹配指定的服务ID
 func Filter_MatchSvcID(svcid string) FilterFunc {
 
@@ -80,22 +67,4 @@ func Filter_MatchSvcID(svcid string) FilterFunc {
 
 		return true
 	}
-}
-
-// 匹配指定的规则,一般由命令行指定
-func Filter_MatchRule(rules []MatchRule) FilterFunc {
-
-	return func(desc *ServiceDesc) interface{} {
-
-		// 任意规则满足即可
-		for _, rule := range rules {
-
-			if matchTarget(&rule, desc) {
-				return true
-			}
-		}
-
-		return false
-	}
-
 }
