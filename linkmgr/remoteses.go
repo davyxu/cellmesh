@@ -2,44 +2,52 @@ package linkmgr
 
 import (
 	"github.com/davyxu/cellmesh"
+	meshutil "github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"sync"
 )
 
-type NotifyFunc func(ses cellnet.Session)
-
 var (
-	sesBySvcID      = map[string]cellnet.Session{}
-	sesBySvcIDGuard sync.RWMutex
-	removeNotify    NotifyFunc
+	// 连接建立
+	OnLinkAdd meshutil.EventHandlerSet
+
+	// 连接关闭
+	OnLinkRemove meshutil.EventHandlerSet
 )
 
-func AddRemoteSession(ses cellnet.Session, svcid string) {
+var (
+	linkBySvcID      = map[string]cellnet.Session{}
+	linkBySvcIDGuard sync.RWMutex
+)
 
-	sesBySvcIDGuard.Lock()
-	ses.(cellnet.ContextSet).SetContext(cellmesh.RemoteSesKey_RemoteSvcID, svcid)
-	sesBySvcID[svcid] = ses
-	sesBySvcIDGuard.Unlock()
+func AddRemoteLink(ses cellnet.Session, svcid, svcName string) {
+
+	linkBySvcIDGuard.Lock()
+	ctxSet := ses.(cellnet.ContextSet)
+	ctxSet.SetContext(cellmesh.SesContextKey_LinkSvcID, svcid)
+	ctxSet.SetContext(cellmesh.SesContextKey_LinkSvcName, svcName)
+	linkBySvcID[svcid] = ses
+	linkBySvcIDGuard.Unlock()
 
 	log.SetColor("green").Infof("remote service added: '%s' sid: %d", svcid, ses.ID())
+
+	OnLinkAdd.Invoke(ses)
 }
 
-func RemoveRemoteSession(ses cellnet.Session) {
+func RemoveRemoteLink(ses cellnet.Session) {
 
 	if ses == nil {
 		return
 	}
 
-	svcID := GetRemoteSessionSvcID(ses)
+	svcID := GetRemoteLinkSvcID(ses)
 	if svcID != "" {
 
-		if removeNotify != nil {
-			removeNotify(ses)
-		}
+		OnLinkRemove.Invoke(ses)
 
-		sesBySvcIDGuard.Lock()
-		delete(sesBySvcID, svcID)
-		sesBySvcIDGuard.Unlock()
+		linkBySvcIDGuard.Lock()
+		delete(linkBySvcID, svcID)
+		linkBySvcIDGuard.Unlock()
 
 		log.SetColor("yellow").Infof("remote service removed '%s' sid: %d", svcID, ses.ID())
 	} else {
@@ -47,24 +55,26 @@ func RemoveRemoteSession(ses cellnet.Session) {
 	}
 }
 
-// 设置服务的通知
-func SetRemoteSessionNotify(mode string, callback NotifyFunc) {
-
-	switch mode {
-	case "remove":
-		removeNotify = callback
-	default:
-		panic("unknown notify mode")
-	}
-}
-
-// 取得其他服务器的会话对应的上下文
-func GetRemoteSessionSvcID(ses cellnet.Session) string {
+// 取得远程会话的ID
+func GetRemoteLinkSvcID(ses cellnet.Session) string {
 	if ses == nil {
 		return ""
 	}
 
-	if raw, ok := ses.(cellnet.ContextSet).GetContext(cellmesh.RemoteSesKey_RemoteSvcID); ok {
+	if raw, ok := ses.(cellnet.ContextSet).GetContext(cellmesh.SesContextKey_LinkSvcID); ok {
+		return raw.(string)
+	}
+
+	return ""
+}
+
+// 取得远程会话的服务名
+func GetRemoteLinkSvcName(ses cellnet.Session) string {
+	if ses == nil {
+		return ""
+	}
+
+	if raw, ok := ses.(cellnet.ContextSet).GetContext(cellmesh.SesContextKey_LinkSvcName); ok {
 		return raw.(string)
 	}
 
@@ -72,11 +82,11 @@ func GetRemoteSessionSvcID(ses cellnet.Session) string {
 }
 
 // 根据svcid获取远程服务的会话
-func GetRemoteSession(svcid string) cellnet.Session {
-	sesBySvcIDGuard.RLock()
-	defer sesBySvcIDGuard.RUnlock()
+func GetRemoteLink(svcid string) cellnet.Session {
+	linkBySvcIDGuard.RLock()
+	defer linkBySvcIDGuard.RUnlock()
 
-	if ses, ok := sesBySvcID[svcid]; ok {
+	if ses, ok := linkBySvcID[svcid]; ok {
 
 		return ses
 	}
@@ -86,14 +96,14 @@ func GetRemoteSession(svcid string) cellnet.Session {
 
 // 遍历远程服务(已经连接到本进程)
 func VisitRemoteSession(callback func(ses cellnet.Session) bool) {
-	sesBySvcIDGuard.RLock()
+	linkBySvcIDGuard.RLock()
 
-	for _, ses := range sesBySvcID {
+	for _, ses := range linkBySvcID {
 
 		if !callback(ses) {
 			break
 		}
 	}
 
-	sesBySvcIDGuard.RUnlock()
+	linkBySvcIDGuard.RUnlock()
 }

@@ -18,21 +18,22 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 	switch msg := inputEvent.Message().(type) {
 	case *meshproto.ServiceIdentifyACK: // 服务方收到连接方的服务标识
 
-		if pre := GetRemoteSession(msg.SvcID); pre == nil {
+		if pre := GetRemoteLink(msg.SvcID); pre == nil {
 
 			// 添加连接上来的对方服务
-			AddRemoteSession(inputEvent.Session(), msg.SvcID)
+			AddRemoteLink(inputEvent.Session(), msg.SvcID, msg.SvcName)
 		}
 	case *cellnet.SessionConnected:
 
 		// 用Connector的名称（一般是ProcName）让远程知道自己是什么服务，用于网关等需要反向发送消息的标识
 		inputEvent.Session().Send(&meshproto.ServiceIdentifyACK{
-			SvcID: cellmesh.GetLocalSvcID(),
+			SvcID:   cellmesh.GetLocalSvcID(),
+			SvcName: cellmesh.GetProcName(),
 		})
 
 	case *cellnet.SessionClosed:
 
-		RemoveRemoteSession(inputEvent.Session())
+		RemoveRemoteLink(inputEvent.Session())
 	}
 
 	return inputEvent

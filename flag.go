@@ -12,15 +12,6 @@ var (
 	// 服务发现地址
 	flagDiscoveryAddr = CommandLine.String("sdaddr", "127.0.0.1:8900", "Discovery address")
 
-	// 服务发现规则
-	flagLinkRule = CommandLine.String("linkrule", "", "Discovery other node then connect it, format like: 'svcname:tgtnode|defaultnode'")
-
-	// 服务所在组
-	flagSvcGroup = CommandLine.String("svcgroup", "dev", "Represent one group server")
-
-	// 服务索引
-	flagSvcIndex = CommandLine.Int("svcindex", 0, "Multi proc in group use index to seperate each other")
-
 	// 设置外网IP
 	flagWANIP = CommandLine.String("wanip", "", "Client connect from extern ip")
 

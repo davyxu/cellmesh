@@ -14,14 +14,6 @@ func GetWANIP() string {
 	return *flagWANIP
 }
 
-func GetSvcGroup() string {
-	return *flagSvcGroup
-}
-
-func GetSvcIndex() int {
-	return *flagSvcIndex
-}
-
 func GetDiscoveryAddr() string {
 	return *flagDiscoveryAddr
 }

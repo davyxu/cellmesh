@@ -19,7 +19,8 @@ var (
 )
 
 type ServiceIdentifyACK struct {
-	SvcID string
+	SvcID   string
+	SvcName string
 }
 
 func (self *ServiceIdentifyACK) String() string { return proto.CompactTextString(self) }
@@ -28,12 +29,16 @@ func (self *ServiceIdentifyACK) Size() (ret int) {
 
 	ret += proto.SizeString(1, self.SvcID)
 
+	ret += proto.SizeString(2, self.SvcName)
+
 	return
 }
 
 func (self *ServiceIdentifyACK) Marshal(buffer *proto.Buffer) error {
 
 	proto.MarshalString(buffer, 1, self.SvcID)
+
+	proto.MarshalString(buffer, 2, self.SvcName)
 
 	return nil
 }
@@ -42,6 +47,8 @@ func (self *ServiceIdentifyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint6
 	switch fieldIndex {
 	case 1:
 		return proto.UnmarshalString(buffer, wt, &self.SvcID)
+	case 2:
+		return proto.UnmarshalString(buffer, wt, &self.SvcName)
 
 	}
 

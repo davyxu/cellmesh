@@ -31,18 +31,20 @@ func StartService(param ServiceParameter) cellnet.Peer {
 	return p
 }
 
-func ConnectToService(param ServiceParameter) {
+func LinkService(param ServiceParameter) {
 
 	param.MakeConnectorDefault()
 
 	discovery.Default.SetNotify(func(evType string, args ...interface{}) {
+		//log.Debugf("notify")
 
 		if evType == "add" {
 			discovery.QueryService(param.SvcName, func(desc *discovery.ServiceDesc) interface{} {
 
+				//log.Debugf("found '%s'", desc.ID)
 				// TODO 全局连接约束表
 
-				preses := GetRemoteSession(desc.ID)
+				preses := GetRemoteLink(desc.ID)
 				if preses != nil {
 
 					// TODO 更换地址操作
@@ -60,8 +62,9 @@ func ConnectToService(param ServiceParameter) {
 				p.(cellnet.TCPConnector).SetReconnectDuration(time.Second * 3)
 
 				// 提前添加到表中， 通过IsReady判断，避免连不上时反复创建Connector
-				AddRemoteSession(p.(cellnet.TCPConnector).Session(), desc.ID)
+				AddRemoteLink(p.(cellnet.TCPConnector).Session(), desc.ID, desc.Name)
 
+				//log.Debugf("start link '%s'", desc.ID)
 				p.Start()
 
 				// 注册本地Peer，方便做检查遍历

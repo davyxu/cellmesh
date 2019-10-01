@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
-	"strconv"
 )
 
 type peerListener interface {
@@ -21,14 +20,11 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 	property := p.(cellnet.PeerProperty)
 
 	sd := &discovery.ServiceDesc{
-		ID:   cellmesh.MakeLocalSvcID(property.Name()),
+		ID:   cellmesh.MakeSvcID(property.Name()),
 		Name: property.Name(),
 		Host: host,
 		Port: p.(peerListener).Port(),
 	}
-
-	sd.SetMeta(cellmesh.SDMetaKey_SvcGroup, cellmesh.GetSvcGroup())
-	sd.SetMeta(cellmesh.SDMetaKey_SvcIndex, strconv.Itoa(cellmesh.GetSvcIndex()))
 
 	for _, opt := range options {
 
@@ -40,13 +36,14 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 		}
 	}
 
+	// TODO 自动获取外网IP
 	if cellmesh.GetWANIP() != "" {
 		sd.SetMeta(cellmesh.SDMetaKey_WANAddress, util.JoinAddress(cellmesh.GetWANIP(), sd.Port))
 	}
 
 	log.SetColor("green").Debugf("service '%s' listen at port: %d", sd.ID, sd.Port)
 
-	p.(cellnet.ContextSet).SetContext("sd", sd)
+	p.(cellnet.ContextSet).SetContext(cellmesh.PeerContextKey_ServiceDesc, sd)
 
 	// 有同名的要先解除注册，再注册，防止watch不触发
 	discovery.Default.Deregister(sd.ID)
@@ -61,5 +58,5 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 // 解除peer注册
 func Unregister(p cellnet.Peer) {
 	property := p.(cellnet.PeerProperty)
-	discovery.Default.Deregister(cellmesh.MakeLocalSvcID(property.Name()))
+	discovery.Default.Deregister(cellmesh.MakeSvcID(property.Name()))
 }

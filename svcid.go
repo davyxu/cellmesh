@@ -1,61 +1,52 @@
 package cellmesh
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
+	"github.com/davyxu/cellnet/util"
+	"net"
+	"os"
+	"strings"
 )
 
-// 全局唯一的svcid 格式:  svcName#svcIndex@svcGroup
+var (
+	thisSvcID string
+)
 
-// 构造服务ID
-func MakeSvcID(svcName string, svcIndex int, svcGroup string) string {
-	return fmt.Sprintf("%s#%d@%s", svcName, svcIndex, svcGroup)
+// ip+PID的16进制数值字符串，每次启动变化
+func netProcID() string {
+
+	// 一次启动不会变化
+	if thisSvcID != "" {
+		return thisSvcID
+	}
+
+	// 兼容ipv6
+	ipParts := net.ParseIP(util.GetLocalIP())
+
+	var sb strings.Builder
+	for _, p := range ipParts {
+		if p == 0 || p == 255 {
+			continue
+		}
+
+		sb.WriteString(fmt.Sprintf("%x", p))
+	}
+
+	sb.WriteString(fmt.Sprintf("%x", os.Getpid()))
+
+	thisSvcID = sb.String()
+
+	return thisSvcID
 }
 
+// 全局唯一的svcid 格式:  svcName@netProcID
+
 // 构造指定服务的ID
-func MakeLocalSvcID(svcName string) string {
-	return MakeSvcID(svcName, *flagSvcIndex, *flagSvcGroup)
+func MakeSvcID(svcName string) string {
+	return svcName + "@" + netProcID()
 }
 
 // 获得本进程的服务id
 func GetLocalSvcID() string {
-	return MakeLocalSvcID(GetProcName())
-}
-
-func ParseSvcID(svcid string) (svcName string, svcIndex int, svcGroup string, err error) {
-
-	var sharpPos, atPos = -1, -1
-
-	for pos, c := range svcid {
-		switch c {
-		case '#':
-			sharpPos = pos
-			svcName = svcid[:sharpPos]
-		case '@':
-			atPos = pos
-			svcGroup = svcid[atPos+1:]
-
-			if sharpPos == -1 {
-				break
-			}
-
-			var n int64
-			n, err = strconv.ParseInt(svcid[sharpPos+1:atPos], 10, 32)
-			if err != nil {
-				break
-			}
-			svcIndex = int(n)
-		}
-	}
-
-	if sharpPos == -1 {
-		err = errors.New("missing '#' in svcid")
-	}
-
-	if atPos == -1 {
-		err = errors.New("missing '@' in svcid")
-	}
-
-	return
+	return MakeSvcID(GetProcName())
 }

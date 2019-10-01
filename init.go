@@ -79,14 +79,6 @@ func Init(name string) {
 
 }
 
-func getLinkRule() string {
-	if *flagLinkRule == "" {
-		return *flagSvcGroup
-	} else {
-		return *flagLinkRule
-	}
-}
-
 func LogParameter() {
 	workdir, _ := os.Getwd()
 	log.Infof("Execuable: %s", os.Args[0])
@@ -94,9 +86,6 @@ func LogParameter() {
 	log.Infof("ProcName: '%s'", GetProcName())
 	log.Infof("PID: %d", os.Getpid())
 	log.Infof("Discovery: '%s'", *flagDiscoveryAddr)
-	log.Infof("LinkRule: '%s'", getLinkRule())
-	log.Infof("SvcGroup: '%s'", GetSvcGroup())
-	log.Infof("SvcIndex: %d", GetSvcIndex())
 	log.Infof("LANIP: '%s'", util.GetLocalIP())
 	log.Infof("WANIP: '%s'", GetWANIP())
 }

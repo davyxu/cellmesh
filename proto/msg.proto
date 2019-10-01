@@ -1,6 +1,8 @@
 
+// 进程间互联时，连接方发出标识自己的ID
 [AutoMsgID]
 struct ServiceIdentifyACK
 {
-	SvcID   string
+	SvcID   string // 服务全局唯一ID
+	SvcName string // 服务名
 }
