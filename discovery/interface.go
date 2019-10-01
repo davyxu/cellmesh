@@ -5,7 +5,10 @@ type ValueMeta struct {
 	Value []byte
 }
 
-type NotifyFunc func(evType string, args ...interface{})
+type NotifyContext struct {
+	Mode string
+	Desc *ServiceDesc
+}
 
 // 基础服务发现
 type Discovery interface {
@@ -20,10 +23,15 @@ type Discovery interface {
 	// 根据服务名查到可用的服务
 	Query(name string) (ret []*ServiceDesc)
 
-	// 在服务发现内部逻辑线程, 通知回调, 多个事件将顺序通知
-	// "ready"  表示服务发现已准备好
-	// "add" 表示服务有新增， 参数：*ServiceDesc
-	SetNotify(callback NotifyFunc)
+	// 注册服务变化通知
+	// 'add'表示有服务加入
+	// 'ready'表示服务发现准备好
+	// 'mod' 表示有服务修改
+	// 'del' 表示有服务删除
+	RegisterNotify() (ret chan *NotifyContext)
+
+	// 解除服务变化通知
+	DeregisterNotify(c chan struct{})
 }
 
 // KV接口, 可由Discovery转换

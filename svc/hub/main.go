@@ -14,6 +14,8 @@ func main() {
 		ListenAddress: ":0",
 	})
 
+	linkmgr.CheckReady()
+
 	cellmesh.WaitExitSignal()
 
 }

@@ -18,24 +18,13 @@ type memDiscovery struct {
 	svcCache      map[string][]*discovery.ServiceDesc
 	svcCacheGuard sync.RWMutex
 
-	notifyFunc discovery.NotifyFunc
+	notifyMap sync.Map // key=mode+c value=string
 
 	initWg *sync.WaitGroup
 
 	token string
 
 	q cellnet.EventQueue
-}
-
-func (self *memDiscovery) triggerNotify(evType string, args ...interface{}) {
-
-	if self.notifyFunc != nil {
-		self.notifyFunc(evType, args...)
-	}
-}
-func (self *memDiscovery) SetNotify(callback discovery.NotifyFunc) {
-
-	self.notifyFunc = callback
 }
 
 func (self *memDiscovery) Start(config interface{}) {

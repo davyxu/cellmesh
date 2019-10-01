@@ -29,7 +29,7 @@ func AddRemoteLink(ses cellnet.Session, svcid, svcName string) {
 	linkBySvcID[svcid] = ses
 	linkBySvcIDGuard.Unlock()
 
-	log.SetColor("green").Infof("remote service added: '%s' sid: %d", svcid, ses.ID())
+	log.SetColor("green").Infof("add remote service : '%s' sid: %d", svcid, ses.ID())
 
 	OnLinkAdd.Invoke(ses)
 }
@@ -49,9 +49,9 @@ func RemoveRemoteLink(ses cellnet.Session) {
 		delete(linkBySvcID, svcID)
 		linkBySvcIDGuard.Unlock()
 
-		log.SetColor("yellow").Infof("remote service removed '%s' sid: %d", svcID, ses.ID())
+		log.SetColor("yellow").Infof("remove remote service '%s' sid: %d", svcID, ses.ID())
 	} else {
-		log.SetColor("yellow").Infof("remote service removed sid: %d, context lost", ses.ID())
+		log.SetColor("yellow").Infof("remove service sid: %d, context lost", ses.ID())
 	}
 }
 

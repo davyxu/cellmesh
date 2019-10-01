@@ -6,6 +6,8 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/svc/memsd/model"
 	"github.com/davyxu/cellmesh/svc/memsd/proto"
+	"github.com/davyxu/cellnet/util"
+	"time"
 )
 
 func (self *memDiscovery) Register(svc *discovery.ServiceDesc) (retErr error) {
@@ -90,13 +92,63 @@ func (self *memDiscovery) updateSvcCache(svcName string, value []byte) {
 	}
 
 	if notfound {
+
+		self.triggerNotify("add", &desc)
+
 		list = append(list, &desc)
+	} else {
+		self.triggerNotify("mod", &desc)
 	}
 
 	self.svcCache[svcName] = list
 	self.svcCacheGuard.Unlock()
 
-	self.triggerNotify("add", &desc)
+}
+
+type notifyContext struct {
+	stack string
+}
+
+func (self *memDiscovery) RegisterNotify() (ret chan *discovery.NotifyContext) {
+	ret = make(chan *discovery.NotifyContext, 100)
+
+	self.notifyMap.Store(ret, &notifyContext{
+		stack: util.StackToString(5),
+	})
+
+	return
+}
+
+func (self *memDiscovery) DeregisterNotify(c chan struct{}) {
+
+	self.notifyMap.Store(c, nil)
+}
+
+func (self *memDiscovery) triggerNotify(mode string, desc *discovery.ServiceDesc) {
+
+	self.notifyMap.Range(func(key, value interface{}) bool {
+
+		if value == nil {
+			return true
+		}
+
+		ctx := value.(*notifyContext)
+
+		c := key.(chan *discovery.NotifyContext)
+
+		select {
+		case c <- &discovery.NotifyContext{
+			Mode: mode,
+			Desc: desc,
+		}:
+		case <-time.After(time.Second * 10):
+			// 接收通知阻塞太久，或者没有释放侦听的channel
+			log.Errorf("notify(%s) timeout, not free? regstack: %s, desc: %s", mode, ctx.stack, desc.String())
+		}
+
+		return true
+	})
+
 }
 
 func (self *memDiscovery) deleteSvcCache(svcid, svcName string) {
@@ -105,6 +157,8 @@ func (self *memDiscovery) deleteSvcCache(svcid, svcName string) {
 
 	for index, svc := range list {
 		if svc.ID == svcid {
+
+			self.triggerNotify("del", svc)
 			list = append(list[:index], list[index+1:]...)
 			break
 		}

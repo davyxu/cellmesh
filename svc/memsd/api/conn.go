@@ -51,7 +51,7 @@ func (self *memDiscovery) connect(addr string) {
 
 			log.SetColor("green").Debugf("memsd discovery ready!")
 
-			self.triggerNotify("ready")
+			self.triggerNotify("ready", nil)
 
 		case *sdproto.ValueChangeNotifyACK:
 

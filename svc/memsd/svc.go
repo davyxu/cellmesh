@@ -33,6 +33,7 @@ func startSvc() {
 	proc.BindProcessorHandler(p, "memsd.svc", msgHandler)
 
 	p.(cellnet.TCPSocketOption).SetSocketBuffer(1024*1024, 1024*1024, true)
+
 	p.(cellnet.PeerCaptureIOPanic).EnableCaptureIOPanic(true)
 	p.Start()
 

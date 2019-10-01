@@ -17,6 +17,7 @@ func peerStatus(svc cellnet.Peer) string {
 		Address() string
 		cellnet.Peer
 	}
+
 	mp := svc.(myPeer)
 
 	var ready string
@@ -30,11 +31,25 @@ func peerStatus(svc cellnet.Peer) string {
 
 		var desc *discovery.ServiceDesc
 		if cs.FetchContext(cellmesh.PeerContextKey_ServiceDesc, &desc) {
-			context = fmt.Sprintf("--> %22s %22s", desc.ID, desc.Address())
+			context = fmt.Sprintf("  %22s %22s", desc.ID, desc.Address())
 			peerName = desc.Name
 		} else {
-			context = mp.Address()
+			if sesGetter, ok := svc.(interface {
+				Session() cellnet.Session
+			}); ok {
+
+				ses := sesGetter.Session()
+
+				svcID := GetRemoteLinkSvcID(ses)
+
+				context = fmt.Sprintf("  %22s %22s", svcID, mp.Address())
+			} else {
+				context = mp.Address()
+
+			}
+
 			peerName = mp.Name()
+
 		}
 	}
 
@@ -60,11 +75,11 @@ func LocalServiceStatus() string {
 		return true
 	})
 
-	VisitRemoteSession(func(ses cellnet.Session) bool {
-		sb.WriteString(remoteSessionStatus(ses))
-		sb.WriteString("\n")
-		return true
-	})
+	//VisitRemoteSession(func(ses cellnet.Session) bool {
+	//	sb.WriteString(remoteSessionStatus(ses))
+	///	sb.WriteString("\n")
+	//	return true
+	//})
 
 	return sb.String()
 }
@@ -84,11 +99,6 @@ func IsAllReady() (ret bool) {
 }
 
 func CheckReady() {
-
-	OnLinkAdd.Add(func(args ...interface{}) {
-		thisStatus := LocalServiceStatus()
-		log.Infoln(thisStatus)
-	})
 
 	var lastStatus string
 	for {
