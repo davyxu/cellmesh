@@ -1,14 +1,14 @@
 package meshutil
 
-type EventHandler func(args ...interface{})
+type EventFunc func(args ...interface{})
 
-type EventHandlerSet []EventHandler
+type EventFuncSet []EventFunc
 
-func (self *EventHandlerSet) Add(h EventHandler) {
+func (self *EventFuncSet) Add(h EventFunc) {
 	*self = append(*self, h)
 }
 
-func (self *EventHandlerSet) Invoke(args ...interface{}) {
+func (self *EventFuncSet) Invoke(args ...interface{}) {
 	for _, h := range *self {
 		h(args...)
 	}

@@ -53,20 +53,19 @@ func (self *memDiscovery) SetValue(key string, dataPtr interface{}, optList ...i
 		return ErrValueTooLarge
 	}
 
-	callErr := self.remoteCall(&sdproto.SetValueREQ{
+	self.remoteCall(&sdproto.SetValueREQ{
 		Key:   key,
 		Value: raw,
-	}, func(ack *sdproto.SetValueACK) {
-		retErr = codeToError(ack.Code)
+	}, func(ack *sdproto.SetValueACK, err error) {
+
+		if err != nil {
+			retErr = err
+		} else {
+			retErr = codeToError(ack.Code)
+		}
 	})
 
-	if retErr != nil {
-		return
-	}
-
-	retErr = callErr
-
-	return nil
+	return
 }
 
 func (self *memDiscovery) GetValue(key string, valuePtr interface{}) error {
@@ -82,35 +81,35 @@ func (self *memDiscovery) GetValue(key string, valuePtr interface{}) error {
 
 func (self *memDiscovery) GetRawValue(key string) (retData []byte, retErr error) {
 
-	callErr := self.remoteCall(&sdproto.GetValueREQ{
+	self.remoteCall(&sdproto.GetValueREQ{
 		Key: key,
-	}, func(ack *sdproto.GetValueACK) {
-		retData = ack.Value
-		retErr = codeToError(ack.Code)
+	}, func(ack *sdproto.GetValueACK, err error) {
+		if err != nil {
+			retErr = err
+		} else {
+			retData = ack.Value
+			retErr = codeToError(ack.Code)
+		}
+
 	})
-
-	if retErr != nil {
-		return
-	}
-
-	retErr = callErr
 
 	return
 }
 
 func (self *memDiscovery) DeleteValue(key string) (ret error) {
 
-	callErr := self.remoteCall(&sdproto.DeleteValueREQ{
+	self.remoteCall(&sdproto.DeleteValueREQ{
 		Key: key,
-	}, func(ack *sdproto.DeleteValueACK) {
-		ret = codeToError(ack.Code)
+	}, func(ack *sdproto.DeleteValueACK, err error) {
+		if err != nil {
+			ret = err
+		} else {
+			ret = codeToError(ack.Code)
+		}
+
 	})
 
-	if ret != nil {
-		return ret
-	}
-
-	return callErr
+	return
 }
 
 func (self *memDiscovery) GetRawValueList(prefix string) (ret []discovery.ValueMeta) {
@@ -134,5 +133,5 @@ func (self *memDiscovery) GetRawValueList(prefix string) (ret []discovery.ValueM
 }
 
 func (self *memDiscovery) ClearKey() {
-	self.remoteCall(&sdproto.ClearKeyREQ{}, func(ack *sdproto.ClearKeyACK) {})
+	self.remoteCall(&sdproto.ClearKeyREQ{}, func(ack *sdproto.ClearKeyACK, err error) {})
 }

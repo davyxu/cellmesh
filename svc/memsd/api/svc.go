@@ -25,19 +25,20 @@ func (self *memDiscovery) Register(svc *discovery.ServiceDesc) (retErr error) {
 		return err
 	}
 
-	callErr := self.remoteCall(&sdproto.SetValueREQ{
+	self.remoteCall(&sdproto.SetValueREQ{
 		Key:     model.ServiceKeyPrefix + svc.ID,
 		Value:   data,
 		SvcName: svc.Name,
-	}, func(ack *sdproto.SetValueACK) {
-		retErr = codeToError(ack.Code)
+	}, func(ack *sdproto.SetValueACK, err error) {
+		if err != nil {
+			retErr = err
+		} else {
+			retErr = codeToError(ack.Code)
+		}
+
 	})
 
-	if retErr != nil {
-		return
-	}
-
-	return callErr
+	return
 }
 
 func (self *memDiscovery) Deregister(svcid string) error {
@@ -66,7 +67,11 @@ func (self *memDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
 }
 
 func (self *memDiscovery) ClearService() {
-	self.remoteCall(&sdproto.ClearSvcREQ{}, func(ack *sdproto.ClearSvcACK) {})
+	self.remoteCall(&sdproto.ClearSvcREQ{}, func(ack *sdproto.ClearSvcACK, err error) {
+		if err != nil {
+			log.Errorln(err)
+		}
+	})
 }
 
 func (self *memDiscovery) updateSvcCache(svcName string, value []byte) {

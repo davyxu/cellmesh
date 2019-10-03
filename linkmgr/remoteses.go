@@ -9,10 +9,10 @@ import (
 
 var (
 	// 连接建立
-	OnLinkAdd meshutil.EventHandlerSet
+	OnLinkAdd meshutil.EventFuncSet
 
 	// 连接关闭
-	OnLinkRemove meshutil.EventHandlerSet
+	OnLinkRemove meshutil.EventFuncSet
 )
 
 var (
