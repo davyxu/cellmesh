@@ -1,4 +1,4 @@
-package linkmgr
+package link
 
 import (
 	"github.com/davyxu/cellmesh"
@@ -77,10 +77,9 @@ func LinkService(param ServiceParameter) {
 	notify := discovery.Default.RegisterNotify()
 
 	// 加入已有的服务
-	discovery.QueryService(param.SvcName, func(desc *discovery.ServiceDesc) interface{} {
+	for _, desc := range discovery.Default.Query(param.SvcName) {
 		addRemoteSvc(desc, param)
-		return true
-	})
+	}
 
 	// 实时检查更新
 	go func() {

@@ -1,0 +1,18 @@
+
+[AutoMsgID]
+struct SubscribeChannelREQ {
+	Channel string
+}
+
+[AutoMsgID]
+struct SubscribeChannelACK{
+	Channel string
+}
+
+
+[AutoMsgID]
+struct SvcStatusACK{
+    SvcID       string
+	UserCount   int32
+}
+

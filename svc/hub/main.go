@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/davyxu/cellmesh"
-	"github.com/davyxu/cellmesh/linkmgr"
+	"github.com/davyxu/cellmesh/link"
 )
 
 func main() {
@@ -10,11 +10,11 @@ func main() {
 	cellmesh.LogParameter()
 	cellmesh.ConnectDiscovery()
 
-	linkmgr.StartService(linkmgr.ServiceParameter{
+	link.StartService(link.ServiceParameter{
 		ListenAddress: ":0",
 	})
 
-	linkmgr.CheckReady()
+	link.CheckReady()
 
 	cellmesh.WaitExitSignal()
 

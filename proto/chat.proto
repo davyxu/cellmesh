@@ -1,0 +1,17 @@
+
+[AutoMsgID]
+struct ChatREQ {
+	Content string
+}
+
+[AutoMsgID]
+struct ChatACK{
+	Content string
+}
+
+
+
+[AutoMsgID]
+struct TestACK{
+	Dummy string
+}

@@ -1,4 +1,4 @@
-package linkmgr
+package link
 
 import (
 	"fmt"

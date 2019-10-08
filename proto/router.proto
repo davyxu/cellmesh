@@ -1,0 +1,30 @@
+struct ClientID {
+    ID 		int64	// 客户端在网关上的SessionID
+	SvcID 	string	// 客户端在哪个网关
+}
+
+// backend ->agent 切断用户连接
+[AutoMsgID]
+struct CloseClientACK {
+    ID []int64
+	All bool
+}
+
+// agent -> backend 客户端断开
+[AutoMsgID]
+struct ClientClosedACK {
+    ID 	ClientID
+}
+
+
+
+// agent <-> backend 在网关和后端服务器之间传输协议
+[AutoMsgID]
+struct TransmitACK {
+    MsgID uint32  // 用户消息ID
+    MsgData bytes // 用户消息数据
+
+    ClientID int64       // 单发
+    ClientIDList []int64 // 列表发
+    All bool             // 全发
+}

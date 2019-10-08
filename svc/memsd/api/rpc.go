@@ -14,5 +14,5 @@ func (self *memDiscovery) RPCSession() (ses cellnet.Session) {
 
 // callback =func(ack *YouMsgACK)
 func (self *memDiscovery) remoteCall(req interface{}, callback interface{}) {
-	rpc.CallType(self.RPCSession(), req, self.config.RequestTimeout, callback)
+	rpc.CallSyncType(self.RPCSession(), req, self.config.RequestTimeout, callback)
 }
