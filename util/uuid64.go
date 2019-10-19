@@ -1,6 +1,8 @@
 package meshutil
 
 import (
+	"fmt"
+	"math"
 	"sync"
 	"time"
 )
@@ -88,6 +90,11 @@ func (self *UUID64Generator) LeftNumF() (ret uint) {
 
 // 序列号组件
 func (self *UUID64Generator) AddSeqComponent(numF uint, init uint64) {
+
+	if init&numFToMask(numF) != init {
+		panic(fmt.Sprintf("const component out of range, expect 0~%d, got, %d", numFRange(numF), init))
+	}
+
 	self.seqGen = init
 	self.AddComponent(&UUID64Component{
 		ValueSrc: func() uint64 {
@@ -100,10 +107,20 @@ func (self *UUID64Generator) AddSeqComponent(numF uint, init uint64) {
 
 }
 
+func numFRange(numF uint) uint {
+
+	return uint(math.Pow(16, float64(numF))) - 1
+}
+
 // 固定值组件
 func (self *UUID64Generator) AddConstComponent(numF uint, constNumber uint64) {
 
 	uconst := uint64(constNumber)
+
+	if uconst&numFToMask(numF) != constNumber {
+		panic(fmt.Sprintf("const component out of range, expect 0~%d, got, %d", numFRange(numF), constNumber))
+	}
+
 	self.AddComponent(&UUID64Component{
 		ValueSrc: func() uint64 {
 			return uconst
@@ -133,8 +150,8 @@ func (self *UUID64Generator) Generate() (ret uint64) {
 
 	self.genGuard.Lock()
 	var offset uint
-	for _, g := range self.comSet {
-
+	for i := len(self.comSet) - 1; i >= 0; i-- {
+		g := self.comSet[i]
 		mask := numFToMask(g.NumF)
 		part := (g.ValueSrc() & mask) << offset
 		ret |= part

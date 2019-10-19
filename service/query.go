@@ -1,6 +1,9 @@
 package service
 
-import "github.com/davyxu/cellmesh/discovery"
+import (
+	"github.com/davyxu/cellmesh/discovery"
+	"sort"
+)
 
 type QueryServiceOp int
 
@@ -22,7 +25,38 @@ type FilterFunc func(*discovery.ServiceDesc) interface{}
 // 根据给定的查询服务名,将结果经过各种过滤器处理后输出
 func QueryService(svcName string, filterList ...FilterFunc) (ret interface{}) {
 
-	for _, desc := range discovery.Default.Query(svcName) {
+	return QueryServiceEx(svcName, QueryServiceOption{}, filterList...)
+}
+
+type QueryServiceOption struct {
+	Sort bool
+}
+
+func QueryServiceEx(svcName string, opt QueryServiceOption, filterList ...FilterFunc) (ret interface{}) {
+
+	descList := discovery.Default.Query(svcName)
+
+	if opt.Sort {
+		sort.Slice(descList, func(i, j int) bool {
+
+			a := descList[i]
+			b := descList[j]
+
+			aGroup := a.GetMeta("SvcGroup")
+			bGroup := b.GetMeta("SvcGroup")
+
+			if aGroup != bGroup {
+				return aGroup < bGroup
+			}
+
+			aIndex := a.GetMeta("SvcIndex")
+			bIndex := b.GetMeta("SvcIndex")
+
+			return aIndex < bIndex
+		})
+	}
+
+	for _, desc := range descList {
 
 		for _, filter := range filterList {
 
