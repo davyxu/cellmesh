@@ -10,11 +10,11 @@ func main() {
 	cellmesh.LogParameter()
 	cellmesh.ConnectDiscovery()
 
-	link.StartService(link.ServiceParameter{
+	link.StartService(&link.ServiceParameter{
 		ListenAddress: ":0",
 	})
 
-	link.LinkService(link.ServiceParameter{
+	link.LinkService(&link.ServiceParameter{
 		SvcName: "hub",
 	})
 

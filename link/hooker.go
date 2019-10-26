@@ -18,10 +18,10 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 	switch msg := inputEvent.Message().(type) {
 	case *meshproto.ServiceIdentifyACK: // 服务方收到连接方的服务标识
 
-		if pre := GetRemoteLink(msg.SvcID); pre == nil {
+		if pre := GetLink(msg.SvcID); pre == nil {
 
 			// 添加连接上来的对方服务
-			AddRemoteLink(inputEvent.Session(), msg.SvcID, msg.SvcName)
+			MarkLink(inputEvent.Session(), msg.SvcID, msg.SvcName)
 		}
 	case *cellnet.SessionConnected:
 
@@ -33,7 +33,9 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 
 	case *cellnet.SessionClosed:
 
-		RemoveRemoteLink(inputEvent.Session())
+		if svcID := GetLinkSvcID(inputEvent.Session()); svcID != "" {
+			log.Infof("svc link disconnected, '%s' sid: %d", svcID, inputEvent.Session().ID())
+		}
 	}
 
 	return inputEvent

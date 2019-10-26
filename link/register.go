@@ -55,6 +55,17 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 	return sd
 }
 
+func GetPeerDesc(p cellnet.Peer) (ret *discovery.ServiceDesc) {
+
+	if cs, ok := p.(cellnet.ContextSet); ok {
+		if cs.FetchContext(cellmesh.PeerContextKey_ServiceDesc, &ret) {
+			return
+		}
+	}
+
+	return nil
+}
+
 // 解除peer注册
 func Unregister(p cellnet.Peer) {
 	property := p.(cellnet.PeerProperty)

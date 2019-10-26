@@ -160,14 +160,19 @@ func (self *memDiscovery) deleteSvcCache(svcid, svcName string) {
 
 	list := self.svcCache[svcName]
 
+	var svcToRemove []*discovery.ServiceDesc
 	for index, svc := range list {
 		if svc.ID == svcid {
 
-			self.triggerNotify("del", svc)
+			svcToRemove = append(svcToRemove, svc)
 			list = append(list[:index], list[index+1:]...)
 			break
 		}
 	}
 
 	self.svcCache[svcName] = list
+
+	for _, svc := range svcToRemove {
+		self.triggerNotify("del", svc)
+	}
 }

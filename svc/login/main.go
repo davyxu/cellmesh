@@ -10,7 +10,7 @@ func main() {
 	cellmesh.LogParameter()
 	cellmesh.ConnectDiscovery()
 
-	link.LinkService(link.ServiceParameter{
+	link.LinkService(&link.ServiceParameter{
 		SvcName: "hub",
 	})
 

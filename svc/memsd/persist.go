@@ -28,7 +28,7 @@ func loadPersistFile(fileName string) {
 
 func startPersistCheck(fileName string) {
 
-	ticker := time.NewTicker(time.Minute)
+	ticker := time.NewTicker(time.Second * 20)
 
 	for {
 
@@ -47,14 +47,16 @@ func startPersistCheck(fileName string) {
 					return
 				}
 
-				err = model.SaveValue(fileHandle)
+				valuesSaved, err := model.SaveValue(fileHandle)
 
 				if err != nil {
 					log.Errorf("save values failed: %s %s", fileName, err.Error())
 					return
 				}
 
-				log.Infof("Save %d values", model.ValueCount())
+				if valuesSaved > 0 {
+					log.Infof("Save %d values", valuesSaved)
+				}
 
 				model.ValueDirty = false
 

@@ -7,6 +7,16 @@ import (
 	"strconv"
 )
 
+func DescExistsByID(svcid string, list []*ServiceDesc) bool {
+	for _, desc := range list {
+		if svcid == desc.ID {
+			return true
+		}
+	}
+
+	return false
+}
+
 func BytesToAny(data []byte, dataPtr interface{}) error {
 
 	switch ret := dataPtr.(type) {

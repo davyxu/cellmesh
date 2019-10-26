@@ -40,7 +40,7 @@ func peerStatus(svc cellnet.Peer) string {
 
 				ses := sesGetter.Session()
 
-				svcID := GetRemoteLinkSvcID(ses)
+				svcID := GetLinkSvcID(ses)
 
 				context = fmt.Sprintf("  %22s %22s", svcID, mp.Address())
 			} else {
@@ -57,8 +57,8 @@ func peerStatus(svc cellnet.Peer) string {
 }
 
 func remoteSessionStatus(ses cellnet.Session) string {
-	svcID := GetRemoteLinkSvcID(ses)
-	svcName := GetRemoteLinkSvcName(ses)
+	svcID := GetLinkSvcID(ses)
+	svcName := GetLinkSvcName(ses)
 
 	return fmt.Sprintf("%s(%s)", svcName, svcID)
 }

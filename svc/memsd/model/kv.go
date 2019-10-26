@@ -72,7 +72,7 @@ var (
 	fileVersion = 1
 )
 
-func SaveValue(writer io.Writer) error {
+func SaveValue(writer io.Writer) (valuesSaved int, err error) {
 
 	encoder := json.NewEncoder(writer)
 	encoder.SetIndent("", "\t")
@@ -80,6 +80,12 @@ func SaveValue(writer io.Writer) error {
 	var file PersistFile
 	file.Version = fileVersion
 	for _, vmeta := range valueByKey {
+
+		// 服务不保存, 服务重新注册
+		if IsServiceKey(vmeta.Key) {
+			continue
+		}
+
 		file.Values = append(file.Values, vmeta)
 	}
 
@@ -88,13 +94,13 @@ func SaveValue(writer io.Writer) error {
 		return file.Values[i].Key < file.Values[j].Key
 	})
 
-	err := encoder.Encode(&file)
+	err = encoder.Encode(&file)
 
 	if err != nil {
-		return err
+		return
 	}
 
-	return nil
+	return len(file.Values), nil
 }
 
 func LoadValue(reader io.Reader) error {
