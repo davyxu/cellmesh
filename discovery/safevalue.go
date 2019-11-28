@@ -15,21 +15,20 @@ const (
 type rawGetter interface {
 	// 获取原始值
 	GetRawValue(key string) ([]byte, error)
+	GetValueDirect(key string, valuePtr interface{}) error
 }
 
-func getMultiKey(sd Discovery, key string) (ret []string) {
+func getMultiKey(sd rawGetter, key string) (ret []string) {
 
 	mainKey := key
 
 	ret = append(ret, mainKey)
 
-	rg := sd.(rawGetter)
-
 	for i := 1; ; i++ {
 
 		key = fmt.Sprintf("%s.%d", mainKey, i)
 
-		_, err := rg.GetRawValue(key)
+		_, err := sd.GetRawValue(key)
 		if err != nil && err.Error() == "value not exists" {
 			return
 		}
@@ -49,7 +48,7 @@ func SafeSetValue(sd Discovery, key string, value interface{}, compress bool) er
 
 		if len(cData) >= PackedValueSize {
 
-			for _, multiKey := range getMultiKey(sd, key) {
+			for _, multiKey := range getMultiKey(sd.(rawGetter), key) {
 
 				err := sd.DeleteValue(multiKey)
 				if err != nil {
@@ -96,13 +95,21 @@ func SafeSetValue(sd Discovery, key string, value interface{}, compress bool) er
 }
 
 func SafeGetValue(sd Discovery, key string, valuePtr interface{}, decompress bool) error {
+
+	rg := sd.(rawGetter)
+
+	var (
+		finalData []byte
+		err       error
+	)
+
 	if decompress {
 
 		var data []byte
-		for _, multiKey := range getMultiKey(sd, key) {
+		for _, multiKey := range getMultiKey(rg, key) {
 
 			var partData []byte
-			err := sd.GetValue(multiKey, &partData)
+			err := rg.GetValueDirect(multiKey, &partData)
 			if err != nil {
 				return err
 			}
@@ -110,17 +117,20 @@ func SafeGetValue(sd Discovery, key string, valuePtr interface{}, decompress boo
 			data = append(data, partData...)
 		}
 
-		finalData, err := util.DecompressBytes(data)
+		finalData, err = util.DecompressBytes(data)
+
 		if err != nil {
 			return err
 		}
 
 		reflect.ValueOf(valuePtr).Elem().Set(reflect.ValueOf(finalData))
-
-		return nil
-
 	} else {
-		return sd.GetValue(key, valuePtr)
+		err = rg.GetValueDirect(key, &finalData)
+
+		if err != nil {
+			return err
+		}
 	}
 
+	return nil
 }

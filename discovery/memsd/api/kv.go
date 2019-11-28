@@ -80,6 +80,17 @@ func (self *memDiscovery) GetValue(key string, valuePtr interface{}) error {
 	return discovery.BytesToAny(data, valuePtr)
 }
 
+func (self *memDiscovery) GetValueDirect(key string, valuePtr interface{}) error {
+
+	data, err := self.GetRawValue(key)
+
+	if err != nil {
+		return err
+	}
+
+	return discovery.BytesToAny(data, valuePtr)
+}
+
 func (self *memDiscovery) GetRawValue(key string) (retData []byte, retErr error) {
 
 	callErr := self.remoteCall(&proto.GetValueREQ{
