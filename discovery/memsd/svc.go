@@ -27,6 +27,7 @@ func startSvc() {
 
 	p := peer.NewGenericPeer("tcp.Acceptor", "memsd", config.Address, model.Queue)
 	p.(cellnet.PeerCaptureIOPanic).EnableCaptureIOPanic(true)
+
 	model.Listener = p
 	msgFunc := proto.GetMessageHandler("memsd")
 
@@ -37,6 +38,8 @@ func startSvc() {
 		}
 	})
 
+	// 100M封包大小
+	p.(cellnet.TCPSocketOption).SetMaxPacketSize(1024 * 1024 * 100)
 	p.(cellnet.TCPSocketOption).SetSocketBuffer(1024*1024, 1024*1024, true)
 	p.(cellnet.PeerCaptureIOPanic).EnableCaptureIOPanic(true)
 	p.Start()
