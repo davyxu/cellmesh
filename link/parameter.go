@@ -1,7 +1,6 @@
 package link
 
 import (
-	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellnet"
 )
 
@@ -16,9 +15,6 @@ type ServiceParameter struct {
 }
 
 func (self *ServiceParameter) MakeServiceDefault() {
-	if self.SvcName == "" {
-		self.SvcName = cellmesh.GetProcName()
-	}
 
 	if self.PeerType == "" {
 		self.PeerType = "tcp.Acceptor"

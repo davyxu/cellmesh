@@ -1,18 +1,11 @@
 
 [AutoMsgID]
-struct SubscribeChannelREQ {
-	Channel string
+struct RemoteCallACK {
+	SrcSvcID string
+	TgtSvcID string
+
+	CallID int64
+
+	Body bytes
+	BodyMsgID uint32
 }
-
-[AutoMsgID]
-struct SubscribeChannelACK{
-	Channel string
-}
-
-
-[AutoMsgID]
-struct SvcStatusACK{
-    SvcID       string
-	UserCount   int32
-}
-

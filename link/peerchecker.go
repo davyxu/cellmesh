@@ -56,13 +56,6 @@ func peerStatus(svc cellnet.Peer) string {
 	return fmt.Sprintf("%13s %15s %s  [%s]", peerName, mp.TypeName(), context, ready)
 }
 
-func remoteSessionStatus(ses cellnet.Session) string {
-	svcID := GetLinkSvcID(ses)
-	svcName := GetLinkSvcName(ses)
-
-	return fmt.Sprintf("%s(%s)", svcName, svcID)
-}
-
 func LocalServiceStatus() string {
 
 	var sb strings.Builder
@@ -74,12 +67,6 @@ func LocalServiceStatus() string {
 
 		return true
 	})
-
-	//VisitRemoteSession(func(ses cellnet.Session) bool {
-	//	sb.WriteString(remoteSessionStatus(ses))
-	///	sb.WriteString("\n")
-	//	return true
-	//})
 
 	return sb.String()
 }

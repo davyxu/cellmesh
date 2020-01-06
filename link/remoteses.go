@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
+// 内部逻辑使用
 func MarkLink(ses cellnet.Session, svcid, svcName string) {
 	ctxSet := ses.(cellnet.ContextSet)
 	ctxSet.SetContext(cellmesh.SesContextKey_LinkSvcID, svcid)
@@ -59,6 +60,8 @@ func VisitLink(callback func(ses cellnet.Session) bool) {
 
 	visitContinue := true
 	VisitLocalPeer(func(peer cellnet.Peer) bool {
+
+		// 注意, 已经断开的session的Connector是没有session的
 
 		if sesmgr, ok := peer.(cellnet.SessionAccessor); ok {
 			sesmgr.VisitSession(func(ses cellnet.Session) bool {
