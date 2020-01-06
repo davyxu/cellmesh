@@ -1,7 +1,6 @@
 package model
 
 import (
-	meshutil "github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"strings"
 )
@@ -12,7 +11,6 @@ const (
 
 var (
 	Queue cellnet.EventQueue
-	IDGen = meshutil.NewUUID64Generator()
 
 	Listener cellnet.Peer
 
@@ -31,11 +29,6 @@ func GetSvcIDByServiceKey(rawkey string) string {
 	}
 
 	return ""
-}
-
-func init() {
-	IDGen.AddTimeComponent(8)
-	IDGen.AddSeqComponent(8, 0)
 }
 
 func GetSessionToken(ses cellnet.Session) (token string) {

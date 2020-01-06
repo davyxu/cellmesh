@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/davyxu/cellmesh/svc/memsd/model"
 	"github.com/davyxu/cellmesh/svc/memsd/proto"
+	meshutil "github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
-	"strconv"
 )
 
 func msgHandler(ev cellnet.Event) {
@@ -128,7 +128,7 @@ func auth(ev cellnet.Event) {
 
 	// 首次生成token并与ses绑定
 	if msg.Token == "" {
-		ack.Token = strconv.Itoa(int(model.IDGen.Generate()))
+		ack.Token = meshutil.GenID()
 	}
 
 	ev.Session().(cellnet.ContextSet).SetContext("token", ack.Token)
