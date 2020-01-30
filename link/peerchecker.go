@@ -60,7 +60,7 @@ func LocalServiceStatus() string {
 
 	var sb strings.Builder
 
-	VisitLocalPeer(func(svc cellnet.Peer) bool {
+	VisitPeer(func(svc cellnet.Peer) bool {
 
 		sb.WriteString(peerStatus(svc))
 		sb.WriteString("\n")
@@ -73,7 +73,7 @@ func LocalServiceStatus() string {
 
 func IsAllReady() (ret bool) {
 	ret = true
-	VisitLocalPeer(func(svc cellnet.Peer) bool {
+	VisitPeer(func(svc cellnet.Peer) bool {
 		if !svc.(cellnet.PeerReadyChecker).IsReady() {
 			ret = false
 			return false

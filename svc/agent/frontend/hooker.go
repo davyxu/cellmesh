@@ -2,8 +2,8 @@ package frontend
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh_demo/proto"
-	"github.com/davyxu/cellmesh_demo/svc/agent/model"
+	"github.com/davyxu/cellmesh/proto"
+	"github.com/davyxu/cellmesh/svc/agent/model"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	_ "github.com/davyxu/cellnet/peer/tcp"

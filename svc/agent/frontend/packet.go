@@ -39,7 +39,7 @@ func RecvLTVPacketData(reader io.Reader, maxPacketSize int) (msgID int, msgData 
 	// 用小端格式读取Size
 	size := binary.LittleEndian.Uint16(sizeBuffer)
 
-	if maxPacketSize > 0 && size >= uint16(maxPacketSize) {
+	if maxPacketSize > 0 && int(size) >= maxPacketSize {
 		err = ErrMaxPacket
 		return
 	}

@@ -38,6 +38,17 @@ func (self *memDiscovery) Register(svc *discovery.ServiceDesc) (retErr error) {
 
 	})
 
+	// 确保信息已经同步到本地
+	for {
+		descList := self.Query(svc.Name)
+
+		if discovery.DescExistsByID(svc.ID, descList) {
+			break
+		}
+
+		time.Sleep(time.Millisecond * 100)
+	}
+
 	return
 }
 

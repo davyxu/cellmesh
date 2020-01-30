@@ -21,7 +21,7 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 		if pre := GetLink(msg.SvcID); pre == nil {
 
 			// 添加连接上来的对方服务
-			MarkLink(inputEvent.Session(), msg.SvcID, msg.SvcName)
+			markLink(inputEvent.Session(), msg.SvcID, msg.SvcName)
 		}
 	case *cellnet.SessionConnected:
 

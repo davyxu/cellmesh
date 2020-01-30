@@ -12,9 +12,6 @@ import (
 // 开启服务
 func StartService(param *ServiceParameter) cellnet.Peer {
 
-	// 填充默认值
-	param.MakeServiceDefault()
-
 	p := peer.NewGenericPeer(param.PeerType, param.SvcName, param.ListenAddress, param.Queue)
 
 	proc.BindProcessorHandler(p, param.NetProc, param.EventCallback)
@@ -23,11 +20,11 @@ func StartService(param *ServiceParameter) cellnet.Peer {
 		opt.SetSocketBuffer(2048, 2048, true)
 	}
 
-	AddLocalPeer(p)
+	AddPeer(p)
 
 	p.Start()
 
-	Register(p)
+	registerPeerToDiscovery(p)
 
 	return p
 }
@@ -49,14 +46,14 @@ func addRemoteSvc(desc *discovery.ServiceDesc, param *ServiceParameter) {
 	p.(cellnet.TCPConnector).SetReconnectDuration(time.Second * 3)
 
 	// 提前添加到表中， 通过IsReady判断，避免连不上时反复创建Connector
-	MarkLink(p.(cellnet.TCPConnector).Session(), desc.ID, desc.Name)
+	markLink(p.(cellnet.TCPConnector).Session(), desc.ID, desc.Name)
 
 	p.Start()
 
 	p.(cellnet.ContextSet).SetContext(cellmesh.PeerContextKey_ServiceDesc, desc)
 
 	// 注册本地Peer，方便做检查遍历
-	AddLocalPeer(p)
+	AddPeer(p)
 }
 
 var (
@@ -71,7 +68,7 @@ func syncService(param *ServiceParameter) {
 	var peerToRemove []cellnet.Peer
 
 	// 遍历所有的本地服务
-	VisitLocalPeer(func(p cellnet.Peer) bool {
+	VisitPeer(func(p cellnet.Peer) bool {
 
 		sd := GetPeerDesc(p)
 		if DebugSyncService {
@@ -79,6 +76,11 @@ func syncService(param *ServiceParameter) {
 		}
 
 		if sd != nil {
+
+			// 只处理同类的服务
+			if sd.Name != param.SvcName {
+				return true
+			}
 
 			// 是否在服务发现列表中存在
 			if !discovery.DescExistsByID(sd.ID, descList) {
@@ -97,7 +99,7 @@ func syncService(param *ServiceParameter) {
 
 		// 有自动连接情况时, 关闭
 		p.Stop()
-		RemoveLocalPeer(p)
+		RemovePeer(p)
 	}
 
 	// 加入已有的服务
@@ -116,9 +118,6 @@ func syncService(param *ServiceParameter) {
 
 // 连接到服务
 func LinkService(param *ServiceParameter) {
-
-	// 填充默认值
-	param.MakeConnectorDefault()
 
 	// 提前注册回调, 避免在处理已有服务时掉服务
 	notify := discovery.Default.RegisterNotify()

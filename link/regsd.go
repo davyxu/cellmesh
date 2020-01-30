@@ -14,7 +14,7 @@ type peerListener interface {
 type ServiceMeta map[string]string
 
 // 将Acceptor注册到服务发现,IP自动取本地IP
-func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
+func registerPeerToDiscovery(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 	host := util.GetLocalIP()
 
 	property := p.(cellnet.PeerProperty)
@@ -55,19 +55,8 @@ func Register(p cellnet.Peer, options ...interface{}) *discovery.ServiceDesc {
 	return sd
 }
 
-func GetPeerDesc(p cellnet.Peer) (ret *discovery.ServiceDesc) {
-
-	if cs, ok := p.(cellnet.ContextSet); ok {
-		if cs.FetchContext(cellmesh.PeerContextKey_ServiceDesc, &ret) {
-			return
-		}
-	}
-
-	return nil
-}
-
 // 解除peer注册
-func Unregister(p cellnet.Peer) {
+func unregister(p cellnet.Peer) {
 	property := p.(cellnet.PeerProperty)
 	discovery.Default.Deregister(cellmesh.MakeSvcID(property.Name()))
 }

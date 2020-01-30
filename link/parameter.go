@@ -13,23 +13,3 @@ type ServiceParameter struct {
 	Queue         cellnet.EventQueue
 	EventCallback cellnet.EventCallback
 }
-
-func (self *ServiceParameter) MakeServiceDefault() {
-
-	if self.PeerType == "" {
-		self.PeerType = "tcp.Acceptor"
-	}
-
-	if self.NetProc == "" {
-		self.NetProc = "tcp.svc"
-	}
-}
-
-func (self *ServiceParameter) MakeConnectorDefault() {
-	if self.PeerType == "" {
-		self.PeerType = "tcp.Connector"
-	}
-	if self.NetProc == "" {
-		self.NetProc = "tcp.svc"
-	}
-}

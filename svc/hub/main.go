@@ -12,8 +12,10 @@ func main() {
 
 	// 服务互联服务
 	link.StartService(&link.ServiceParameter{
+		PeerType:      "tcp.Acceptor",
+		NetProc:       "tcp.svc",
 		SvcName:       "hub",
-		ListenAddress: ":0",
+		ListenAddress: ":7001",
 	})
 
 	link.CheckReady()

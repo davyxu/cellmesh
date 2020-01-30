@@ -12,7 +12,9 @@ func main() {
 
 	// 服务互联
 	link.LinkService(&link.ServiceParameter{
-		SvcName: "hub",
+		PeerType: "tcp.Connector",
+		NetProc:  "tcp.svc",
+		SvcName:  "hub",
 	})
 
 	link.CheckReady()

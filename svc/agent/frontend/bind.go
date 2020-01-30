@@ -2,8 +2,8 @@ package frontend
 
 import (
 	"errors"
-	"github.com/davyxu/cellmesh/service"
-	"github.com/davyxu/cellmesh_demo/svc/agent/model"
+	"github.com/davyxu/cellmesh/link"
+	"github.com/davyxu/cellmesh/svc/agent/model"
 )
 
 var (
@@ -15,14 +15,16 @@ var (
 // 将客户端连接绑定到后台服务
 func bindClientToBackend(backendSvcID string, clientSesID int64) (*model.User, error) {
 
-	backendSes := service.GetRemoteService(backendSvcID)
+	backendSes := link.GetLink(backendSvcID)
 
 	if backendSes == nil {
 		return nil, ErrBackendServerNotFound
 	}
 
+	backendPeer := backendSes.Peer()
+
 	// 取得后台服务的信息
-	sd := service.SessionToContext(backendSes)
+	sd := link.GetPeerDesc(backendPeer)
 	if sd == nil {
 		return nil, ErrBackendSDNotFound
 	}
@@ -41,7 +43,7 @@ func bindClientToBackend(backendSvcID string, clientSesID int64) (*model.User, e
 	u = model.CreateUser(clientSes)
 
 	// 更新绑定后台服务的svcid
-	u.SetBackend(sd.Name, sd.SvcID)
+	u.SetBackend(sd.Name, sd.ID)
 
 	return u, nil
 }
