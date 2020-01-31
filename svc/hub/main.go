@@ -16,6 +16,7 @@ func main() {
 		NetProc:       "tcp.svc",
 		SvcName:       "hub",
 		ListenAddress: ":7001",
+		Queue:         cellmesh.Queue,
 	})
 
 	link.CheckReady()

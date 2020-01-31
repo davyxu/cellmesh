@@ -28,7 +28,7 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 		// 用Connector的名称（一般是ProcName）让远程知道自己是什么服务，用于网关等需要反向发送消息的标识
 		inputEvent.Session().Send(&meshproto.ServiceIdentifyACK{
 			SvcID:   cellmesh.GetLocalSvcID(),
-			SvcName: cellmesh.GetProcName(),
+			SvcName: cellmesh.ProcName,
 		})
 
 	case *cellnet.SessionClosed:

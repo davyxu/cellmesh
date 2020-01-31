@@ -37,8 +37,8 @@ func registerPeerToDiscovery(p cellnet.Peer, options ...interface{}) *discovery.
 	}
 
 	// TODO 自动获取外网IP
-	if cellmesh.GetWANIP() != "" {
-		sd.SetMeta(cellmesh.SDMetaKey_WANAddress, util.JoinAddress(cellmesh.GetWANIP(), sd.Port))
+	if cellmesh.WANIP != "" {
+		sd.SetMeta(cellmesh.SDMetaKey_WANAddress, util.JoinAddress(cellmesh.WANIP, sd.Port))
 	}
 
 	log.SetColor("green").Debugf("service '%s' listen at port: %d", sd.ID, sd.Port)

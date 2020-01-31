@@ -9,12 +9,6 @@ var (
 	// 独立出来避免污染工具类的flagset
 	CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	// 服务发现地址
-	flagDiscoveryAddr = CommandLine.String("sdaddr", "127.0.0.1:8900", "Discovery address")
-
-	// 设置外网IP
-	flagWANIP = CommandLine.String("wanip", "", "Client connect from extern ip")
-
 	// 对日志上色
 	flagLogColor = CommandLine.Bool("logcolor", false, "Make log in color in *nix")
 
@@ -33,3 +27,10 @@ var (
 	// 批量设置flag
 	flagFlagFile = CommandLine.String("flagfile", "../cfg/LocalFlag.cfg", "Flagfile to init flag values")
 )
+
+func init() {
+	CommandLine.StringVar(&WANIP, "wanip", "", "Client connect from extern ip")
+
+	CommandLine.StringVar(&DiscoveryAddress, "sdaddr", "127.0.0.1:8900", "Discovery address")
+
+}

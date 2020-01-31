@@ -48,5 +48,5 @@ func MakeSvcID(svcName string) string {
 
 // 获得本进程的服务id
 func GetLocalSvcID() string {
-	return MakeSvcID(GetProcName())
+	return MakeSvcID(ProcName)
 }

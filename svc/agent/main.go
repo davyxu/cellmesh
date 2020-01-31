@@ -17,7 +17,8 @@ func main() {
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "tcp.frontend",
 		SvcName:       "frontend",
-		ListenAddress: ":8001",
+		ListenAddress: ":8002",
+		Queue:         cellmesh.Queue,
 	})
 
 	// 对内的服务连接
@@ -26,6 +27,7 @@ func main() {
 		NetProc:       "agent.backend",
 		SvcName:       "frontend",
 		ListenAddress: ":0",
+		Queue:         cellmesh.Queue,
 	})
 
 	// 服务互联
@@ -33,6 +35,7 @@ func main() {
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
 		SvcName:  "hub",
+		Queue:    cellmesh.Queue,
 	})
 
 	link.CheckReady()

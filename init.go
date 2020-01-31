@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/svc/memsd/api"
 	"github.com/davyxu/cellmesh/util"
+	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
@@ -15,7 +16,7 @@ import (
 
 func Init(name string) {
 
-	procName = name
+	ProcName = name
 
 	CommandLine.Parse(os.Args[1:])
 
@@ -23,6 +24,10 @@ func Init(name string) {
 	meshutil.ApplyFlagFromFile(CommandLine, *flagFlagFile)
 
 	CommandLine.Parse(os.Args[1:])
+
+	Queue = cellnet.NewEventQueue()
+
+	Queue.StartLoop()
 
 	// 设置文件日志
 	if *flagLogFile != "" {
@@ -83,18 +88,18 @@ func LogParameter() {
 	workdir, _ := os.Getwd()
 	log.Infof("Execuable: %s", os.Args[0])
 	log.Infof("WorkDir: %s", workdir)
-	log.Infof("ProcName: '%s'", GetProcName())
+	log.Infof("ProcName: '%s'", ProcName)
 	log.Infof("PID: %d", os.Getpid())
-	log.Infof("Discovery: '%s'", *flagDiscoveryAddr)
+	log.Infof("Discovery: '%s'", DiscoveryAddress)
 	log.Infof("LANIP: '%s'", util.GetLocalIP())
-	log.Infof("WANIP: '%s'", GetWANIP())
+	log.Infof("WANIP: '%s'", WANIP)
 }
 
 // 连接到服务发现, 建议在service.Init后, 以及服务器逻辑开始前调用
 func ConnectDiscovery() {
-	log.Debugf("Connecting to discovery '%s' ...", *flagDiscoveryAddr)
+	log.Debugf("Connecting to discovery '%s' ...", DiscoveryAddress)
 	sdConfig := memsd.DefaultConfig()
-	sdConfig.Address = *flagDiscoveryAddr
+	sdConfig.Address = DiscoveryAddress
 	discovery.Default = memsd.NewDiscovery()
 	discovery.Default.Start(sdConfig)
 }

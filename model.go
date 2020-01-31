@@ -1,19 +1,17 @@
 package cellmesh
 
+import "github.com/davyxu/cellnet"
+
 var (
-	procName string
+	// 全局队列
+	Queue cellnet.EventQueue
+
+	// 进程名
+	ProcName string
+
+	// 公网IP
+	WANIP string
+
+	// 服务发现地址
+	DiscoveryAddress string
 )
-
-// 获取当前服务进程名称
-func GetProcName() string {
-	return procName
-}
-
-// 获取外网IP
-func GetWANIP() string {
-	return *flagWANIP
-}
-
-func GetDiscoveryAddr() string {
-	return *flagDiscoveryAddr
-}
