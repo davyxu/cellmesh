@@ -2,12 +2,12 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/msglog"
 	_ "github.com/davyxu/cellnet/peer/gorillaws"
+	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/timer"
 	"github.com/davyxu/golog"
 	"os"
@@ -33,11 +33,11 @@ func login(param *ClientParam) (agentAddr, gameSvcID string) {
 	// TODO 短连接请求完毕关闭
 
 	// 封装连接和接收以及超时的过程,真正的客户端可以添加这套机制
-	RemoteCall(loginReq, &proto.LoginREQ{
+	rpc.CallSyncType(loginReq, &proto.LoginREQ{
 		Version:  "1.0",
 		Platform: "demo",
 		UID:      "1234",
-	}, func(ack *proto.LoginACK) {
+	}, time.Second, func(ack *proto.LoginACK) {
 
 		if ack.Result == proto.ResultCode_NoError {
 			agentAddr = fmt.Sprintf("%s:%d", ack.Server.IP, ack.Server.Port)
@@ -104,10 +104,10 @@ func main() {
 
 	agentReq := getAgentSession(agentAddr, currParam)
 
-	RemoteCall(agentReq, &proto.VerifyREQ{
+	rpc.CallSyncType(agentReq, &proto.VerifyREQ{
 		GameToken: "verify",
 		GameSvcID: gameSvcID,
-	}, func(ack *proto.VerifyACK) {
+	}, time.Second, func(ack *proto.VerifyACK) {
 
 		fmt.Println(ack)
 	})
@@ -122,9 +122,9 @@ func main() {
 
 	ReadConsole(func(s string) {
 
-		RemoteCall(agentReq, &proto.ChatREQ{
+		rpc.CallSyncType(agentReq, &proto.ChatREQ{
 			Content: s,
-		}, func(ack *proto.ChatACK) {
+		}, time.Second, func(ack *proto.ChatACK) {
 
 			fmt.Println(ack.Content)
 		})
