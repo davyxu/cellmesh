@@ -18,7 +18,7 @@ func main() {
 		SvcName:       "verify",
 		ListenAddress: ":8001",
 		Queue:         cellmesh.Queue,
-		EventCallback: fx.MakeIOCEventHandler(fx.GEventDispatcher.IOC),
+		EventCallback: fx.MakeIOCEventHandler(fx.MessageRegistry),
 	})
 
 	// 服务互联
