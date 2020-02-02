@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/link"
+	_ "github.com/davyxu/cellmesh/svc/login/verify"
 )
 
 func main() {

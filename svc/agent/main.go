@@ -25,7 +25,7 @@ func main() {
 	link.StartService(&link.ServiceParameter{
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "agent.backend",
-		SvcName:       "frontend",
+		SvcName:       "backend",
 		ListenAddress: ":0",
 		Queue:         cellmesh.Queue,
 	})

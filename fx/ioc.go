@@ -1,6 +1,9 @@
 package fx
 
-import "sync"
+import (
+	"reflect"
+	"sync"
+)
 
 type InjectInvoker func(ioc *InjectContext) interface{}
 
@@ -50,12 +53,34 @@ func (self *InjectContext) TryInvoke(key interface{}) (value interface{}, ok boo
 	return invoker(self), true
 }
 
+func keyToString(key interface{}) string {
+	switch v := key.(type) {
+	case string:
+		return v
+	case reflect.Type:
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+
+		return v.Name()
+	default:
+
+		t := reflect.TypeOf(key)
+		if t.Kind() == reflect.Ptr {
+			t = t.Elem()
+		}
+
+		return t.Name()
+	}
+
+}
+
 func (self *InjectContext) Invoke(key interface{}) interface{} {
 
 	if value, ok := self.TryInvoke(key); ok {
 		return value
 	} else {
-		panic("type not register mapper ")
+		panic("type not register mapper: " + keyToString(key))
 	}
 }
 
@@ -63,4 +88,5 @@ func NewInjectContext() *InjectContext {
 	return &InjectContext{
 		invokerByKey: make(map[interface{}]InjectInvoker),
 	}
+
 }

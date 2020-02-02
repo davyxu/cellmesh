@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/svc/robot/flow"
 	"github.com/davyxu/cellmesh/svc/robot/model"
@@ -13,6 +14,8 @@ import (
 var log = golog.New("main")
 
 func main() {
+
+	flag.Parse()
 
 	// 异步写日志
 	golog.EnableASyncWrite()

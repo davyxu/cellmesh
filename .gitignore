@@ -1,3 +1,4 @@
 demo/bin
 *.stackdump
 bin/
+cfg/LocalFlag.cfg

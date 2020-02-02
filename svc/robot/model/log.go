@@ -4,4 +4,4 @@ import (
 	"github.com/davyxu/golog"
 )
 
-var log = golog.New("model")
+var log = golog.New("rmodel")

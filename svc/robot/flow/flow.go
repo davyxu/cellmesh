@@ -1,7 +1,10 @@
 package flow
 
 import (
+	"github.com/davyxu/cellmesh/proto"
+	"github.com/davyxu/cellmesh/svc/robot/link"
 	"github.com/davyxu/cellmesh/svc/robot/model"
+	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golexer"
 )
 
@@ -24,4 +27,10 @@ func Main(r *model.Robot) {
 
 		return BackgroundProc(r, msg)
 	})
+
+	link.ConnectTCP(r, "login", util.GetLocalIP()+":8001")
+
+	r.Send("login", &proto.LoginREQ{})
+	ack := r.Recv("proto.LoginACK").(*proto.LoginACK)
+	log.Debugf("%+v", ack)
 }

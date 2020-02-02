@@ -45,9 +45,9 @@ func (self *Messenger) VisitWaitMsg(callback func(meta *cellnet.MessageMeta) boo
 
 }
 
-func (self *Messenger) Send(socket string, reqMsg interface{}) {
+func (self *Messenger) Send(peerName string, reqMsg interface{}) {
 
-	p := self.GetPeer(socket)
+	p := self.GetPeer(peerName)
 	if p == nil {
 		return
 	}

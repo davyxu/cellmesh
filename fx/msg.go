@@ -17,8 +17,10 @@ func MakeIOCEventHandler(parentIOC *InjectContext) cellnet.EventCallback {
 			return ev
 		})
 
-		msgType := reflect.TypeOf(ev.Message())
-
-		ioc.Invoke(msgType)
+		tMsg := reflect.TypeOf(ev.Message())
+		if tMsg.Kind() == reflect.Ptr {
+			tMsg = tMsg.Elem()
+		}
+		ioc.TryInvoke(tMsg)
 	}
 }
