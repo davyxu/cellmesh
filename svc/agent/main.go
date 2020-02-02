@@ -13,7 +13,7 @@ func main() {
 	cellmesh.ConnectDiscovery()
 
 	// 网关对客户端连接
-	link.StartService(&link.ServiceParameter{
+	link.ListenService(&link.ServiceParameter{
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "tcp.frontend",
 		SvcName:       "frontend",
@@ -22,7 +22,7 @@ func main() {
 	})
 
 	// 对内的服务连接
-	link.StartService(&link.ServiceParameter{
+	link.ListenService(&link.ServiceParameter{
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "agent.backend",
 		SvcName:       "backend",
@@ -31,7 +31,7 @@ func main() {
 	})
 
 	// 服务互联
-	link.LinkService(&link.ServiceParameter{
+	link.ConnectService(&link.ServiceParameter{
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
 		SvcName:  "hub",

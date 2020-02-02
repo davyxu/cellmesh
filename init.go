@@ -1,6 +1,7 @@
 package cellmesh
 
 import (
+	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/svc/memsd/api"
 	"github.com/davyxu/cellmesh/util"
@@ -8,6 +9,7 @@ import (
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/golog"
+	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -24,6 +26,16 @@ func Init(name string) {
 	meshutil.ApplyFlagFromFile(CommandLine, *flagFlagFile)
 
 	CommandLine.Parse(os.Args[1:])
+
+	// 命令行可以设置GroupName, 否则初始化为IP串
+	if SvcGroup == "" {
+		initGroupName()
+	}
+
+	// 命令行可以设置GroupName, 否则初始化为进程ID
+	if SvcIndex == 0 {
+		SvcIndex = os.Getpid()
+	}
 
 	Queue = cellnet.NewEventQueue()
 
@@ -84,6 +96,24 @@ func Init(name string) {
 
 }
 
+// ip+PID的16进制数值字符串，每次启动变化
+func initGroupName() {
+
+	// 兼容ipv6
+	ipParts := net.ParseIP(util.GetLocalIP())
+
+	var sb strings.Builder
+	for _, p := range ipParts {
+		if p == 0 || p == 255 {
+			continue
+		}
+
+		sb.WriteString(fmt.Sprintf("%d", p))
+	}
+
+	SvcGroup = sb.String()
+}
+
 func LogParameter() {
 	workdir, _ := os.Getwd()
 	log.Infof("Execuable: %s", os.Args[0])
@@ -93,6 +123,8 @@ func LogParameter() {
 	log.Infof("Discovery: '%s'", DiscoveryAddress)
 	log.Infof("LANIP: '%s'", util.GetLocalIP())
 	log.Infof("WANIP: '%s'", WANIP)
+	log.Infof("SvcGroup: '%s'", SvcGroup)
+	log.Infof("SvcIndex: %d", SvcIndex)
 }
 
 // 连接到服务发现, 建议在service.Init后, 以及服务器逻辑开始前调用

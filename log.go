@@ -5,6 +5,6 @@ import (
 )
 
 var (
-	log = golog.New("cellmesh")
+	log = golog.New("cm")
 	Log = log
 )

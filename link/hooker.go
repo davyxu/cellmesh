@@ -34,7 +34,7 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 	case *cellnet.SessionClosed:
 
 		if svcID := GetLinkSvcID(inputEvent.Session()); svcID != "" {
-			log.Infof("svc link disconnected, '%s' sid: %d", svcID, inputEvent.Session().ID())
+			log.SetColor("yellow").Infof("Remove service link : %s %s", GetLinkSvcID(inputEvent.Session()), getPeerDescString(inputEvent.Session().Peer()))
 		}
 	}
 

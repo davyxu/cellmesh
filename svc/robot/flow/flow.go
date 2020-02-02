@@ -30,7 +30,9 @@ func Main(r *model.Robot) {
 
 	link.ConnectTCP(r, "login", util.GetLocalIP()+":8001")
 
-	r.Send("login", &proto.LoginREQ{})
-	ack := r.Recv("proto.LoginACK").(*proto.LoginACK)
+	r.Send("login", &proto.VerifyREQ{})
+	ack := r.Recv("proto.VerifyACK").(*proto.VerifyACK)
 	log.Debugf("%+v", ack)
+
+	link.ConnectTCP(r, "agent", util.JoinAddress(ack.Server.IP, int(ack.Server.Port)))
 }

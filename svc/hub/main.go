@@ -11,11 +11,11 @@ func main() {
 	cellmesh.ConnectDiscovery()
 
 	// 服务互联服务
-	link.StartService(&link.ServiceParameter{
+	link.ListenService(&link.ServiceParameter{
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "tcp.svc",
 		SvcName:       "hub",
-		ListenAddress: ":7001",
+		ListenAddress: ":0",
 		Queue:         cellmesh.Queue,
 	})
 

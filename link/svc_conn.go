@@ -9,31 +9,7 @@ import (
 	"time"
 )
 
-// 开启服务
-func StartService(param *ServiceParameter) cellnet.Peer {
-
-	p := peer.NewGenericPeer(param.PeerType, param.SvcName, param.ListenAddress, param.Queue)
-
-	proc.BindProcessorHandler(p, param.NetProc, param.EventCallback)
-
-	if opt, ok := p.(cellnet.TCPSocketOption); ok {
-		opt.SetSocketBuffer(2048, 2048, true)
-	}
-
-	AddPeer(p)
-
-	p.Start()
-
-	registerPeerToDiscovery(p)
-
-	return p
-}
-
 func addRemoteSvc(desc *discovery.ServiceDesc, param *ServiceParameter) {
-	preses := GetLink(desc.ID)
-	if preses != nil {
-		return
-	}
 
 	p := peer.NewGenericPeer(param.PeerType, param.SvcName, desc.Address(), param.Queue)
 
@@ -45,12 +21,12 @@ func addRemoteSvc(desc *discovery.ServiceDesc, param *ServiceParameter) {
 
 	p.(cellnet.TCPConnector).SetReconnectDuration(time.Second * 3)
 
+	p.(cellnet.ContextSet).SetContext(cellmesh.PeerContextKey_ServiceDesc, desc)
+
 	// 提前添加到表中， 通过IsReady判断，避免连不上时反复创建Connector
 	markLink(p.(cellnet.TCPConnector).Session(), desc.ID, desc.Name)
 
 	p.Start()
-
-	p.(cellnet.ContextSet).SetContext(cellmesh.PeerContextKey_ServiceDesc, desc)
 
 	// 注册本地Peer，方便做检查遍历
 	AddPeer(p)
@@ -93,10 +69,6 @@ func syncService(param *ServiceParameter) {
 
 	// 已经没有的服务, 删除
 	for _, p := range peerToRemove {
-		sd := GetPeerDesc(p)
-
-		log.SetColor("yellow").Infof("remove remote service : '%s'", sd.ID)
-
 		// 有自动连接情况时, 关闭
 		p.Stop()
 		RemovePeer(p)
@@ -108,7 +80,19 @@ func syncService(param *ServiceParameter) {
 		if DebugSyncService {
 			log.Debugf("check remote link: %s", desc.String())
 		}
-		addRemoteSvc(desc, param)
+
+		preses := GetLink(desc.ID)
+		if preses == nil {
+
+			dummy := GetPeer(param.SvcName)
+			if _, ok := dummy.(interface {
+				IsDummy() bool
+			}); ok {
+				RemovePeer(dummy)
+			}
+
+			addRemoteSvc(desc, param)
+		}
 	}
 
 	if DebugSyncService {
@@ -117,7 +101,8 @@ func syncService(param *ServiceParameter) {
 }
 
 // 连接到服务
-func LinkService(param *ServiceParameter) {
+func ConnectService(param *ServiceParameter) {
+	AddPeer(newDummyPeer(param))
 
 	// 提前注册回调, 避免在处理已有服务时掉服务
 	notify := discovery.Default.RegisterNotify()

@@ -255,15 +255,15 @@ func (self *PingACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto
 	return proto.ErrUnknownField
 }
 
-type LoginREQ struct {
+type VerifyREQ struct {
 	Version  string
 	Platform string
 	UID      string
 }
 
-func (self *LoginREQ) String() string { return proto.CompactTextString(self) }
+func (self *VerifyREQ) String() string { return proto.CompactTextString(self) }
 
-func (self *LoginREQ) Size() (ret int) {
+func (self *VerifyREQ) Size() (ret int) {
 
 	ret += proto.SizeString(1, self.Version)
 
@@ -274,7 +274,7 @@ func (self *LoginREQ) Size() (ret int) {
 	return
 }
 
-func (self *LoginREQ) Marshal(buffer *proto.Buffer) error {
+func (self *VerifyREQ) Marshal(buffer *proto.Buffer) error {
 
 	proto.MarshalString(buffer, 1, self.Version)
 
@@ -285,7 +285,7 @@ func (self *LoginREQ) Marshal(buffer *proto.Buffer) error {
 	return nil
 }
 
-func (self *LoginREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *VerifyREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
 		return proto.UnmarshalString(buffer, wt, &self.Version)
@@ -299,16 +299,16 @@ func (self *LoginREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt prot
 	return proto.ErrUnknownField
 }
 
-type LoginACK struct {
+type VerifyACK struct {
 	Result    ResultCode
 	Server    ServerInfo
 	GameToken string
 	GameSvcID string // 选中的一台game服务器ID
 }
 
-func (self *LoginACK) String() string { return proto.CompactTextString(self) }
+func (self *VerifyACK) String() string { return proto.CompactTextString(self) }
 
-func (self *LoginACK) Size() (ret int) {
+func (self *VerifyACK) Size() (ret int) {
 
 	ret += proto.SizeInt32(1, int32(self.Result))
 
@@ -321,7 +321,7 @@ func (self *LoginACK) Size() (ret int) {
 	return
 }
 
-func (self *LoginACK) Marshal(buffer *proto.Buffer) error {
+func (self *VerifyACK) Marshal(buffer *proto.Buffer) error {
 
 	proto.MarshalInt32(buffer, 1, int32(self.Result))
 
@@ -334,7 +334,7 @@ func (self *LoginACK) Marshal(buffer *proto.Buffer) error {
 	return nil
 }
 
-func (self *LoginACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *VerifyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
 		return proto.UnmarshalInt32(buffer, wt, (*int32)(&self.Result))
@@ -350,14 +350,14 @@ func (self *LoginACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt prot
 	return proto.ErrUnknownField
 }
 
-type VerifyREQ struct {
+type LoginREQ struct {
 	GameToken string
 	GameSvcID string
 }
 
-func (self *VerifyREQ) String() string { return proto.CompactTextString(self) }
+func (self *LoginREQ) String() string { return proto.CompactTextString(self) }
 
-func (self *VerifyREQ) Size() (ret int) {
+func (self *LoginREQ) Size() (ret int) {
 
 	ret += proto.SizeString(1, self.GameToken)
 
@@ -366,7 +366,7 @@ func (self *VerifyREQ) Size() (ret int) {
 	return
 }
 
-func (self *VerifyREQ) Marshal(buffer *proto.Buffer) error {
+func (self *LoginREQ) Marshal(buffer *proto.Buffer) error {
 
 	proto.MarshalString(buffer, 1, self.GameToken)
 
@@ -375,7 +375,7 @@ func (self *VerifyREQ) Marshal(buffer *proto.Buffer) error {
 	return nil
 }
 
-func (self *VerifyREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *LoginREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
 		return proto.UnmarshalString(buffer, wt, &self.GameToken)
@@ -387,27 +387,27 @@ func (self *VerifyREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt pro
 	return proto.ErrUnknownField
 }
 
-type VerifyACK struct {
+type LoginACK struct {
 	Result ResultCode
 }
 
-func (self *VerifyACK) String() string { return proto.CompactTextString(self) }
+func (self *LoginACK) String() string { return proto.CompactTextString(self) }
 
-func (self *VerifyACK) Size() (ret int) {
+func (self *LoginACK) Size() (ret int) {
 
 	ret += proto.SizeInt32(1, int32(self.Result))
 
 	return
 }
 
-func (self *VerifyACK) Marshal(buffer *proto.Buffer) error {
+func (self *LoginACK) Marshal(buffer *proto.Buffer) error {
 
 	proto.MarshalInt32(buffer, 1, int32(self.Result))
 
 	return nil
 }
 
-func (self *VerifyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *LoginACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
 		return proto.UnmarshalInt32(buffer, wt, (*int32)(&self.Result))
@@ -645,16 +645,6 @@ func init() {
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),
-		Type:  reflect.TypeOf((*LoginREQ)(nil)).Elem(),
-		ID:    18837,
-	})
-	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec: codec.MustGetCodec("protoplus"),
-		Type:  reflect.TypeOf((*LoginACK)(nil)).Elem(),
-		ID:    46204,
-	})
-	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec: codec.MustGetCodec("protoplus"),
 		Type:  reflect.TypeOf((*VerifyREQ)(nil)).Elem(),
 		ID:    13457,
 	})
@@ -662,6 +652,16 @@ func init() {
 		Codec: codec.MustGetCodec("protoplus"),
 		Type:  reflect.TypeOf((*VerifyACK)(nil)).Elem(),
 		ID:    40824,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*LoginREQ)(nil)).Elem(),
+		ID:    18837,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*LoginACK)(nil)).Elem(),
+		ID:    46204,
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),

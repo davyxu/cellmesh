@@ -1,9 +1,20 @@
 package link
 
 import (
+	"fmt"
 	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellnet"
 )
+
+func getPeerDescString(peer cellnet.Peer) string {
+
+	desc := GetPeerDesc(peer)
+	if desc != nil {
+		return fmt.Sprintf("%s", desc.Address())
+	}
+
+	return ""
+}
 
 // 内部逻辑使用
 func markLink(ses cellnet.Session, svcid, svcName string) {
@@ -11,7 +22,7 @@ func markLink(ses cellnet.Session, svcid, svcName string) {
 	ctxSet.SetContext(cellmesh.SesContextKey_LinkSvcID, svcid)
 	ctxSet.SetContext(cellmesh.SesContextKey_LinkSvcName, svcName)
 
-	log.SetColor("green").Infof("add remote service : '%s' sid: %d", svcid, ses.ID())
+	log.SetColor("green").Infof("Add service link : %s %s", svcid, getPeerDescString(ses.Peer()))
 }
 
 // 取得远程会话的ID
@@ -58,25 +69,14 @@ func GetLink(svcid string) (ret cellnet.Session) {
 // 遍历远程服务(已经连接到本进程)
 func VisitLink(callback func(ses cellnet.Session) bool) {
 
-	visitContinue := true
 	VisitPeer(func(peer cellnet.Peer) bool {
 
-		// 注意, 已经断开的session的Connector是没有session的
-
-		if sesmgr, ok := peer.(cellnet.SessionAccessor); ok {
-			sesmgr.VisitSession(func(ses cellnet.Session) bool {
-
-				visitContinue = callback(ses)
-
-				return visitContinue
-			})
-
-		} else {
-			log.Errorf("peer not support 'cellnet.SessionAccessor', %s", peer.TypeName())
-
+		linkSes := GetPeerLink(peer)
+		if linkSes != nil {
+			return callback(linkSes)
 		}
 
-		return visitContinue
+		return true
 	})
 
 }

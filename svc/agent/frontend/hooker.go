@@ -42,7 +42,7 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 			}
 
 			// 第一个到网关的消息
-		case *proto.VerifyREQ:
+		case *proto.LoginREQ:
 			u, err := bindClientToBackend(userMsg.GameSvcID, ses.ID())
 			if err == nil {
 				u.TransmitToBackend(userMsg.GameSvcID, msgID, msgData)

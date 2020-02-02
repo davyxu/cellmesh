@@ -22,7 +22,7 @@ func peerStatus(svc cellnet.Peer) string {
 
 	var ready string
 	if mp.IsReady() {
-		ready = "READY"
+		ready = "[READY]"
 	}
 
 	var peerName string
@@ -51,9 +51,11 @@ func peerStatus(svc cellnet.Peer) string {
 			peerName = mp.Name()
 
 		}
+	} else {
+		peerName = mp.Name()
 	}
 
-	return fmt.Sprintf("%13s %15s %s  [%s]", peerName, mp.TypeName(), context, ready)
+	return fmt.Sprintf("%13s %15s %s  %s", peerName, mp.TypeName(), context, ready)
 }
 
 func LocalServiceStatus() string {

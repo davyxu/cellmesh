@@ -12,19 +12,30 @@ var (
 	linkPeersGuard sync.RWMutex
 )
 
+type linkPeerProp interface {
+	Name() string
+	Session() cellnet.Session
+}
+
 func AddPeer(p cellnet.Peer) {
 	linkPeersGuard.Lock()
 	linkPeers = append(linkPeers, p)
 	linkPeersGuard.Unlock()
+}
 
-	log.Debugf("add local peer '%s'", p.(cellnet.PeerProperty).Name())
+func GetPeerLink(peer cellnet.Peer) cellnet.Session {
+	if lp, ok := peer.(linkPeerProp); ok {
+		return lp.Session()
+	}
+
+	return nil
 }
 
 func RemovePeer(p cellnet.Peer) {
 	linkPeersGuard.Lock()
 	for index, libp := range linkPeers {
 		if libp == p {
-			log.Debugf("remove local peer '%s'", p.(cellnet.PeerProperty).Name())
+
 			linkPeers = append(linkPeers[:index], linkPeers[index+1:]...)
 			break
 		}
@@ -39,7 +50,7 @@ func GetPeer(svcName string) cellnet.Peer {
 	defer linkPeersGuard.RUnlock()
 
 	for _, svc := range linkPeers {
-		if prop, ok := svc.(cellnet.PeerProperty); ok && prop.Name() == svcName {
+		if prop, ok := svc.(linkPeerProp); ok && prop.Name() == svcName {
 			return svc
 		}
 	}

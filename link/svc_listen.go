@@ -4,8 +4,30 @@ import (
 	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/peer"
+	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/util"
 )
+
+// 开启服务
+func ListenService(param *ServiceParameter) cellnet.Peer {
+
+	p := peer.NewGenericPeer(param.PeerType, param.SvcName, param.ListenAddress, param.Queue)
+
+	proc.BindProcessorHandler(p, param.NetProc, param.EventCallback)
+
+	if opt, ok := p.(cellnet.TCPSocketOption); ok {
+		opt.SetSocketBuffer(2048, 2048, true)
+	}
+
+	AddPeer(p)
+
+	p.Start()
+
+	registerPeerToDiscovery(p)
+
+	return p
+}
 
 type peerListener interface {
 	Port() int
@@ -40,8 +62,6 @@ func registerPeerToDiscovery(p cellnet.Peer, options ...interface{}) *discovery.
 	if cellmesh.WANIP != "" {
 		sd.SetMeta(cellmesh.SDMetaKey_WANAddress, util.JoinAddress(cellmesh.WANIP, sd.Port))
 	}
-
-	log.SetColor("green").Debugf("service '%s' listen at port: %d", sd.ID, sd.Port)
 
 	p.(cellnet.ContextSet).SetContext(cellmesh.PeerContextKey_ServiceDesc, sd)
 

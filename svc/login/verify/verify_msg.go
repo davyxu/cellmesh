@@ -34,10 +34,10 @@ func getAgentAddress() (code proto.ResultCode, svcID, host string, port int) {
 }
 
 func init() {
-	fx.RegisterMessage(new(proto.LoginREQ), func(ioc *fx.InjectContext, ev cellnet.Event) {
-		//msg := ev.Message().(*proto.LoginREQ)
+	fx.RegisterMessage(new(proto.VerifyREQ), func(ioc *fx.InjectContext, ev cellnet.Event) {
+		//msg := ev.Message().(*proto.VerifyREQ)
 
-		var ack proto.LoginACK
+		var ack proto.VerifyACK
 
 		code, svcid, host, port := getAgentAddress()
 

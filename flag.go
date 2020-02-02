@@ -30,6 +30,8 @@ var (
 
 func init() {
 	CommandLine.StringVar(&WANIP, "wanip", "", "Client connect from extern ip")
+	CommandLine.StringVar(&SvcGroup, "svcgroup", "", "Service group, default is local ip string")
+	CommandLine.IntVar(&SvcIndex, "svcindex", 0, "Service index, default is process id")
 
 	CommandLine.StringVar(&DiscoveryAddress, "sdaddr", "127.0.0.1:8900", "Discovery address")
 
