@@ -20,7 +20,7 @@ type FilterFunc func(*ServiceDesc) interface{}
 // 根据给定的查询服务名,将结果经过各种过滤器处理后输出
 func QueryService(svcName string, filterList ...FilterFunc) (ret interface{}) {
 
-	for _, desc := range Default.Query(svcName) {
+	for _, desc := range Global.Query(svcName) {
 
 		for _, filter := range filterList {
 

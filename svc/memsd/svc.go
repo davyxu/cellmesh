@@ -7,14 +7,12 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/golog"
+	"github.com/davyxu/ulog"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 )
-
-var log = golog.New("memsd")
 
 func startSvc() {
 
@@ -73,9 +71,9 @@ func deleteNotify(key, reason string) {
 	if valueMeta != nil {
 
 		if valueMeta.SvcName == "" {
-			log.Infof("DeleteValue '%s'  reason: %s", key, reason)
+			ulog.Infof("DeleteValue '%s'  reason: %s", key, reason)
 		} else {
-			log.Infof("DeregisterService '%s'  reason: %s", model.GetSvcIDByServiceKey(key), reason)
+			ulog.Infof("DeregisterService '%s'  reason: %s", model.GetSvcIDByServiceKey(key), reason)
 		}
 	}
 

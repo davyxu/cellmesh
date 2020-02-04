@@ -1,16 +1,15 @@
 package main
 
 import (
-	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/link"
 	_ "github.com/davyxu/cellmesh/svc/login/verify"
 )
 
 func main() {
-	cellmesh.Init("login")
-	cellmesh.LogParameter()
-	cellmesh.ConnectDiscovery()
+	fx.Init("login")
+	fx.LogParameter()
+	fx.ConnectDiscovery()
 
 	// 网关对客户端连接
 	link.ListenService(&link.ServiceParameter{
@@ -18,7 +17,7 @@ func main() {
 		NetProc:       "tcp.client",
 		SvcName:       "verify",
 		ListenAddress: ":8001",
-		Queue:         cellmesh.Queue,
+		Queue:         fx.Queue,
 		EventCallback: fx.MakeIOCEventHandler(fx.MessageRegistry),
 	})
 
@@ -27,11 +26,11 @@ func main() {
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
 		SvcName:  "hub",
-		Queue:    cellmesh.Queue,
+		Queue:    fx.Queue,
 	})
 
 	link.CheckReady()
 
-	cellmesh.WaitExitSignal()
+	fx.WaitExitSignal()
 
 }

@@ -1,12 +1,13 @@
 package link
 
 import (
-	"github.com/davyxu/cellmesh"
+	"github.com/davyxu/cellmesh/fx"
 	meshproto "github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellnet"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
+	"github.com/davyxu/ulog"
 )
 
 // 服务互联消息处理
@@ -27,14 +28,14 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 
 		// 用Connector的名称（一般是ProcName）让远程知道自己是什么服务，用于网关等需要反向发送消息的标识
 		inputEvent.Session().Send(&meshproto.ServiceIdentifyACK{
-			SvcID:   cellmesh.GetLocalSvcID(),
-			SvcName: cellmesh.ProcName,
+			SvcID:   GetLocalSvcID(),
+			SvcName: fx.ProcName,
 		})
 
 	case *cellnet.SessionClosed:
 
 		if svcID := GetLinkSvcID(inputEvent.Session()); svcID != "" {
-			log.SetColor("yellow").Infof("Remove service link : %s %s", GetLinkSvcID(inputEvent.Session()), getPeerDescString(inputEvent.Session().Peer()))
+			ulog.WithColorName("yellow").Infof("Remove service link : %s %s", GetLinkSvcID(inputEvent.Session()), getPeerDescString(inputEvent.Session().Peer()))
 		}
 	}
 

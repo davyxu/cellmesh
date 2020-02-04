@@ -1,11 +1,11 @@
 package link
 
 import (
-	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/ulog"
 	"time"
 )
 
@@ -21,7 +21,7 @@ func addRemoteSvc(desc *discovery.ServiceDesc, param *ServiceParameter) {
 
 	p.(cellnet.TCPConnector).SetReconnectDuration(time.Second * 3)
 
-	p.(cellnet.ContextSet).SetContext(cellmesh.PeerContextKey_ServiceDesc, desc)
+	p.(cellnet.ContextSet).SetContext(PeerContextKey_ServiceDesc, desc)
 
 	// 提前添加到表中， 通过IsReady判断，避免连不上时反复创建Connector
 	markLink(p.(cellnet.TCPConnector).Session(), desc.ID, desc.Name)
@@ -40,7 +40,7 @@ var (
 func syncService(param *ServiceParameter) {
 
 	// 本类服务的所有服务id
-	descList := discovery.Default.Query(param.SvcName)
+	descList := discovery.Global.Query(param.SvcName)
 	var peerToRemove []cellnet.Peer
 
 	// 遍历所有的本地服务
@@ -48,7 +48,7 @@ func syncService(param *ServiceParameter) {
 
 		sd := GetPeerDesc(p)
 		if DebugSyncService {
-			log.Debugf("peer: %+v", sd)
+			ulog.Debugf("peer: %+v", sd)
 		}
 
 		if sd != nil {
@@ -78,7 +78,7 @@ func syncService(param *ServiceParameter) {
 	for _, desc := range descList {
 
 		if DebugSyncService {
-			log.Debugf("check remote link: %s", desc.String())
+			ulog.Debugf("check remote link: %s", desc.String())
 		}
 
 		preses := GetLink(desc.ID)
@@ -96,7 +96,7 @@ func syncService(param *ServiceParameter) {
 	}
 
 	if DebugSyncService {
-		log.Debugf("sync done")
+		ulog.Debugf("sync done")
 	}
 }
 
@@ -105,7 +105,7 @@ func ConnectService(param *ServiceParameter) {
 	AddPeer(newDummyPeer(param))
 
 	// 提前注册回调, 避免在处理已有服务时掉服务
-	notify := discovery.Default.RegisterNotify()
+	notify := discovery.Global.RegisterNotify()
 
 	syncService(param)
 
@@ -116,7 +116,7 @@ func ConnectService(param *ServiceParameter) {
 			notifyCtx := <-notify
 
 			if DebugSyncService {
-				log.Debugf("recv notify %+v", notifyCtx)
+				ulog.Debugf("recv notify %+v", notifyCtx)
 			}
 
 			syncService(param)

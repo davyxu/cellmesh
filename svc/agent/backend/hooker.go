@@ -9,6 +9,7 @@ import (
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
+	"github.com/davyxu/ulog"
 )
 
 type BackendMsgHooker struct {
@@ -22,7 +23,7 @@ func (BackendMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 
 		userMsg, _, err := codec.DecodeMessage(int(incomingMsg.MsgID), incomingMsg.MsgData)
 		if err != nil {
-			log.Warnf("Backend msg decode failed, %s, msgid: %d", err.Error(), incomingMsg.MsgID)
+			ulog.Warnf("Backend msg decode failed, %s, msgid: %d", err.Error(), incomingMsg.MsgID)
 			return nil
 		}
 
@@ -47,8 +48,7 @@ func (BackendMsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent c
 	switch outgoingMsg := inputEvent.Message().(type) {
 	case *proto.TransmitACK:
 
-		if log.IsDebugEnabled() {
-
+		if ulog.IsLevelEnabled(ulog.DebugLevel) {
 			writeAgentLog(inputEvent.Session(), "send", outgoingMsg)
 		}
 	}
@@ -70,8 +70,7 @@ func (broadcasterHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent c
 			MsgID:   int(incomingMsg.MsgID),
 		}
 
-		if log.IsDebugEnabled() {
-
+		if ulog.IsLevelEnabled(ulog.DebugLevel) {
 			writeAgentLog(inputEvent.Session(), "recv", incomingMsg)
 		}
 
@@ -113,8 +112,7 @@ func (broadcasterHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent 
 	switch outgoingMsg := inputEvent.Message().(type) {
 	case *proto.TransmitACK:
 
-		if log.IsDebugEnabled() {
-
+		if ulog.IsLevelEnabled(ulog.DebugLevel) {
 			writeAgentLog(inputEvent.Session(), "send", outgoingMsg)
 		}
 	}
@@ -132,7 +130,7 @@ func writeAgentLog(ses cellnet.Session, dir string, ack *proto.TransmitACK) {
 
 	userMsg, _, err := codec.DecodeMessage(int(ack.MsgID), ack.MsgData)
 	if err == nil {
-		log.Debugf("#agent.%s(%s)@%d len: %d %s <%d>| %s",
+		ulog.Debugf("#agent.%s(%s)@%d len: %d %s <%d>| %s",
 			dir,
 			peerInfo.Name(),
 			ses.ID(),
@@ -143,7 +141,7 @@ func writeAgentLog(ses cellnet.Session, dir string, ack *proto.TransmitACK) {
 	} else {
 
 		// 网关没有相关的消息, 只能打出消息号
-		log.Debugf("#agent.%s(%s)@%d len: %d msgid: %d <%d>",
+		ulog.Debugf("#agent.%s(%s)@%d len: %d msgid: %d <%d>",
 			dir,
 			peerInfo.Name(),
 			ses.ID(),

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/davyxu/cellmesh/svc/memsd/model"
+	"github.com/davyxu/ulog"
 	"os"
 	"time"
 )
@@ -15,15 +16,15 @@ func loadPersistFile(fileName string) {
 		return
 	}
 
-	log.Infoln("Load values...")
+	ulog.Infoln("Load values...")
 
 	err = model.LoadValue(fileHandle)
 	if err != nil {
-		log.Errorf("load values failed: %s %s", fileName, err.Error())
+		ulog.Errorf("load values failed: %s %s", fileName, err.Error())
 		return
 	}
 
-	log.Infof("Load %d values", model.ValueCount())
+	ulog.Infof("Load %d values", model.ValueCount())
 }
 
 func startPersistCheck(fileName string) {
@@ -39,23 +40,23 @@ func startPersistCheck(fileName string) {
 
 			if model.ValueDirty {
 
-				log.Infoln("Save values...")
+				ulog.Infoln("Save values...")
 
 				fileHandle, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
 				if err != nil {
-					log.Errorf("save persist file failed: %s %s", fileName, err.Error())
+					ulog.Errorf("save persist file failed: %s %s", fileName, err.Error())
 					return
 				}
 
 				valuesSaved, err := model.SaveValue(fileHandle)
 
 				if err != nil {
-					log.Errorf("save values failed: %s %s", fileName, err.Error())
+					ulog.Errorf("save values failed: %s %s", fileName, err.Error())
 					return
 				}
 
 				if valuesSaved > 0 {
-					log.Infof("Save %d values", valuesSaved)
+					ulog.Infof("Save %d values", valuesSaved)
 				}
 
 				model.ValueDirty = false

@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/ulog"
 )
 
 // 关闭所有网关上客户端的连接
@@ -27,7 +28,7 @@ func BroadcastAll(msg interface{}) {
 
 	data, meta, err := codec.EncodeMessage(msg, nil)
 	if err != nil {
-		log.Errorf("BroadcastAll.EncodeMessage %s", err)
+		ulog.Errorf("BroadcastAll.EncodeMessage %s", err)
 		return
 	}
 

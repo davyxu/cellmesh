@@ -1,4 +1,4 @@
-package cellmesh
+package link
 
 // 服务发现中的Key
 const (

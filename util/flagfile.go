@@ -3,6 +3,7 @@ package meshutil
 import (
 	"flag"
 	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/ulog"
 )
 
 func ApplyFlagFromFile(fs *flag.FlagSet, filename string) error {
@@ -12,10 +13,10 @@ func ApplyFlagFromFile(fs *flag.FlagSet, filename string) error {
 		// 设置flagm
 		fg := fs.Lookup(key)
 		if fg != nil {
-			log.Infof("ApplyFlagFromFile: %s=%s", key, value)
+			ulog.Infof("ApplyFlagFromFile: %s=%s", key, value)
 			fg.Value.Set(value)
 		} else {
-			log.Errorf("ApplyFlagFromFile: flag not found, %s", key)
+			ulog.Errorf("ApplyFlagFromFile: flag not found, %s", key)
 		}
 
 		return true

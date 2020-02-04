@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh/svc/robot/rbase"
+	"github.com/davyxu/ulog"
 )
 
 type Robot struct {
@@ -21,7 +22,7 @@ type Robot struct {
 func (self *Robot) SetState(state string) {
 	self.state = state
 	AddState(state)
-	log.Debugf("%s SetState: %s", self.AccountName(), state)
+	ulog.Infof("%s SetState: %s", self.AccountName(), state)
 
 	self.Sleep()
 }

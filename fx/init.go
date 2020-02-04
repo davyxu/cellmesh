@@ -1,4 +1,4 @@
-package cellmesh
+package fx
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/util"
-	"github.com/davyxu/golog"
+	"github.com/davyxu/ulog"
 	"net"
 	"os"
 	"os/signal"
@@ -41,46 +41,48 @@ func Init(name string) {
 
 	Queue.StartLoop()
 
+	initLogger()
+}
+
+func initLogger() {
 	// 设置文件日志
 	if *flagLogFile != "" {
 
+		var maxFileSize int
 		if *flagLogFileSize == "" {
-			log.Infof("LogFile: %s", *flagLogFile)
-			golog.SetOutputToFile(*flagLogFile)
-
+			ulog.Infof("LogFile: %s", *flagLogFile)
 		} else {
-
-			size, err := meshutil.ParseSizeString(*flagLogFileSize)
+			var err error
+			maxFileSize, err = meshutil.ParseSizeString(*flagLogFileSize)
 			if err == nil {
-				log.Infof("LogFile: %s Size: %s", *flagLogFile, *flagLogFileSize)
-				golog.SetOutputToFile(*flagLogFile, golog.OutputFileOption{
-					MaxFileSize: size,
-				})
+				ulog.Infof("LogFile: %s Size: %s", *flagLogFile, *flagLogFileSize)
 			} else {
-				log.Errorf("log file size err: %s", err)
+				ulog.Errorf("log file size err: %s", err)
 			}
 
 		}
+
+		ulog.Global().SetOutput(ulog.NewAsyncOutput(ulog.NewRollingOutput(*flagLogFile, maxFileSize)))
+	}
+
+	textFormatter := &ulog.TextFormatter{
+		EnableColor: *flagLogColor,
+	}
+
+	if *flagLogColor {
+		textFormatter.ParseColorRule(msglog.LogColorDefine)
 	}
 
 	// 彩色日志
-	if *flagLogColor {
-		golog.SetColorDefine(".", msglog.LogColorDefine)
-		golog.EnableColorLogger(".", true)
-	}
+	ulog.Global().SetFormatter(textFormatter)
 
 	// 设置日志级别
 	if *flagLogLevel != "" {
 
-		if rawstr := strings.Split(*flagLogLevel, "|"); len(rawstr) == 2 {
-
-			if err := golog.SetLevelByString(rawstr[0], rawstr[1]); err != nil {
-				log.Warnln("SetLevelByString:", err)
-			} else {
-				log.Infoln("SetLevelByString:", rawstr[0], rawstr[1])
-			}
+		if lv, ok := ulog.ParseLevelString(*flagLogLevel); ok {
+			ulog.SetLevel(lv)
 		} else {
-			log.Errorln("Invalid log level cli fomat, require 'name level'")
+			ulog.Warnf("invalid log level: '%s'", *flagLogLevel)
 		}
 	}
 
@@ -88,12 +90,11 @@ func Init(name string) {
 	if *flagMuteMsgLog != "" {
 
 		if err := msglog.SetMsgLogRule(*flagMuteMsgLog, msglog.MsgLogRule_BlackList); err != nil {
-			log.Errorln("SetMsgLogRule: ", err)
+			ulog.Errorln("SetMsgLogRule: ", err)
 		} else {
-			log.Infoln("SetMsgLogRule:", *flagMuteMsgLog)
+			ulog.Infoln("SetMsgLogRule:", *flagMuteMsgLog)
 		}
 	}
-
 }
 
 // ip+PID的16进制数值字符串，每次启动变化
@@ -116,24 +117,24 @@ func initGroupName() {
 
 func LogParameter() {
 	workdir, _ := os.Getwd()
-	log.Infof("Execuable: %s", os.Args[0])
-	log.Infof("WorkDir: %s", workdir)
-	log.Infof("ProcName: '%s'", ProcName)
-	log.Infof("PID: %d", os.Getpid())
-	log.Infof("Discovery: '%s'", DiscoveryAddress)
-	log.Infof("LANIP: '%s'", util.GetLocalIP())
-	log.Infof("WANIP: '%s'", WANIP)
-	log.Infof("SvcGroup: '%s'", SvcGroup)
-	log.Infof("SvcIndex: %d", SvcIndex)
+	ulog.Infof("Execuable: %s", os.Args[0])
+	ulog.Infof("WorkDir: %s", workdir)
+	ulog.Infof("ProcName: '%s'", ProcName)
+	ulog.Infof("PID: %d", os.Getpid())
+	ulog.Infof("Discovery: '%s'", DiscoveryAddress)
+	ulog.Infof("LANIP: '%s'", util.GetLocalIP())
+	ulog.Infof("WANIP: '%s'", WANIP)
+	ulog.Infof("SvcGroup: '%s'", SvcGroup)
+	ulog.Infof("SvcIndex: %d", SvcIndex)
 }
 
 // 连接到服务发现, 建议在service.Init后, 以及服务器逻辑开始前调用
 func ConnectDiscovery() {
-	log.Debugf("Connecting to discovery '%s' ...", DiscoveryAddress)
+	ulog.Debugf("Connecting to discovery '%s' ...", DiscoveryAddress)
 	sdConfig := memsd.DefaultConfig()
 	sdConfig.Address = DiscoveryAddress
-	discovery.Default = memsd.NewDiscovery()
-	discovery.Default.Start(sdConfig)
+	discovery.Global = memsd.NewDiscovery()
+	discovery.Global.Start(sdConfig)
 }
 
 func WaitExitSignal() {

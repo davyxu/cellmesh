@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellmesh/svc/memsd/proto"
 	meshutil "github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/ulog"
 )
 
 func msgHandler(ev cellnet.Event) {
@@ -51,9 +52,9 @@ func setValue(ev cellnet.Event) {
 	model.SetValue(msg.Key, meta)
 
 	if model.IsServiceKey(msg.Key) {
-		log.Infof("RegisterService '%s'", meta.ValueAsServiceDesc().ID)
+		ulog.Infof("RegisterService '%s'", meta.ValueAsServiceDesc().ID)
 	} else {
-		log.Infof("SetValue '%s' value(size:%d)", msg.Key, len(msg.Value))
+		ulog.Infof("SetValue '%s' value(size:%d)", msg.Key, len(msg.Value))
 	}
 
 	model.Broadcast(&sdproto.ValueChangeNotifyACK{
@@ -144,7 +145,7 @@ func clearSvc(ev cellnet.Event) {
 		return
 	}
 
-	log.Infoln("ClearSvc")
+	ulog.Infoln("ClearSvc")
 
 	var svcToDelete []*model.ValueMeta
 	model.VisitValue(func(meta *model.ValueMeta) bool {
@@ -171,7 +172,7 @@ func clearKey(ev cellnet.Event) {
 		return
 	}
 
-	log.Infoln("ClearValue")
+	ulog.Infoln("ClearValue")
 
 	var svcToDelete []*model.ValueMeta
 	model.VisitValue(func(meta *model.ValueMeta) bool {

@@ -2,8 +2,8 @@ package link
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/ulog"
 )
 
 func getPeerDescString(peer cellnet.Peer) string {
@@ -19,10 +19,10 @@ func getPeerDescString(peer cellnet.Peer) string {
 // 内部逻辑使用
 func markLink(ses cellnet.Session, svcid, svcName string) {
 	ctxSet := ses.(cellnet.ContextSet)
-	ctxSet.SetContext(cellmesh.SesContextKey_LinkSvcID, svcid)
-	ctxSet.SetContext(cellmesh.SesContextKey_LinkSvcName, svcName)
+	ctxSet.SetContext(SesContextKey_LinkSvcID, svcid)
+	ctxSet.SetContext(SesContextKey_LinkSvcName, svcName)
 
-	log.SetColor("green").Infof("Add service link : %s %s", svcid, getPeerDescString(ses.Peer()))
+	ulog.WithColorName("green").Infof("Add service link : %s %s", svcid, getPeerDescString(ses.Peer()))
 }
 
 // 取得远程会话的ID
@@ -31,7 +31,7 @@ func GetLinkSvcID(ses cellnet.Session) string {
 		return ""
 	}
 
-	if raw, ok := ses.(cellnet.ContextSet).GetContext(cellmesh.SesContextKey_LinkSvcID); ok {
+	if raw, ok := ses.(cellnet.ContextSet).GetContext(SesContextKey_LinkSvcID); ok {
 		return raw.(string)
 	}
 
@@ -44,7 +44,7 @@ func GetLinkSvcName(ses cellnet.Session) string {
 		return ""
 	}
 
-	if raw, ok := ses.(cellnet.ContextSet).GetContext(cellmesh.SesContextKey_LinkSvcName); ok {
+	if raw, ok := ses.(cellnet.ContextSet).GetContext(SesContextKey_LinkSvcName); ok {
 		return raw.(string)
 	}
 

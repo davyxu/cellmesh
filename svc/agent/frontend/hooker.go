@@ -9,6 +9,7 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
+	"github.com/davyxu/ulog"
 	"time"
 )
 
@@ -49,7 +50,7 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 
 			} else {
 				ses.Close()
-				log.Errorln("bindClientToBackend", err)
+				ulog.Errorln("bindClientToBackend", err)
 			}
 		}
 
@@ -67,7 +68,7 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 
 			// 透传到后台
 			if err = u.TransmitToBackend(u.GetBackend(rule.SvcName), msgID, msgData); err != nil {
-				log.Warnf("TransmitToBackend %s, msg: '%s' svc: %s", err, rule.MsgName, rule.SvcName)
+				ulog.Warnf("TransmitToBackend %s, msg: '%s' svc: %s", err, rule.MsgName, rule.SvcName)
 			}
 
 		} else {

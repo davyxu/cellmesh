@@ -1,4 +1,4 @@
-package cellmesh
+package fx
 
 import "github.com/davyxu/cellnet"
 

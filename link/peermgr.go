@@ -1,7 +1,6 @@
 package link
 
 import (
-	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
 	"sync"
@@ -82,7 +81,7 @@ func StopPeers() {
 func GetPeerDesc(p cellnet.Peer) (ret *discovery.ServiceDesc) {
 
 	if cs, ok := p.(cellnet.ContextSet); ok {
-		if cs.FetchContext(cellmesh.PeerContextKey_ServiceDesc, &ret) {
+		if cs.FetchContext(PeerContextKey_ServiceDesc, &ret) {
 			return
 		}
 	}

@@ -1,16 +1,16 @@
 package main
 
 import (
-	"github.com/davyxu/cellmesh"
+	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/link"
 	_ "github.com/davyxu/cellmesh/svc/agent/backend"
 	_ "github.com/davyxu/cellmesh/svc/agent/frontend"
 )
 
 func main() {
-	cellmesh.Init("agent")
-	cellmesh.LogParameter()
-	cellmesh.ConnectDiscovery()
+	fx.Init("agent")
+	fx.LogParameter()
+	fx.ConnectDiscovery()
 
 	// 网关对客户端连接
 	link.ListenService(&link.ServiceParameter{
@@ -18,7 +18,7 @@ func main() {
 		NetProc:       "tcp.frontend",
 		SvcName:       "frontend",
 		ListenAddress: ":8002",
-		Queue:         cellmesh.Queue,
+		Queue:         fx.Queue,
 	})
 
 	// 对内的服务连接
@@ -27,7 +27,7 @@ func main() {
 		NetProc:       "agent.backend",
 		SvcName:       "backend",
 		ListenAddress: ":0",
-		Queue:         cellmesh.Queue,
+		Queue:         fx.Queue,
 	})
 
 	// 服务互联
@@ -35,11 +35,11 @@ func main() {
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
 		SvcName:  "hub",
-		Queue:    cellmesh.Queue,
+		Queue:    fx.Queue,
 	})
 
 	link.CheckReady()
 
-	cellmesh.WaitExitSignal()
+	fx.WaitExitSignal()
 
 }

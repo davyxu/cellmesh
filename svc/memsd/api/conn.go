@@ -7,6 +7,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
+	"github.com/davyxu/ulog"
 	"time"
 )
 
@@ -38,7 +39,7 @@ func (self *memDiscovery) connect(addr string) {
 			})
 		case *cellnet.SessionClosed:
 			self.token = ""
-			log.Errorf("memsd discovery lost!")
+			ulog.Errorf("memsd discovery lost!")
 
 		case *sdproto.AuthACK:
 
@@ -49,7 +50,7 @@ func (self *memDiscovery) connect(addr string) {
 				self.initWg.Done()
 			}
 
-			log.SetColor("green").Debugf("memsd discovery ready!")
+			ulog.Infoln("memsd discovery ready!")
 
 			self.triggerNotify("ready", nil)
 

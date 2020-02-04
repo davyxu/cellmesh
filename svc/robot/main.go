@@ -2,31 +2,31 @@ package main
 
 import (
 	"flag"
-	"github.com/davyxu/cellmesh"
+	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/svc/robot/flow"
 	"github.com/davyxu/cellmesh/svc/robot/model"
 	"github.com/davyxu/cellmesh/svc/robot/rbase"
 	"github.com/davyxu/cellnet/msglog"
-	"github.com/davyxu/golog"
+	"github.com/davyxu/ulog"
 	"strconv"
 )
-
-var log = golog.New("main")
 
 func main() {
 
 	flag.Parse()
 
-	// 异步写日志
-	golog.EnableASyncWrite()
+	textFormatter := &ulog.TextFormatter{
+		EnableColor: *rbase.FlagShowMsgLog,
+	}
 
-	// 精确到毫秒
-	golog.VisitLogger("[.]*", func(logger *golog.Logger) bool {
+	if *rbase.FlagShowMsgLog {
+		textFormatter.ParseColorRule(msglog.LogColorDefine)
+	}
 
-		logger.SetParts(golog.LogPart_CurrLevel, golog.LogPart_Name, golog.LogPart_TimeMS)
+	// 彩色日志
+	ulog.Global().SetFormatter(textFormatter)
 
-		return true
-	})
+	ulog.SetLevel(ulog.DebugLevel)
 
 	msglog.SetCurrMsgLogMode(msglog.MsgLogMode_BlackList)
 	//msglog.SetMsgLogRule("gamedef.PingACK", msglog.MsgLogRule_BlackList)
@@ -50,5 +50,5 @@ func main() {
 
 	}
 
-	cellmesh.WaitExitSignal()
+	fx.WaitExitSignal()
 }

@@ -19,14 +19,14 @@ func (self *MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cel
 
 	self.evHandler.OnEvent(inputEvent)
 
-	msglog.WriteRecvLogger(log, "tcp", inputEvent.Session(), inputEvent.Message())
+	msglog.WriteRecvLogger("tcp", inputEvent.Session(), inputEvent.Message())
 
 	return inputEvent
 }
 
 func (self *MsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
-	msglog.WriteSendLogger(log, "tcp", inputEvent.Session(), inputEvent.Message())
+	msglog.WriteSendLogger("tcp", inputEvent.Session(), inputEvent.Message())
 
 	return inputEvent
 }

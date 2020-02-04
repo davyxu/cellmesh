@@ -10,7 +10,7 @@ import (
 
 func getAgentAddress() (code proto.ResultCode, svcID, host string, port int) {
 
-	descList := discovery.Default.Query("frontend")
+	descList := discovery.Global.Query("frontend")
 
 	if len(descList) == 0 {
 		code = proto.ResultCode_AgentNotFound

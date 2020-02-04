@@ -47,5 +47,5 @@ type KVStorage interface {
 }
 
 var (
-	Default Discovery
+	Global Discovery
 )

@@ -6,7 +6,6 @@ import (
 	"github.com/davyxu/cellmesh/discovery"
 	memsd "github.com/davyxu/cellmesh/svc/memsd/api"
 	"github.com/davyxu/cellmesh/svc/memsd/model"
-	"github.com/davyxu/golog"
 	"os"
 )
 
@@ -55,8 +54,6 @@ func main() {
 		loadPersistFile(*flagDataFile)
 		go startPersistCheck(*flagDataFile)
 	}
-
-	golog.SetLevelByString("memsdapi", "info")
 
 	switch *flagCmd {
 	case "": // addr

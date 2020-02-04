@@ -7,6 +7,7 @@ import (
 	"github.com/davyxu/cellmesh/svc/memsd/model"
 	"github.com/davyxu/cellmesh/svc/memsd/proto"
 	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/ulog"
 	"time"
 )
 
@@ -80,7 +81,7 @@ func (self *memDiscovery) QueryAll() (ret []*discovery.ServiceDesc) {
 func (self *memDiscovery) ClearService() {
 	self.remoteCall(&sdproto.ClearSvcREQ{}, func(ack *sdproto.ClearSvcACK, err error) {
 		if err != nil {
-			log.Errorln(err)
+			ulog.Errorln(err)
 		}
 	})
 }
@@ -93,7 +94,7 @@ func (self *memDiscovery) updateSvcCache(svcName string, value []byte) {
 	var desc discovery.ServiceDesc
 	err := json.Unmarshal(value, &desc)
 	if err != nil {
-		log.Errorf("ServiceDesc unmarshal failed, %s", err)
+		ulog.Errorf("ServiceDesc unmarshal failed, %s", err)
 		self.svcCacheGuard.Unlock()
 		return
 	}
@@ -159,7 +160,7 @@ func (self *memDiscovery) triggerNotify(mode string, desc *discovery.ServiceDesc
 		}:
 		case <-time.After(time.Second * 10):
 			// 接收通知阻塞太久，或者没有释放侦听的channel
-			log.Errorf("notify(%s) timeout, not free? regstack: %s, desc: %s", mode, ctx.stack, desc.String())
+			ulog.Errorf("notify(%s) timeout, not free? regstack: %s, desc: %s", mode, ctx.stack, desc.String())
 		}
 
 		return true

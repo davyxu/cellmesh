@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/davyxu/cellmesh"
+	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/link"
 )
 
 func main() {
-	cellmesh.Init("hub")
-	cellmesh.LogParameter()
-	cellmesh.ConnectDiscovery()
+	fx.Init("hub")
+	fx.LogParameter()
+	fx.ConnectDiscovery()
 
 	// 服务互联服务
 	link.ListenService(&link.ServiceParameter{
@@ -16,11 +16,11 @@ func main() {
 		NetProc:       "tcp.svc",
 		SvcName:       "hub",
 		ListenAddress: ":0",
-		Queue:         cellmesh.Queue,
+		Queue:         fx.Queue,
 	})
 
 	link.CheckReady()
 
-	cellmesh.WaitExitSignal()
+	fx.WaitExitSignal()
 
 }

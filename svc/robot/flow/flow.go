@@ -5,7 +5,7 @@ import (
 	"github.com/davyxu/cellmesh/svc/robot/link"
 	"github.com/davyxu/cellmesh/svc/robot/model"
 	"github.com/davyxu/cellnet/util"
-	"github.com/davyxu/golexer"
+	"github.com/davyxu/ulog"
 )
 
 func BackgroundProc(r *model.Robot, msg interface{}) bool {
@@ -18,8 +18,8 @@ func BackgroundProc(r *model.Robot, msg interface{}) bool {
 }
 
 func Main(r *model.Robot) {
-	defer golexer.ErrorCatcher(func(e error) {
-		log.Errorln(e)
+	defer util.ErrorCatcher(func(e error) {
+		ulog.Errorln(e)
 	})
 
 	// 模拟异步全局收消息处理
@@ -32,7 +32,7 @@ func Main(r *model.Robot) {
 
 	r.Send("login", &proto.VerifyREQ{})
 	ack := r.Recv("proto.VerifyACK").(*proto.VerifyACK)
-	log.Debugf("%+v", ack)
+	ulog.Debugf("%+v", ack)
 
 	link.ConnectTCP(r, "agent", util.JoinAddress(ack.Server.IP, int(ack.Server.Port)))
 }

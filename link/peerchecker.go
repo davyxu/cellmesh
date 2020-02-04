@@ -2,9 +2,9 @@ package link
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh"
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/ulog"
 	"strings"
 	"time"
 )
@@ -30,7 +30,7 @@ func peerStatus(svc cellnet.Peer) string {
 	if cs, ok := svc.(cellnet.ContextSet); ok {
 
 		var desc *discovery.ServiceDesc
-		if cs.FetchContext(cellmesh.PeerContextKey_ServiceDesc, &desc) {
+		if cs.FetchContext(PeerContextKey_ServiceDesc, &desc) {
 			context = fmt.Sprintf("  %22s %22s", desc.ID, desc.Address())
 			peerName = desc.Name
 		} else {
@@ -95,7 +95,7 @@ func CheckReady() {
 		time.Sleep(time.Second * 3)
 
 		if IsAllReady() {
-			log.SetColor("green").Infof("All peers ready!\n%s", LocalServiceStatus())
+			ulog.WithColorName("green").Infof("All peers ready!\n%s", LocalServiceStatus())
 
 			break
 		}
@@ -103,7 +103,7 @@ func CheckReady() {
 		thisStatus := LocalServiceStatus()
 
 		if lastStatus != thisStatus {
-			log.Warnf("peers not all ready\n%s", thisStatus)
+			ulog.Warnf("peers not all ready\n%s", thisStatus)
 			lastStatus = thisStatus
 		}
 
