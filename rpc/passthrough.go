@@ -89,7 +89,7 @@ func loadPassthrough(data []byte, dataType string) (pt interface{}, err error) {
 		}
 
 		// 创建消息
-		pt := meta.NewType()
+		pt = meta.NewType()
 
 		// 从字节数组转换为消息
 		err = meta.Codec.Decode(data, pt)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh/discovery"
 	"os"
 	"sort"
 )
@@ -52,7 +51,7 @@ func ViewKey() {
 }
 
 func GetValue(key string) {
-	sd := initSD().(discovery.KVStorage)
+	sd := initSD()
 	var value string
 	err := sd.GetValue(key, &value)
 	if err != nil {
@@ -64,7 +63,7 @@ func GetValue(key string) {
 }
 
 func SetValue(key, value string) {
-	sd := initSD().(discovery.KVStorage)
+	sd := initSD()
 	err := sd.SetValue(key, value)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -86,6 +85,6 @@ func ClearValue() {
 
 func DeleteValue(key string) {
 
-	sd := initSD().(discovery.KVStorage)
+	sd := initSD()
 	sd.DeleteValue(key)
 }
