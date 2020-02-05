@@ -1,10 +1,6 @@
 package fx
 
 import (
-	_ "github.com/davyxu/cellnet/codec/protoplus"
-)
-
-import (
 	"github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellnet"
 

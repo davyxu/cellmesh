@@ -71,6 +71,10 @@ func syncService(param *ServiceParameter) {
 	for _, p := range peerToRemove {
 		// 有自动连接情况时, 关闭
 		p.Stop()
+		if peerSes := GetPeerLink(p); peerSes != nil {
+			ulog.WithColorName("yellow").Infof("Remove service link : %s %s", GetLinkSvcID(peerSes), getPeerDescString(p))
+		}
+
 		RemovePeer(p)
 	}
 

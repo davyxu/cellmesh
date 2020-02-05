@@ -19,7 +19,7 @@ type BackendMsgHooker struct {
 func (BackendMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch incomingMsg := inputEvent.Message().(type) {
-	case *proto.TransmitACK:
+	case *proto.RouterTransmitACK:
 
 		userMsg, _, err := codec.DecodeMessage(int(incomingMsg.MsgID), incomingMsg.MsgData)
 		if err != nil {
@@ -46,7 +46,7 @@ func (BackendMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent ce
 func (BackendMsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch outgoingMsg := inputEvent.Message().(type) {
-	case *proto.TransmitACK:
+	case *proto.RouterTransmitACK:
 
 		if ulog.IsLevelEnabled(ulog.DebugLevel) {
 			writeAgentLog(inputEvent.Session(), "send", outgoingMsg)
@@ -63,7 +63,7 @@ type broadcasterHooker struct {
 func (broadcasterHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch incomingMsg := inputEvent.Message().(type) {
-	case *proto.TransmitACK:
+	case *proto.RouterTransmitACK:
 
 		rawPkt := &cellnet.RawPacket{
 			MsgData: incomingMsg.MsgData,
@@ -110,7 +110,7 @@ func (broadcasterHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent c
 func (broadcasterHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch outgoingMsg := inputEvent.Message().(type) {
-	case *proto.TransmitACK:
+	case *proto.RouterTransmitACK:
 
 		if ulog.IsLevelEnabled(ulog.DebugLevel) {
 			writeAgentLog(inputEvent.Session(), "send", outgoingMsg)
@@ -120,7 +120,7 @@ func (broadcasterHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent 
 	return inputEvent
 }
 
-func writeAgentLog(ses cellnet.Session, dir string, ack *proto.TransmitACK) {
+func writeAgentLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitACK) {
 
 	if !msglog.IsMsgLogValid(int(ack.MsgID)) {
 		return
@@ -155,7 +155,7 @@ func writeAgentLog(ses cellnet.Session, dir string, ack *proto.TransmitACK) {
 func init() {
 
 	// 避免默认消息日志显示本条消息
-	msglog.SetMsgLogRule("proto.TransmitACK", msglog.MsgLogRule_BlackList)
+	msglog.SetMsgLogRule("proto.TransmitACK", "black")
 
 	// 适用于后端服务的处理器
 	proc.RegisterProcessor("svc.backend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {

@@ -1,16 +1,23 @@
 package main
 
 import (
+	_ "github.com/davyxu/cellmesh/fx/proc"
+)
+
+import (
 	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/link"
 	_ "github.com/davyxu/cellmesh/svc/agent/backend"
 	_ "github.com/davyxu/cellmesh/svc/agent/frontend"
+	"github.com/davyxu/cellmesh/svc/agent/routerule"
 )
 
 func main() {
 	fx.Init("agent")
 	fx.LogParameter()
-	fx.ConnectDiscovery()
+	link.ConnectDiscovery()
+
+	routerule.Download()
 
 	// 网关对客户端连接
 	link.ListenService(&link.ServiceParameter{

@@ -6,7 +6,7 @@ import (
 	"github.com/davyxu/cellmesh/svc/agent/model"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
-	_ "github.com/davyxu/cellnet/peer/tcp"
+
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
 	"github.com/davyxu/ulog"
@@ -14,14 +14,14 @@ import (
 )
 
 var (
-	PingACKMsgID   = cellnet.MessageMetaByFullName("proto.PingACK").ID
-	VerifyREQMsgID = cellnet.MessageMetaByFullName("proto.VerifyREQ").ID
+	PingACKMsgID  = cellnet.MessageMetaByFullName("proto.PingACK").ID
+	LoginREQMsgID = cellnet.MessageMetaByFullName("proto.LoginREQ").ID
 )
 
 func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg interface{}, err error) {
 	// agent自己的内部消息以及预处理消息
 	switch int(msgID) {
-	case PingACKMsgID, VerifyREQMsgID:
+	case PingACKMsgID, LoginREQMsgID:
 
 		// 将字节数组和消息ID用户解出消息
 		msg, _, err = codec.DecodeMessage(msgID, msgData)
@@ -44,9 +44,9 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 
 			// 第一个到网关的消息
 		case *proto.LoginREQ:
-			u, err := bindClientToBackend(userMsg.GameSvcID, ses.ID())
+			u, err := bindClientToBackend(userMsg.SvcID, ses.ID())
 			if err == nil {
-				u.TransmitToBackend(userMsg.GameSvcID, msgID, msgData)
+				u.TransmitToBackend(userMsg.SvcID, msgID, msgData)
 
 			} else {
 				ses.Close()

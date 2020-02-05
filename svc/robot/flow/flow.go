@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellmesh/svc/robot/link"
 	"github.com/davyxu/cellmesh/svc/robot/model"
+	robotutil "github.com/davyxu/cellmesh/svc/robot/util"
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
 )
@@ -17,6 +18,28 @@ func BackgroundProc(r *model.Robot, msg interface{}) bool {
 	return false
 }
 
+func Verify(r *model.Robot) {
+	link.ConnectTCP(r, "login", util.GetLocalIP()+":8001")
+
+	r.Send("login", &proto.VerifyREQ{})
+	ack := r.Recv("proto.VerifyACK").(*proto.VerifyACK)
+	robotutil.CheckCode(ack.Code)
+	r.AgentAddress = util.JoinAddress(ack.Server.IP, int(ack.Server.Port))
+	r.AgentSvcID = ack.SvcID
+	r.LoginToken = ack.Token
+}
+
+func EnterGame(r *model.Robot) {
+	link.ConnectTCP(r, "agent", r.AgentAddress)
+	r.Send("agent", &proto.LoginREQ{
+		SvcID: r.AgentSvcID,
+		Token: r.LoginToken,
+	})
+	ack := r.Recv("proto.LoginACK").(*proto.LoginACK)
+	robotutil.CheckCode(ack.Code)
+
+}
+
 func Main(r *model.Robot) {
 	defer util.ErrorCatcher(func(e error) {
 		ulog.Errorln(e)
@@ -28,11 +51,7 @@ func Main(r *model.Robot) {
 		return BackgroundProc(r, msg)
 	})
 
-	link.ConnectTCP(r, "login", util.GetLocalIP()+":8001")
+	Verify(r)
 
-	r.Send("login", &proto.VerifyREQ{})
-	ack := r.Recv("proto.VerifyACK").(*proto.VerifyACK)
-	ulog.Debugf("%+v", ack)
-
-	link.ConnectTCP(r, "agent", util.JoinAddress(ack.Server.IP, int(ack.Server.Port)))
+	EnterGame(r)
 }

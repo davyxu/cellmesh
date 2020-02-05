@@ -3,6 +3,7 @@ package link
 import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/fx"
+	memsd "github.com/davyxu/cellmesh/svc/memsd/api"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	"github.com/davyxu/cellnet/proc"
@@ -43,7 +44,7 @@ func registerPeerToDiscovery(p cellnet.Peer, options ...interface{}) *discovery.
 	property := p.(cellnet.PeerProperty)
 
 	sd := &discovery.ServiceDesc{
-		ID:   MakeSvcID(property.Name()),
+		ID:   fx.MakeSvcID(property.Name()),
 		Name: property.Name(),
 		Host: host,
 		Port: p.(peerListener).Port(),
@@ -65,6 +66,7 @@ func registerPeerToDiscovery(p cellnet.Peer, options ...interface{}) *discovery.
 	}
 
 	p.(cellnet.ContextSet).SetContext(PeerContextKey_ServiceDesc, sd)
+	p.(cellnet.ContextSet).SetContext("NeedRecover", true)
 
 	// 有同名的要先解除注册，再注册，防止watch不触发
 	discovery.Global.Deregister(sd.ID)
@@ -79,5 +81,41 @@ func registerPeerToDiscovery(p cellnet.Peer, options ...interface{}) *discovery.
 // 解除peer注册
 func unregister(p cellnet.Peer) {
 	property := p.(cellnet.PeerProperty)
-	discovery.Global.Deregister(MakeSvcID(property.Name()))
+	discovery.Global.Deregister(fx.MakeSvcID(property.Name()))
+}
+
+// 连接到服务发现, 建议在service.Init后, 以及服务器逻辑开始前调用
+func ConnectDiscovery() {
+	ulog.Debugf("Connecting to discovery '%s' ...", fx.DiscoveryAddress)
+	sdConfig := memsd.DefaultConfig()
+	sdConfig.Address = fx.DiscoveryAddress
+	discovery.Global = memsd.NewDiscovery()
+	discovery.Global.Start(sdConfig)
+
+	go autoRecoverServiceDiscovery()
+}
+
+// 服务发现断线重连
+func autoRecoverServiceDiscovery() {
+	notify := discovery.Global.RegisterNotify()
+
+	for {
+		ctx := <-notify
+		if ctx.Mode == "ready" {
+			ulog.Infof("memsd discovery recover")
+
+			VisitPeer(func(p cellnet.Peer) bool {
+
+				// 需要重新注册的服务只有侦听器
+				if _, ok := p.(cellnet.ContextSet).GetContext("NeedRecover"); ok {
+					registerPeerToDiscovery(p)
+				}
+
+				return true
+			})
+
+		}
+
+	}
+
 }

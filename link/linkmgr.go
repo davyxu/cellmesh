@@ -22,7 +22,7 @@ func markLink(ses cellnet.Session, svcid, svcName string) {
 	ctxSet.SetContext(SesContextKey_LinkSvcID, svcid)
 	ctxSet.SetContext(SesContextKey_LinkSvcName, svcName)
 
-	ulog.WithColorName("green").Infof("Add service link : %s %s", svcid, getPeerDescString(ses.Peer()))
+	ulog.WithColorName("green").Infof("Add service link: %s %s", svcid, getPeerDescString(ses.Peer()))
 }
 
 // 取得远程会话的ID
@@ -79,4 +79,11 @@ func VisitLink(callback func(ses cellnet.Session) bool) {
 		return true
 	})
 
+}
+
+func printAllLink() {
+	VisitLink(func(ses cellnet.Session) bool {
+		ulog.Debugf("link: ", GetLinkSvcID(ses))
+		return true
+	})
 }

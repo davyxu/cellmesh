@@ -1,6 +1,11 @@
 package main
 
 import (
+	_ "github.com/davyxu/cellnet/codec/protoplus"
+	_ "github.com/davyxu/cellnet/peer/tcp"
+)
+
+import (
 	"flag"
 	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/svc/robot/flow"
@@ -11,10 +16,7 @@ import (
 	"strconv"
 )
 
-func main() {
-
-	flag.Parse()
-
+func initLogger() {
 	textFormatter := &ulog.TextFormatter{
 		EnableColor: *rbase.FlagShowMsgLog,
 	}
@@ -28,12 +30,20 @@ func main() {
 
 	ulog.SetLevel(ulog.DebugLevel)
 
-	msglog.SetCurrMsgLogMode(msglog.MsgLogMode_BlackList)
-	//msglog.SetMsgLogRule("gamedef.PingACK", msglog.MsgLogRule_BlackList)
+	msglog.SetMsgLogRule("gamedef.PingACK", "black")
 
-	if !*rbase.FlagShowMsgLog {
-		msglog.SetCurrMsgLogMode(msglog.MsgLogMode_Mute)
+	if *rbase.FlagShowMsgLog {
+		msglog.SetCurrMsgLogMode("black")
+	} else {
+		msglog.SetCurrMsgLogMode("mute")
 	}
+}
+
+func main() {
+
+	flag.Parse()
+
+	initLogger()
 
 	baseID := model.GenBaseID()
 
@@ -47,7 +57,6 @@ func main() {
 		r.SetRecvTimeoutSec(*rbase.FlagRecvTimeOut)
 
 		r.RunFlow(flow.Main)
-
 	}
 
 	fx.WaitExitSignal()

@@ -1,17 +1,9 @@
-// 添加Service属性的消息会在生成接收代码封装,同时加到路由表中
-
-struct ServerInfo{
+struct ServerInfo {
     IP      string
     Port    int32
 }
 
-// client -> agent 客户端Ping
-[AutoMsgID]
-struct PingACK {
-}
-
-
-[AutoMsgID]
+[AutoMsgID MsgDir:"client -> login"]
 struct VerifyREQ {
     Version string
 	Platform string
@@ -21,21 +13,27 @@ struct VerifyREQ {
 
 [AutoMsgID]
 struct VerifyACK {
-	Result ResultCode
+	Code ResultCode
 	Server ServerInfo
-	GameToken string
-	GameSvcID string // 选中的一台game服务器ID
+	Token string // 登录game的token
+	SvcID string // 选中的一台game服务器ID
 }
 
 
-[AutoMsgID]
+// 客户端Ping
+[AutoMsgID MsgDir:"client -> agent"]
+struct PingACK {
+
+}
+
+[AutoMsgID MsgDir:"client -> agent -> game"]
 struct LoginREQ {
-	GameToken string
-	GameSvcID string
+	SvcID string
+	Token string
 }
 
 
 [AutoMsgID]
 struct LoginACK {
-	Result ResultCode
+	Code ResultCode
 }

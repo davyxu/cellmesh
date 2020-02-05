@@ -4,10 +4,6 @@ import (
 	"github.com/davyxu/cellmesh/fx"
 	meshproto "github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/peer/tcp"
-	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/cellnet/proc/tcp"
-	"github.com/davyxu/ulog"
 )
 
 // 服务互联消息处理
@@ -28,15 +24,11 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 
 		// 用Connector的名称（一般是ProcName）让远程知道自己是什么服务，用于网关等需要反向发送消息的标识
 		inputEvent.Session().Send(&meshproto.ServiceIdentifyACK{
-			SvcID:   GetLocalSvcID(),
+			SvcID:   fx.LocalSvcID,
 			SvcName: fx.ProcName,
 		})
 
 	case *cellnet.SessionClosed:
-
-		if svcID := GetLinkSvcID(inputEvent.Session()); svcID != "" {
-			ulog.WithColorName("yellow").Infof("Remove service link : %s %s", GetLinkSvcID(inputEvent.Session()), getPeerDescString(inputEvent.Session().Peer()))
-		}
 	}
 
 	return inputEvent
@@ -46,23 +38,4 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 func (SvcEventHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	return inputEvent
-}
-
-func init() {
-
-	// 服务器间通讯协议
-	proc.RegisterProcessor("tcp.svc", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
-
-		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
-		bundle.SetHooker(proc.NewMultiHooker(new(SvcEventHooker), new(tcp.MsgHooker)))
-		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
-	})
-
-	// 与客户端通信的处理器
-	proc.RegisterProcessor("tcp.client", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
-
-		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
-		bundle.SetHooker(proc.NewMultiHooker(new(tcp.MsgHooker)))
-		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
-	})
 }

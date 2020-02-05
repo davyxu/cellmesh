@@ -5,15 +5,15 @@ import (
 )
 
 const (
-	ConfigPath = "config_demo/route_rule"
+	ConfigKey = "config_demo/route_rule"
 )
 
 // 路由规则
 type RouteRule struct {
 	MsgName string
-	SvcName string
-	Mode    string // auth: 需要授权 pass: 可通过
 	MsgID   int
+
+	SvcName string
 }
 
 // 路由表，包含多条路由规则

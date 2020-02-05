@@ -2,8 +2,6 @@ package fx
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh/discovery"
-	"github.com/davyxu/cellmesh/svc/memsd/api"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/msglog"
@@ -37,6 +35,8 @@ func Init(name string) {
 		SvcIndex = os.Getpid()
 	}
 
+	LocalSvcID = MakeSvcID(ProcName)
+
 	Queue = cellnet.NewEventQueue()
 
 	Queue.StartLoop()
@@ -65,20 +65,24 @@ func initLogger() {
 		ulog.Global().SetOutput(ulog.NewAsyncOutput(ulog.NewRollingOutput(*flagLogFile, maxFileSize)))
 	}
 
-	textFormatter := &ulog.TextFormatter{
-		EnableColor: *flagLogColor,
-	}
+	switch *flagLogFormat {
+	case "json":
+		ulog.Global().SetFormatter(&ulog.JSONFormatter{})
+	case "text":
+		textFormatter := &ulog.TextFormatter{
+			EnableColor: *flagLogColor,
+		}
 
-	if *flagLogColor {
-		textFormatter.ParseColorRule(msglog.LogColorDefine)
-	}
+		// 彩色日志
+		if *flagLogColor {
+			textFormatter.ParseColorRule(msglog.LogColorDefine)
+		}
 
-	// 彩色日志
-	ulog.Global().SetFormatter(textFormatter)
+		ulog.Global().SetFormatter(textFormatter)
+	}
 
 	// 设置日志级别
 	if *flagLogLevel != "" {
-
 		if lv, ok := ulog.ParseLevelString(*flagLogLevel); ok {
 			ulog.SetLevel(lv)
 		} else {
@@ -86,14 +90,9 @@ func initLogger() {
 		}
 	}
 
-	// 禁用指定消息名的消息日志
-	if *flagMuteMsgLog != "" {
-
-		if err := msglog.SetMsgLogRule(*flagMuteMsgLog, msglog.MsgLogRule_BlackList); err != nil {
-			ulog.Errorln("SetMsgLogRule: ", err)
-		} else {
-			ulog.Infoln("SetMsgLogRule:", *flagMuteMsgLog)
-		}
+	// 设置消息日志模式
+	if *flagMsglogMode != "" {
+		msglog.SetCurrMsgLogMode(*flagMsglogMode)
 	}
 }
 
@@ -126,15 +125,6 @@ func LogParameter() {
 	ulog.Infof("WANIP: '%s'", WANIP)
 	ulog.Infof("SvcGroup: '%s'", SvcGroup)
 	ulog.Infof("SvcIndex: %d", SvcIndex)
-}
-
-// 连接到服务发现, 建议在service.Init后, 以及服务器逻辑开始前调用
-func ConnectDiscovery() {
-	ulog.Debugf("Connecting to discovery '%s' ...", DiscoveryAddress)
-	sdConfig := memsd.DefaultConfig()
-	sdConfig.Address = DiscoveryAddress
-	discovery.Global = memsd.NewDiscovery()
-	discovery.Global.Start(sdConfig)
 }
 
 func WaitExitSignal() {

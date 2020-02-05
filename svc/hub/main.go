@@ -1,6 +1,10 @@
 package main
 
 import (
+	_ "github.com/davyxu/cellmesh/fx/proc"
+)
+
+import (
 	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/link"
 )
@@ -8,7 +12,7 @@ import (
 func main() {
 	fx.Init("hub")
 	fx.LogParameter()
-	fx.ConnectDiscovery()
+	link.ConnectDiscovery()
 
 	// 服务互联服务
 	link.ListenService(&link.ServiceParameter{

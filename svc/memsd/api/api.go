@@ -7,7 +7,7 @@ import (
 )
 
 type memDiscovery struct {
-	config *Config
+	config Config
 
 	ses      cellnet.Session
 	sesGuard sync.RWMutex
@@ -33,7 +33,7 @@ func (self *memDiscovery) Start(config interface{}) {
 		config = DefaultConfig()
 	}
 
-	self.config = config.(*Config)
+	self.config = config.(Config)
 
 	self.initWg = new(sync.WaitGroup)
 	self.initWg.Add(1)

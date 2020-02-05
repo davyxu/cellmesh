@@ -2,7 +2,6 @@ package memsd
 
 import (
 	"github.com/davyxu/cellmesh/discovery"
-	_ "github.com/davyxu/cellnet/peer/tcp"
 	"testing"
 	"time"
 )

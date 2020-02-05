@@ -7,9 +7,9 @@ type Config struct {
 	RequestTimeout time.Duration
 }
 
-func DefaultConfig() *Config {
+func DefaultConfig() Config {
 
-	return &Config{
+	return Config{
 		Address:        ":8900",
 		RequestTimeout: time.Second * 10,
 	}

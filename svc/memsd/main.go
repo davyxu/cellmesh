@@ -1,6 +1,11 @@
 package main
 
 import (
+	_ "github.com/davyxu/cellnet/codec/protoplus"
+	_ "github.com/davyxu/cellnet/peer/tcp"
+)
+
+import (
 	"flag"
 	"fmt"
 	"github.com/davyxu/cellmesh/discovery"

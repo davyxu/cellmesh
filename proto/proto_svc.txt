@@ -1,0 +1,4 @@
+#服务器间协议,一行一个
+router.proto
+hub.proto
+svc.proto

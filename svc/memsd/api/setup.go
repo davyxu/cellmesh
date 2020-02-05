@@ -2,7 +2,6 @@ package memsd
 
 import (
 	"github.com/davyxu/cellnet"
-	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/rpc"
 )

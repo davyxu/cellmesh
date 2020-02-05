@@ -1,5 +1,5 @@
 
-[AutoMsgID]
+[AutoMsgID MsgDir:"client -> agent -> game"]
 struct ChatREQ {
 	Content string
 }
@@ -7,11 +7,4 @@ struct ChatREQ {
 [AutoMsgID]
 struct ChatACK{
 	Content string
-}
-
-
-
-[AutoMsgID]
-struct TestACK{
-	Dummy string
 }

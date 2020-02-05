@@ -32,10 +32,7 @@ type Discovery interface {
 
 	// 解除服务变化通知
 	DeregisterNotify(c chan struct{})
-}
 
-// KV接口, 可由Discovery转换
-type KVStorage interface {
 	// 设置值
 	SetValue(key string, value interface{}, optList ...interface{}) error
 

@@ -2,6 +2,8 @@ package link
 
 import "github.com/davyxu/cellnet"
 
+// 在连上实际服务前, 需要创建一个空的Peer以方便peerchecker显示与检查
+// 连上后, 该peer会被丢弃
 type dummyPeer struct {
 	*ServiceParameter
 }

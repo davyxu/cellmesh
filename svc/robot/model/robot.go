@@ -12,9 +12,11 @@ type Robot struct {
 	// 基础结构
 	ID string
 	// 账号
-	GameAddress string // 养成服地址
-	LoginToken  string // login返回的token
-	GameToken   int64  // 断线重连的token
+
+	AgentSvcID   string
+	AgentAddress string // 网关地址
+	LoginToken   string // login返回的token
+	GameToken    string // 断线重连的token
 
 	state string
 }

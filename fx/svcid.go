@@ -1,8 +1,7 @@
-package link
+package fx
 
 import (
 	"fmt"
-	"github.com/davyxu/cellmesh/fx"
 )
 
 // 全局唯一的svcid 格式:  svcName@ip
@@ -10,10 +9,5 @@ import (
 
 // 构造指定服务的ID
 func MakeSvcID(svcName string) string {
-	return fmt.Sprintf("%s#%d@%s", svcName, fx.SvcIndex, fx.SvcGroup)
-}
-
-// 获得本进程的服务id
-func GetLocalSvcID() string {
-	return MakeSvcID(fx.ProcName)
+	return fmt.Sprintf("%s#%d@%s", svcName, SvcIndex, SvcGroup)
 }

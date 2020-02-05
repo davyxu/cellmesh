@@ -45,7 +45,7 @@ func (self *User) TransmitToBackend(backendSvcid string, msgID int, msgData []by
 		return ErrBackendNotFound
 	}
 
-	backendSes.Send(&proto.TransmitACK{
+	backendSes.Send(&proto.RouterTransmitACK{
 		MsgID:    uint32(msgID),
 		MsgData:  msgData,
 		ClientID: self.CID.ID,

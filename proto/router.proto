@@ -4,7 +4,7 @@ struct ClientID {
 }
 
 // backend ->agent 切断用户连接
-[AutoMsgID]
+[AutoMsgID MsgDir:"*->agent"]
 struct CloseClientACK {
     ID []int64
 	All bool
@@ -20,7 +20,7 @@ struct ClientClosedACK {
 
 // agent <-> backend 在网关和后端服务器之间传输协议
 [AutoMsgID]
-struct TransmitACK {
+struct RouterTransmitACK {
     MsgID uint32  // 用户消息ID
     MsgData bytes // 用户消息数据
 

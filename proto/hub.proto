@@ -1,11 +1,48 @@
 
+
+// 上报服务状态
 [AutoMsgID]
-struct RemoteCallACK {
-	SrcSvcID string
-	TgtSvcID string
+struct SvcStatusReportACK{
+    Status SvcStatus
+}
 
-	CallID int64
+// 服务状态
+struct SvcStatus{
+    SvcID       string
+	UserCount   int32
+}
 
-	Body bytes
-	BodyMsgID uint32
+// 拉取一类服务的状态
+[AutoMsgID]
+struct SvcStatusREQ{
+    SvcName string
+}
+
+[AutoMsgID]
+struct SvcStatusACK{
+    Status []SvcStatus
+}
+
+
+// 在服务间接力传递消息
+[AutoMsgID]
+struct HubTransmitACK
+{
+	MsgID uint32  // 用户消息ID
+    MsgData bytes // 用户消息数据
+	CallID int64  // 调用ID
+	SrcSvcID string  // 来源服务ID
+	TgtSvcID string  // 目标服务ID
+	Mode int32    // 模式 0:上行(请求/通知),  1: 回应
+
+	PassThroughData bytes // 透传数据
+	PassThroughType string // 透传类型  透传的不一定是消息, 所以用字符串表示类型
+}
+
+
+struct PassThroughWrap {
+    Int64 int64
+    Int32 int32
+    Str string
+    Float32 float32
 }

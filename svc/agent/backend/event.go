@@ -29,7 +29,7 @@ func (self *RecvMsgEvent) Reply(msg interface{}) {
 		return
 	}
 
-	self.Ses.Send(&proto.TransmitACK{
+	self.Ses.Send(&proto.RouterTransmitACK{
 		MsgID:    uint32(meta.ID),
 		MsgData:  data,
 		ClientID: self.ClientID,

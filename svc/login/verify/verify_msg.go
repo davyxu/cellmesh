@@ -8,7 +8,7 @@ import (
 	"github.com/davyxu/cellnet/util"
 )
 
-func getAgentAddress() (code proto.ResultCode, svcID, host string, port int) {
+func getAgentAddress() (code proto.ResultCode, host string, port int) {
 
 	descList := discovery.Global.Query("frontend")
 
@@ -17,12 +17,9 @@ func getAgentAddress() (code proto.ResultCode, svcID, host string, port int) {
 		return
 	}
 
+	// TODO 挑选低负载agent
 	agentDesc := descList[0]
-
-	svcID = agentDesc.ID
-
 	wanAddr := agentDesc.GetMeta("WANAddress")
-
 	var err error
 	host, port, err = util.SpliteAddress(wanAddr)
 	if err != nil {
@@ -33,21 +30,46 @@ func getAgentAddress() (code proto.ResultCode, svcID, host string, port int) {
 	return
 }
 
+func getGameSvcID() (code proto.ResultCode, svcID string) {
+	descList := discovery.Global.Query("game")
+
+	if len(descList) == 0 {
+		code = proto.ResultCode_GameNotFound
+		return
+	}
+
+	// TODO 挑选低负载game
+	svcID = descList[0].ID
+
+	return
+}
+
 func init() {
 	fx.RegisterMessage(new(proto.VerifyREQ), func(ioc *fx.InjectContext, ev cellnet.Event) {
 		//msg := ev.Message().(*proto.VerifyREQ)
 
-		var ack proto.VerifyACK
-
-		code, svcid, host, port := getAgentAddress()
-
-		ack.Result = code
-		if code == 0 {
-			ack.GameSvcID = svcid
-			ack.Server.IP = host
-			ack.Server.Port = int32(port)
+		code, host, port := getAgentAddress()
+		if code != 0 {
+			fx.Reply(ev, &proto.VerifyACK{
+				Code: code,
+			})
+			return
 		}
 
-		ev.Session().Send(&ack)
+		code, svcid := getGameSvcID()
+		if code != 0 {
+			fx.Reply(ev, &proto.VerifyACK{
+				Code: code,
+			})
+			return
+		}
+
+		var ack proto.VerifyACK
+		ack.Server.IP = host
+		ack.Server.Port = int32(port)
+		ack.SvcID = svcid
+		ack.Code = code
+
+		fx.Reply(ev, &ack)
 	})
 }
