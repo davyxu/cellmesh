@@ -87,3 +87,16 @@ func printAllLink() {
 		return true
 	})
 }
+
+func OneLink(svcName string) (ret cellnet.Session) {
+	VisitLink(func(ses cellnet.Session) bool {
+		if GetLinkSvcName(ses) == svcName {
+			ret = ses
+			return false
+		}
+
+		return true
+	})
+
+	return
+}

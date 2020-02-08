@@ -798,6 +798,66 @@ func (self *ServiceIdentifyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint6
 	return proto.ErrUnknownField
 }
 
+type TestREQ struct {
+	Dummy string
+}
+
+func (self *TestREQ) String() string { return proto.CompactTextString(self) }
+
+func (self *TestREQ) Size() (ret int) {
+
+	ret += proto.SizeString(1, self.Dummy)
+
+	return
+}
+
+func (self *TestREQ) Marshal(buffer *proto.Buffer) error {
+
+	proto.MarshalString(buffer, 1, self.Dummy)
+
+	return nil
+}
+
+func (self *TestREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+	switch fieldIndex {
+	case 1:
+		return proto.UnmarshalString(buffer, wt, &self.Dummy)
+
+	}
+
+	return proto.ErrUnknownField
+}
+
+type TestACK struct {
+	Dummy string
+}
+
+func (self *TestACK) String() string { return proto.CompactTextString(self) }
+
+func (self *TestACK) Size() (ret int) {
+
+	ret += proto.SizeString(1, self.Dummy)
+
+	return
+}
+
+func (self *TestACK) Marshal(buffer *proto.Buffer) error {
+
+	proto.MarshalString(buffer, 1, self.Dummy)
+
+	return nil
+}
+
+func (self *TestACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+	switch fieldIndex {
+	case 1:
+		return proto.UnmarshalString(buffer, wt, &self.Dummy)
+
+	}
+
+	return proto.ErrUnknownField
+}
+
 func init() {
 
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
@@ -894,6 +954,16 @@ func init() {
 		Codec: codec.MustGetCodec("protoplus"),
 		Type:  reflect.TypeOf((*ServiceIdentifyACK)(nil)).Elem(),
 		ID:    33360,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*TestREQ)(nil)).Elem(),
+		ID:    47484,
+	})
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: codec.MustGetCodec("protoplus"),
+		Type:  reflect.TypeOf((*TestACK)(nil)).Elem(),
+		ID:    9315,
 	})
 
 }

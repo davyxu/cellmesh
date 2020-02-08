@@ -3,6 +3,7 @@ package link
 import (
 	"fmt"
 	"github.com/davyxu/cellmesh/discovery"
+	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/ulog"
 	"strings"
@@ -96,6 +97,8 @@ func CheckReady() {
 
 		if IsAllReady() {
 			ulog.WithColorName("green").Infof("All peers ready!\n%s", LocalServiceStatus())
+
+			fx.OnLoad.Invoke()
 
 			break
 		}

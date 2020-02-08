@@ -39,14 +39,14 @@ func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 
 		recvMsg, _, err = codec.DecodeMessage(int(rpcMsg.MsgID), rpcMsg.MsgData)
 		if err != nil {
-			req.onRecv(recvMsg, recvPt, fmt.Errorf("rpc decode failed, %s", err))
+			req.onRespond(recvMsg, recvPt, fmt.Errorf("rpc decode failed, %s", err))
 			return inputEvent
 		}
 
 		if rpcMsg.PassThroughType != "" {
 			recvPt, err = loadPassthrough(rpcMsg.PassThroughData, rpcMsg.PassThroughType)
 			if err != nil {
-				req.onRecv(recvMsg, recvPt, fmt.Errorf("rpc decode failed, %s", err))
+				req.onRespond(recvMsg, recvPt, fmt.Errorf("rpc decode failed, %s", err))
 				return inputEvent
 			}
 		}

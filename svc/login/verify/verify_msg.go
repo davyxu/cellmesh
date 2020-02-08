@@ -3,9 +3,12 @@ package verify
 import (
 	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/fx"
+	"github.com/davyxu/cellmesh/link"
 	"github.com/davyxu/cellmesh/proto"
+	"github.com/davyxu/cellmesh/rpc"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
+	"github.com/davyxu/ulog"
 )
 
 func getAgentAddress() (code proto.ResultCode, host string, port int) {
@@ -45,6 +48,22 @@ func getGameSvcID() (code proto.ResultCode, svcID string) {
 }
 
 func init() {
+
+	fx.OnLoad.Add(func(args ...interface{}) {
+
+		rpc.New(link.OneLink("hub")).Request(&proto.TestREQ{
+			Dummy: "hello",
+		}).RecvWait(func(resp *rpc.Respond) {
+			if resp.Error != nil {
+				ulog.Errorln(resp.Error)
+				return
+			}
+
+			ulog.Debugf("%+V", resp)
+		})
+
+	})
+
 	fx.RegisterMessage(new(proto.VerifyREQ), func(ioc *fx.InjectContext, ev cellnet.Event) {
 		//msg := ev.Message().(*proto.VerifyREQ)
 

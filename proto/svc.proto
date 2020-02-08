@@ -6,3 +6,17 @@ struct ServiceIdentifyACK
 	SvcID   string // 服务全局唯一ID
 	SvcName string // 服务名
 }
+
+
+
+[AutoMsgID]
+struct TestREQ
+{
+	Dummy string
+}
+
+[AutoMsgID]
+struct TestACK
+{
+	Dummy string
+}

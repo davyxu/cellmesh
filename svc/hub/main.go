@@ -7,6 +7,7 @@ import (
 import (
 	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/link"
+	_ "github.com/davyxu/cellmesh/svc/hub/relay"
 )
 
 func main() {

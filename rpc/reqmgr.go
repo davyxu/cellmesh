@@ -20,6 +20,7 @@ func (self *RequestManager) Get(id int64) *Request {
 }
 
 func (self *RequestManager) Add(req *Request) {
+	req.mgr = self
 	req.id = atomic.AddInt64(&self.idAcc, 1)
 	self.reqByID.Store(req.id, req)
 }

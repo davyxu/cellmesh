@@ -8,6 +8,7 @@ import (
 	"github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"reflect"
 	"time"
 )
 
@@ -21,10 +22,12 @@ type Respond struct {
 
 type Request struct {
 	id      int64
+	req     interface{} // 存档留作报告错误用
 	pt      interface{}
 	timeout time.Duration
 	ses     cellnet.Session
 	err     error
+	mgr     *RequestManager
 
 	ch       chan *Respond
 	callback func(*Respond)
@@ -36,6 +39,7 @@ func (self *Request) Request(msg interface{}) *Request {
 		ack proto.HubTransmitACK
 		err error
 	)
+	self.req = msg
 
 	ack.MsgData, ack.MsgID, err = saveMessage(msg)
 	if err != nil {
@@ -69,7 +73,7 @@ func (self *Request) WithPassThrough(msg interface{}) *Request {
 	return self
 }
 
-func (self *Request) Recv(callback func(*Respond)) {
+func (self *Request) Recv(callback func(resp *Respond)) {
 	self.callback = callback
 
 	if self.err != nil {
@@ -78,10 +82,30 @@ func (self *Request) Recv(callback func(*Respond)) {
 				Error: self.err,
 			})
 		})
+	} else {
+		time.AfterFunc(self.timeout, func() {
+			if self.mgr.Get(self.id) != nil {
+				cellnet.SessionQueuedCall(self.ses, func() {
+					callback(&Respond{
+						Error: fmt.Errorf("request %s failed, %s", self.msgName(), ErrTimeout),
+					})
+				})
+			}
+		})
+
 	}
 }
 
-func (self *Request) RecvWait(callback func(*Respond)) {
+func (self *Request) msgName() string {
+	t := reflect.TypeOf(self.req)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	return t.Name()
+}
+
+func (self *Request) RecvWait(callback func(resp *Respond)) {
 
 	if self.err != nil {
 		callback(&Respond{
@@ -95,19 +119,22 @@ func (self *Request) RecvWait(callback func(*Respond)) {
 			callback(r)
 		case <-time.After(self.timeout):
 			callback(&Respond{
-				Error: ErrTimeout,
+				Error: fmt.Errorf("request %s failed, %s", self.msgName(), ErrTimeout),
 			})
 		}
 	}
 }
 
-func (self *Request) onRecv(msg, pt interface{}, err error) {
+// 接收到RPC回应
+func (self *Request) onRespond(msg, pt interface{}, err error) {
 
 	resp := &Respond{
 		Passsthrough: pt,
 		Message:      msg,
 		Error:        err,
 	}
+
+	self.mgr.Remove(self)
 
 	if self.ch != nil {
 		self.ch <- resp
@@ -116,9 +143,10 @@ func (self *Request) onRecv(msg, pt interface{}, err error) {
 			self.callback(resp)
 		})
 	}
+
 }
 
-func NewRequest(ses cellnet.Session) *Request {
+func New(ses cellnet.Session) *Request {
 
 	self := &Request{
 		ses:     ses,
