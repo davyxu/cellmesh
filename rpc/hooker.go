@@ -13,6 +13,24 @@ import (
 type MsgHooker struct {
 }
 
+func decodePayload(rpcMsg *proto.HubTransmitACK) (userMsg, userPt interface{}, err error) {
+	userMsg, _, err = codec.DecodeMessage(int(rpcMsg.MsgID), rpcMsg.MsgData)
+	if err != nil {
+		err = fmt.Errorf("rpc decode failed, %s", err)
+		return
+	}
+
+	if rpcMsg.PassThroughType != "" {
+		userPt, err = decodePassthrough(rpcMsg.PassThroughData, rpcMsg.PassThroughType)
+		if err != nil {
+			err = fmt.Errorf("rpc decode failed, %s", err)
+			return
+		}
+	}
+
+	return
+}
+
 func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	rpcMsg, ok := inputEvent.Message().(*proto.HubTransmitACK)
@@ -28,56 +46,60 @@ func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 			return inputEvent
 		}
 
-		mgr := fetchManager(inputEvent.Session())
-		req := mgr.Get(rpcMsg.CallID)
-
-		var (
-			err     error
-			recvMsg interface{}
-			recvPt  interface{}
-		)
-
-		recvMsg, _, err = codec.DecodeMessage(int(rpcMsg.MsgID), rpcMsg.MsgData)
+		userMsg, userPt, err := decodePayload(rpcMsg)
 		if err != nil {
-			req.onRespond(recvMsg, recvPt, fmt.Errorf("rpc decode failed, %s", err))
+			ulog.Errorf("%s", err)
 			return inputEvent
 		}
 
-		if rpcMsg.PassThroughType != "" {
-			recvPt, err = loadPassthrough(rpcMsg.PassThroughData, rpcMsg.PassThroughType)
-			if err != nil {
-				req.onRespond(recvMsg, recvPt, fmt.Errorf("rpc decode failed, %s", err))
-				return inputEvent
-			}
+		if ulog.IsLevelEnabled(ulog.DebugLevel) {
+			peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
+
+			ulog.Debugf("#rpc.recv(%s)@%d len: %d %s | %s",
+				peerInfo.Name(),
+				inputEvent.Session().ID(),
+				cellnet.MessageSize(userMsg),
+				cellnet.MessageToName(userMsg),
+				cellnet.MessageToString(userMsg))
 		}
+
+		mgr := fetchManager(inputEvent.Session())
+		req := mgr.Get(rpcMsg.CallID)
+
+		if req != nil {
+
+			req.onRespond(userMsg, userPt, err)
+		} else {
+			ulog.Warnf("rpc respond not hit, id: %d, msgid: %d srcSvcID: %s", rpcMsg.CallID, rpcMsg.MsgID, rpcMsg.SrcSvcID)
+		}
+
 	case TransmitMode_RequestNotify: // 服务器接收并回应
 		// 接收到本进程应该接收的消息
 		if rpcMsg.TgtSvcID == fx.LocalSvcID {
 
-			var (
-				err     error
-				recvMsg interface{}
-				recvPt  interface{}
-			)
-			recvMsg, _, err = codec.DecodeMessage(int(rpcMsg.MsgID), rpcMsg.MsgData)
+			userMsg, userPt, err := decodePayload(rpcMsg)
 			if err != nil {
-				ulog.Errorf("rpc decode failed, %s", err)
+				ulog.Errorf("%s", err)
 				return inputEvent
 			}
 
-			if rpcMsg.PassThroughType != "" {
-				recvPt, err = loadPassthrough(rpcMsg.PassThroughData, rpcMsg.PassThroughType)
-				if err != nil {
-					ulog.Errorf("rpc decode failed, %s", err)
-					return inputEvent
-				}
+			if ulog.IsLevelEnabled(ulog.DebugLevel) {
+				peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
+
+				ulog.Debugf("#rpc.recv(%s)@%d len: %d %s | %s",
+					peerInfo.Name(),
+					inputEvent.Session().ID(),
+					cellnet.MessageSize(userMsg),
+					cellnet.MessageToName(userMsg),
+					cellnet.MessageToString(userMsg))
 			}
+
 			return &RecvMsgEvent{
 				ses:      inputEvent.Session(),
-				Msg:      recvMsg,
+				Msg:      userMsg,
 				callid:   rpcMsg.CallID,
 				srcSvcID: rpcMsg.SrcSvcID,
-				recvPt:   recvPt,
+				recvPt:   userPt,
 			}
 
 		} else {
@@ -89,6 +111,24 @@ func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 			}
 
 			remoteSvcID.Send(rpcMsg)
+
+			if ulog.IsLevelEnabled(ulog.DebugLevel) {
+
+				userMsg, _, err := decodePayload(rpcMsg)
+				if err != nil {
+					ulog.Errorf("%s", err)
+					return inputEvent
+				}
+
+				peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
+
+				ulog.Debugf("#rpc.relay(%s)@%d len: %d %s | %s",
+					peerInfo.Name(),
+					inputEvent.Session().ID(),
+					cellnet.MessageSize(userMsg),
+					cellnet.MessageToName(userMsg),
+					cellnet.MessageToString(userMsg))
+			}
 		}
 	}
 
@@ -96,6 +136,28 @@ func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 }
 
 func (self MsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+
+	rpcMsg, ok := inputEvent.Message().(*proto.HubTransmitACK)
+	if !ok {
+		return inputEvent
+	}
+
+	if ulog.IsLevelEnabled(ulog.DebugLevel) {
+		userMsg, _, err := decodePayload(rpcMsg)
+		if err != nil {
+			ulog.Errorf("%s", err)
+			return inputEvent
+		}
+
+		peerInfo := inputEvent.Session().Peer().(cellnet.PeerProperty)
+
+		ulog.Debugf("#rpc.send(%s)@%d len: %d %s | %s",
+			peerInfo.Name(),
+			inputEvent.Session().ID(),
+			cellnet.MessageSize(userMsg),
+			cellnet.MessageToName(userMsg),
+			cellnet.MessageToString(userMsg))
+	}
 
 	return inputEvent
 }

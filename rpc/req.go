@@ -15,8 +15,8 @@ import (
 var ErrTimeout = errors.New("rpc time out")
 
 type Respond struct {
-	Passsthrough interface{}
 	Message      interface{}
+	Passsthrough interface{}
 	Error        error
 }
 
@@ -36,28 +36,29 @@ type Request struct {
 func (self *Request) Request(msg interface{}) *Request {
 
 	var (
-		ack proto.HubTransmitACK
+		req proto.HubTransmitACK
 		err error
 	)
 	self.req = msg
 
-	ack.MsgData, ack.MsgID, err = saveMessage(msg)
+	req.MsgData, req.MsgID, err = saveMessage(msg)
 	if err != nil {
 		self.err = fmt.Errorf("rpc request message encode error: %w", err)
 		return self
 	}
 
 	if self.pt != nil {
-		ack.PassThroughData, ack.PassThroughType, err = savePassthrough(self.pt)
+		req.PassThroughData, req.PassThroughType, err = encodePassthrough(self.pt)
 	}
-
-	ack.Mode = TransmitMode_RequestNotify
-	ack.SrcSvcID = fx.LocalSvcID
-	ack.TgtSvcID = link.GetLinkSvcID(self.ses)
 
 	fetchManager(self.ses).Add(self)
 
-	self.ses.Send(&ack)
+	req.Mode = TransmitMode_RequestNotify
+	req.SrcSvcID = fx.LocalSvcID
+	req.TgtSvcID = link.GetLinkSvcID(self.ses)
+	req.CallID = self.id
+
+	self.ses.Send(&req)
 
 	return self
 }

@@ -22,6 +22,7 @@ func main() {
 		SvcName:       "hub",
 		ListenAddress: ":0",
 		Queue:         fx.Queue,
+		EventCallback: fx.MakeIOCEventHandler(fx.MessageRegistry),
 	})
 
 	link.CheckReady()

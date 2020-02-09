@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func savePassthrough(passthrough interface{}) ([]byte, string, error) {
+func encodePassthrough(passthrough interface{}) ([]byte, string, error) {
 
 	var typeName string
 	switch pvalue := passthrough.(type) {
@@ -54,7 +54,7 @@ func init() {
 	ptwMeta = cellnet.MessageMetaByType(reflect.TypeOf((*proto.PassThroughWrap)(nil)).Elem())
 }
 
-func loadPassthrough(data []byte, dataType string) (pt interface{}, err error) {
+func decodePassthrough(data []byte, dataType string) (pt interface{}, err error) {
 
 	if strings.HasPrefix(dataType, "pt.") {
 

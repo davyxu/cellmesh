@@ -59,7 +59,7 @@ func init() {
 				return
 			}
 
-			ulog.Debugf("%+V", resp)
+			ulog.Debugf("%+v", resp)
 		})
 
 	})

@@ -58,7 +58,7 @@ func (self *RecvMsgEvent) Reply(msg interface{}) {
 	ack.TgtSvcID = self.srcSvcID
 
 	if self.replyPt != nil {
-		ack.PassThroughData, ack.PassThroughType, err = savePassthrough(self.replyPt)
+		ack.PassThroughData, ack.PassThroughType, err = encodePassthrough(self.replyPt)
 	}
 
 	self.ses.Send(&ack)
