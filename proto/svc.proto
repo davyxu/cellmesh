@@ -9,7 +9,7 @@ struct ServiceIdentifyACK
 
 
 
-[AutoMsgID]
+[AutoMsgID MsgDir:"* -> hub -> game"]
 struct TestREQ
 {
 	Dummy string

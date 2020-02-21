@@ -11,6 +11,10 @@ type MsgDir struct {
 	Name          string
 }
 
+func (self *MsgDir) Valid() bool {
+	return self.From != "" && self.To != ""
+}
+
 func (self *MsgDir) HasStar() bool {
 	if self.From == "*" {
 		return true

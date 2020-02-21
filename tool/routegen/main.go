@@ -27,11 +27,15 @@ func GenRouteTable(dset *model.DescriptorSet) (ret *agentModel.RouteTable) {
 	for _, d := range dset.Structs() {
 
 		msgDir := ParseMessage(d)
-		if msgDir.Mid == "agent" && msgDir.From == "client" {
+		msgID := msgidutil.StructMsgID(d)
 
-			msgID := msgidutil.StructMsgID(d)
+		if msgDir.Valid() {
+			var relay string
+			if msgDir.Mid != "" {
+				relay = fmt.Sprintf("[%s]", msgDir.Mid)
+			}
 
-			ulog.Debugf("	%s(%d) svc:%s", d.Name, msgID, msgDir.To)
+			ulog.Debugf("  %s(%d)  %s -> %s   %s", d.Name, msgID, msgDir.From, msgDir.To, relay)
 
 			ret.Rule = append(ret.Rule, &agentModel.RouteRule{
 				MsgName: d.Name,
@@ -39,6 +43,7 @@ func GenRouteTable(dset *model.DescriptorSet) (ret *agentModel.RouteTable) {
 				MsgID:   msgID,
 			})
 		}
+
 	}
 
 	return

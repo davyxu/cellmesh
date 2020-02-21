@@ -17,4 +17,4 @@ RouteGen=../bin/routegen
 go build -v -o=${RouteGen} github.com/davyxu/cellmesh/tool/routegen
 
 echo "Upload route config to discovery..."
-${RouteGen} `source ./protolist.sh client`
+${RouteGen} `source ./protolist.sh all`
