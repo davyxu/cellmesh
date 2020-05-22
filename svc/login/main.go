@@ -2,11 +2,12 @@ package main
 
 import (
 	_ "github.com/davyxu/cellmesh/fx/proc"
+	"github.com/davyxu/cellmesh/link"
+	"time"
 )
 
 import (
 	"github.com/davyxu/cellmesh/fx"
-	"github.com/davyxu/cellmesh/link"
 	_ "github.com/davyxu/cellmesh/svc/login/verify"
 )
 
@@ -15,8 +16,11 @@ func main() {
 	fx.LogParameter()
 	link.ConnectDiscovery()
 
+	link.MonitorService("frontend", time.Second*3)
+	link.MonitorService("game", time.Second*3)
+
 	// 网关对客户端连接
-	link.ListenService(&link.ServiceParameter{
+	link.ListenNode(&link.NodeParameter{
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "tcp.client",
 		SvcName:       "verify",
@@ -26,7 +30,7 @@ func main() {
 	})
 
 	// 服务互联
-	link.ConnectService(&link.ServiceParameter{
+	link.ConnectNode(&link.NodeParameter{
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
 		SvcName:  "hub",
@@ -35,6 +39,6 @@ func main() {
 
 	link.CheckReady()
 
-	fx.WaitExitSignal()
+	fx.WaitExit()
 
 }

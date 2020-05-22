@@ -1,7 +1,6 @@
 package verify
 
 import (
-	"github.com/davyxu/cellmesh/discovery"
 	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/link"
 	"github.com/davyxu/cellmesh/proto"
@@ -13,7 +12,7 @@ import (
 
 func getAgentAddress() (code proto.ResultCode, host string, port int) {
 
-	descList := discovery.Global.Query("frontend")
+	descList := link.DescListByName("frontend")
 
 	if len(descList) == 0 {
 		code = proto.ResultCode_AgentNotFound
@@ -22,7 +21,7 @@ func getAgentAddress() (code proto.ResultCode, host string, port int) {
 
 	// TODO 挑选低负载agent
 	agentDesc := descList[0]
-	wanAddr := agentDesc.GetMeta("WANAddress")
+	wanAddr := agentDesc.GetMeta("WAN")
 	var err error
 	host, port, err = util.SpliteAddress(wanAddr)
 	if err != nil {
@@ -34,7 +33,7 @@ func getAgentAddress() (code proto.ResultCode, host string, port int) {
 }
 
 func getGameSvcID() (code proto.ResultCode, svcID string) {
-	descList := discovery.Global.Query("game")
+	descList := link.DescListByName("game")
 
 	if len(descList) == 0 {
 		code = proto.ResultCode_GameNotFound
@@ -51,7 +50,7 @@ func init() {
 
 	fx.OnLoad.Add(func(args ...interface{}) {
 
-		rpc.New(link.OneLink("hub")).Request(&proto.TestREQ{
+		rpc.New(link.LinkByName("hub")).Request(&proto.TestREQ{
 			Dummy: "hello",
 		}).RecvWait(func(resp *rpc.Respond) {
 			if resp.Error != nil {

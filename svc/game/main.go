@@ -2,11 +2,11 @@ package main
 
 import (
 	_ "github.com/davyxu/cellmesh/fx/proc"
+	"github.com/davyxu/cellmesh/link"
 )
 
 import (
 	"github.com/davyxu/cellmesh/fx"
-	"github.com/davyxu/cellmesh/link"
 	_ "github.com/davyxu/cellmesh/svc/game/enter"
 )
 
@@ -15,8 +15,10 @@ func main() {
 	fx.LogParameter()
 	link.ConnectDiscovery()
 
+	link.RegisterBackendNode()
+
 	// 服务互联
-	link.ConnectService(&link.ServiceParameter{
+	link.ConnectNode(&link.NodeParameter{
 		PeerType:      "tcp.Connector",
 		NetProc:       "tcp.svc",
 		SvcName:       "backend",
@@ -25,7 +27,7 @@ func main() {
 	})
 
 	// 服务互联
-	link.ConnectService(&link.ServiceParameter{
+	link.ConnectNode(&link.NodeParameter{
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
 		SvcName:  "hub",
@@ -34,6 +36,6 @@ func main() {
 
 	link.CheckReady()
 
-	fx.WaitExitSignal()
+	fx.WaitExit()
 
 }

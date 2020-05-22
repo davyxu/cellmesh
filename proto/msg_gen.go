@@ -47,6 +47,38 @@ func (self ResultCode) String() string {
 	return ResultCodeMapperNameByValue[int32(self)]
 }
 
+type NodeKind int32
+
+const (
+	NodeKind_Listen  NodeKind = 0
+	NodeKind_Connect NodeKind = 1
+	NodeKind_Backend NodeKind = 2
+	NodeKind_Accept  NodeKind = 3
+	NodeKind_Monitor NodeKind = 4
+)
+
+var (
+	NodeKindMapperValueByName = map[string]int32{
+		"Listen":  0,
+		"Connect": 1,
+		"Backend": 2,
+		"Accept":  3,
+		"Monitor": 4,
+	}
+
+	NodeKindMapperNameByValue = map[int32]string{
+		0: "Listen",
+		1: "Connect",
+		2: "Backend",
+		3: "Accept",
+		4: "Monitor",
+	}
+)
+
+func (self NodeKind) String() string {
+	return NodeKindMapperNameByValue[int32(self)]
+}
+
 type ServerInfo struct {
 	IP   string
 	Port int32

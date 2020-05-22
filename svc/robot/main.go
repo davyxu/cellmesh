@@ -59,5 +59,5 @@ func main() {
 		r.RunFlow(flow.Main)
 	}
 
-	fx.WaitExitSignal()
+	fx.WaitExit()
 }

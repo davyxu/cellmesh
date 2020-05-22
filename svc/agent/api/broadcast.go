@@ -53,7 +53,7 @@ func Send(cid *proto.ClientID, msg interface{}) {
 	if agentSes != nil {
 		data, meta, err := codec.EncodeMessage(msg, nil)
 		if err != nil {
-			log.Errorf("Send.EncodeMessage %s", err)
+			ulog.Errorf("Send.EncodeMessage %s", err)
 			return
 		}
 

@@ -26,7 +26,7 @@ func (self *User) BroadcastToBackends(msg interface{}) {
 
 	for _, t := range self.Targets {
 
-		backendSes := link.GetLink(t.SvcID)
+		backendSes := link.LinkByID(t.SvcID)
 		if backendSes != nil {
 			backendSes.Send(msg)
 		}
@@ -39,7 +39,7 @@ var (
 
 func (self *User) TransmitToBackend(backendSvcid string, msgID int, msgData []byte) error {
 
-	backendSes := link.GetLink(backendSvcid)
+	backendSes := link.LinkByID(backendSvcid)
 
 	if backendSes == nil {
 		return ErrBackendNotFound

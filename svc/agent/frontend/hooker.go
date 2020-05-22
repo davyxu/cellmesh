@@ -50,7 +50,7 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 
 			} else {
 				ses.Close()
-				ulog.Errorln("bindClientToBackend", err)
+				ulog.WithField("nodeid", userMsg.SvcID).WithField("err", err).Errorln("bindClientToBackend failed")
 			}
 		}
 

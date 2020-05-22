@@ -1,0 +1,115 @@
+package link
+
+import (
+	"github.com/davyxu/cellmesh/fx"
+	"github.com/davyxu/cellmesh/proto"
+	"github.com/davyxu/cellmesh/redsd"
+	"github.com/davyxu/cellnet"
+)
+
+// 某类节点的默认连接
+func LinkByName(name string) cellnet.Session {
+
+	descList := DescListByName(name)
+	if len(descList) == 0 {
+		return nil
+	}
+
+	return getNodeSession(descList[0])
+}
+
+// 某类节点的list
+func DescListByName(name string) []*redsd.NodeDesc {
+	nodeList := SD.NodeListByName(name)
+	if nodeList == nil {
+		return nil
+	}
+
+	return nodeList.DescList()
+}
+
+// 某节点的desc
+func DescByID(nodeid string) *redsd.NodeDesc {
+	name, _, _, err := fx.ParseSvcID(nodeid)
+	if err != nil {
+		return nil
+	}
+
+	nodeList := SD.NodeListByName(name)
+	if nodeList == nil {
+		return nil
+	}
+
+	ctx := nodeList.GetDesc(nodeid)
+
+	if ctx == nil {
+		return nil
+	}
+
+	return ctx.Desc
+}
+
+// 根据ID获取会话
+func LinkByID(nodeid string) (ret cellnet.Session) {
+
+	desc := DescByID(nodeid)
+	if desc == nil {
+		return nil
+	}
+
+	return getNodeSession(desc)
+}
+
+func DescByLink(ses cellnet.Session) *redsd.NodeDesc {
+	if ses == nil {
+		return nil
+	}
+
+	if raw, ok := ses.(cellnet.ContextSet).GetContext("NodeDesc"); ok {
+		return raw.(*redsd.NodeDesc)
+	}
+
+	return nil
+}
+
+func getNodeSession(desc *redsd.NodeDesc) cellnet.Session {
+
+	// Acceptor 连接上来的连接
+	if desc.Session != nil {
+		return desc.Session
+	}
+
+	if desc.Peer == nil {
+		return nil
+	}
+
+	return desc.Peer.(interface {
+		// 默认会话
+		Session() cellnet.Session
+	}).Session()
+}
+
+func addLink(desc *redsd.NodeDesc) {
+	nodeList := SD.NodeListByName(desc.Name)
+	if nodeList != nil && nodeList.GetDesc(desc.ID) == nil {
+		return
+	}
+
+	if nodeList == nil {
+		nodeList = SD.NewNodeList(desc.Name, int(proto.NodeKind_Accept))
+	}
+
+	nodeList.AddDesc(&redsd.NodeContext{
+		Desc: desc,
+		Ver:  1,
+	})
+}
+
+func removeLink(desc *redsd.NodeDesc) {
+	nodeList := SD.NodeListByName(desc.Name)
+	if nodeList == nil {
+		return
+	}
+
+	nodeList.DeleteDesc(desc.ID)
+}

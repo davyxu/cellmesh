@@ -1,4 +1,15 @@
 
+// 节点服务发现使用类型
+enum NodeKind
+{
+    Listen      // 本地侦听
+    Connect     // 连接其他节点
+	Backend		// 不主动侦听/连接的节点
+	Accept		// 其他连接过来
+    Monitor     // 只监控状态
+}
+
+
 // 进程间互联时，连接方发出标识自己的ID
 [AutoMsgID]
 struct ServiceIdentifyACK

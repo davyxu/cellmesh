@@ -32,6 +32,9 @@ var (
 
 	// 批量设置flag
 	flagFlagFile = CommandLine.String("flagfile", "../cfg/LocalFlag.cfg", "Flagfile to init flag values")
+
+	// 使用命令行操作服务器
+	flagUseConsole = CommandLine.Bool("console", false, "use console to interactive")
 )
 
 func init() {
@@ -39,6 +42,6 @@ func init() {
 	CommandLine.StringVar(&SvcGroup, "svcgroup", "", "Service group, default is local ip string")
 	CommandLine.IntVar(&SvcIndex, "svcindex", 0, "Service index, default is process id")
 
-	CommandLine.StringVar(&DiscoveryAddress, "sdaddr", "127.0.0.1:8900", "Discovery address")
+	CommandLine.StringVar(&DiscoveryAddress, "sdaddr", "127.0.0.1:6379", "Discovery address")
 
 }

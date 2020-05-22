@@ -1,17 +1,15 @@
 package link
 
-// 服务发现中的Key
-const (
-	SDMetaKey_WANAddress = "WANAddress"
+import (
+	"github.com/davyxu/cellnet"
 )
 
-// 服务链接上绑定的Key
-const (
-	SesContextKey_LinkSvcID   = "LinkSvcID"
-	SesContextKey_LinkSvcName = "LinkSvcName"
-)
+type NodeParameter struct {
+	SvcName  string // 服务名,注册到服务发现，本进程服务可以填空
+	PeerType string // cellnet的PeerType
+	NetProc  string // cellnet处理器名称
 
-// 段上绑定的Key
-const (
-	PeerContextKey_ServiceDesc = "ServiceDesc"
-)
+	ListenAddress string // socket侦听地址, 仅限开启服务使用
+	Queue         cellnet.EventQueue
+	EventCallback cellnet.EventCallback
+}

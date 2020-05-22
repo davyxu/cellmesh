@@ -8,25 +8,16 @@ import (
 
 var (
 	ErrAlreadyBind           = errors.New("already bind user")
-	ErrBackendSDNotFound     = errors.New("backend sd not found")
 	ErrBackendServerNotFound = errors.New("backend svc not found")
 )
 
 // 将客户端连接绑定到后台服务
 func bindClientToBackend(backendSvcID string, clientSesID int64) (*model.User, error) {
 
-	backendSes := link.GetLink(backendSvcID)
+	desc := link.DescByID(backendSvcID)
 
-	if backendSes == nil {
+	if desc == nil {
 		return nil, ErrBackendServerNotFound
-	}
-
-	backendPeer := backendSes.Peer()
-
-	// 取得后台服务的信息
-	sd := link.GetPeerDesc(backendPeer)
-	if sd == nil {
-		return nil, ErrBackendSDNotFound
 	}
 
 	// 将客户端的id转为session
@@ -43,7 +34,7 @@ func bindClientToBackend(backendSvcID string, clientSesID int64) (*model.User, e
 	u = model.CreateUser(clientSes)
 
 	// 更新绑定后台服务的svcid
-	u.SetBackend(sd.Name, sd.ID)
+	u.SetBackend(desc.Name, desc.ID)
 
 	return u, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/davyxu/cellmesh/redsd"
 	_ "github.com/davyxu/cellnet/codec/protoplus"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/protoplus/msgidutil"
@@ -9,10 +10,8 @@ import (
 import (
 	"flag"
 	"fmt"
-	"github.com/davyxu/cellmesh/discovery"
 	agentModel "github.com/davyxu/cellmesh/svc/agent/model"
 	"github.com/davyxu/cellmesh/svc/agent/routerule"
-	memsd "github.com/davyxu/cellmesh/svc/memsd/api"
 	"github.com/davyxu/protoplus/model"
 	"github.com/davyxu/protoplus/util"
 	"github.com/davyxu/ulog"
@@ -60,10 +59,8 @@ func main() {
 
 	ulog.SetLevel(ulog.DebugLevel)
 
-	discovery.Global = memsd.NewDiscovery()
-	config := memsd.DefaultConfig()
-	ulog.Infof("Connect memsd discovery %s...", config.Address)
-	discovery.Global.Start(config)
+	sd := redsd.NewRedisDiscovery()
+	sd.Start("localhost:6379")
 
 	dset := new(model.DescriptorSet)
 	dset.PackageName = *flagPackage
@@ -78,7 +75,7 @@ func main() {
 
 	routeTable = GenRouteTable(dset)
 
-	err = routerule.Upload(routeTable, *flagConfigKey)
+	err = routerule.Upload(sd, routeTable, *flagConfigKey)
 
 	if err != nil {
 		goto OnError

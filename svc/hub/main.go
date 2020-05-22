@@ -2,11 +2,11 @@ package main
 
 import (
 	_ "github.com/davyxu/cellmesh/fx/proc"
+	"github.com/davyxu/cellmesh/link"
 )
 
 import (
 	"github.com/davyxu/cellmesh/fx"
-	"github.com/davyxu/cellmesh/link"
 	_ "github.com/davyxu/cellmesh/svc/hub/relay"
 )
 
@@ -16,7 +16,7 @@ func main() {
 	link.ConnectDiscovery()
 
 	// 服务互联服务
-	link.ListenService(&link.ServiceParameter{
+	link.ListenNode(&link.NodeParameter{
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "tcp.svc",
 		SvcName:       "hub",
@@ -27,6 +27,6 @@ func main() {
 
 	link.CheckReady()
 
-	fx.WaitExitSignal()
+	fx.WaitExit()
 
 }

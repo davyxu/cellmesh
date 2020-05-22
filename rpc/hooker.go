@@ -104,7 +104,7 @@ func (self MsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 
 		} else {
 			// 路由到远程服务器
-			remoteSvcID := link.GetLink(rpcMsg.TgtSvcID)
+			remoteSvcID := link.LinkByID(rpcMsg.TgtSvcID)
 			if remoteSvcID == nil {
 				ulog.Warnf("rpc target not found, svcid: '%s', msgid: %d", rpcMsg.TgtSvcID, rpcMsg.MsgID)
 				return inputEvent

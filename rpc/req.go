@@ -51,11 +51,19 @@ func (self *Request) Request(msg interface{}) *Request {
 		req.PassThroughData, req.PassThroughType, err = encodePassthrough(self.pt)
 	}
 
+	if self.ses == nil {
+		self.err = fmt.Errorf("rpc request session empty msg: %s", cellnet.MessageToName(msg))
+		return self
+	}
+
 	fetchManager(self.ses).Add(self)
 
 	req.Mode = TransmitMode_RequestNotify
 	req.SrcSvcID = fx.LocalSvcID
-	req.TgtSvcID = link.GetLinkSvcID(self.ses)
+	if desc := link.DescByLink(self.ses); desc != nil {
+		req.TgtSvcID = desc.ID
+	}
+
 	req.CallID = self.id
 
 	self.ses.Send(&req)

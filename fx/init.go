@@ -1,6 +1,7 @@
 package fx
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
@@ -42,6 +43,14 @@ func Init(name string) {
 	Queue.StartLoop()
 
 	initLogger()
+
+	if *flagUseConsole {
+
+		go ReadConsole(func(cmd string) {
+			OnCommand.Invoke(cmd)
+		})
+
+	}
 }
 
 func initLogger() {
@@ -72,6 +81,8 @@ func initLogger() {
 		textFormatter := &ulog.TextFormatter{
 			EnableColor: *flagLogColor,
 		}
+
+		ulog.Global().SetReportCaller(true)
 
 		// 彩色日志
 		if *flagLogColor {
@@ -127,9 +138,32 @@ func LogParameter() {
 	ulog.Infof("SvcIndex: %d", SvcIndex)
 }
 
-func WaitExitSignal() {
+func WaitExit() {
+
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
 	<-ch
+}
+
+func ReadConsole(onCmd func(cmd string)) {
+
+	for {
+
+		// 从标准输入读取字符串，以\n为分割
+		text, err := bufio.NewReader(os.Stdin).ReadString('\n')
+		if err != nil {
+			break
+		}
+
+		// 去掉读入内容的空白符
+		text = strings.TrimSpace(text)
+
+		if len(text) == 0 {
+			continue
+		}
+
+		onCmd(text)
+
+	}
 }
