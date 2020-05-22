@@ -18,7 +18,7 @@ func RegisterMessage(msgTypeObj interface{}, handler func(ioc *meshutil.InjectCo
 
 	fx.MessageRegistry.MapFunc(tMsg.Elem(), func(ioc *meshutil.InjectContext) interface{} {
 		ev := ioc.Invoke("Event").(cellnet.Event)
-		//cid := ioc.Invoke("CID").(proto.ClientID)
+		//cid := ioc.Invoke("CID").(proto.AgentClientID)
 		handler(ioc, ev)
 
 		return nil
@@ -39,11 +39,11 @@ func invokeAgentMessage(ev cellnet.Event) {
 
 		aev := ev.(*AgentMsgEvent)
 
-		var cid proto.ClientID
-		cid.ID = aev.ClientID
+		var cid proto.AgentClientID
+		cid.SessionID = aev.ClientID
 
 		if desc := link.DescByLink(aev.Session()); desc != nil {
-			cid.SvcID = desc.ID
+			cid.NodeID = desc.ID
 		}
 
 		return cid

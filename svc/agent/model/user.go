@@ -19,7 +19,7 @@ type User struct {
 	Targets      []*Backend
 	LastPingTime time.Time
 
-	CID proto.ClientID
+	CID proto.AgentClientID
 }
 
 // 广播到这个用户绑定的所有后台
@@ -67,10 +67,10 @@ func (self *User) SendToBackend(backendSvcid string, msgID int, msgData []byte) 
 		//ulog.Debugf("client(%d) -> %s len:%d %s| %s", self.Session.ID(), backendSvcid, len(msgData), meta.FullName(), msgtostr)
 	}
 
-	backendSes.Send(&proto.RouterTransmitACK{
+	backendSes.Send(&proto.AgentTransmitACK{
 		MsgID:    uint32(msgID),
 		MsgData:  msgData,
-		ClientID: self.CID.ID,
+		ClientID: self.CID.SessionID,
 	})
 }
 
@@ -84,9 +84,9 @@ func (self *User) BindBackend(svcName string, nodeid string) {
 		}
 	}
 
-	self.CID = proto.ClientID{
-		ID:    self.Session.ID(),
-		SvcID: AgentSvcID,
+	self.CID = proto.AgentClientID{
+		SessionID: self.Session.ID(),
+		NodeID:    AgentNodeID,
 	}
 
 	self.Targets = append(self.Targets, &Backend{

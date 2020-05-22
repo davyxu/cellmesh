@@ -18,7 +18,7 @@ type AgentHooker struct {
 func (AgentHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch incomingMsg := inputEvent.Message().(type) {
-	case *proto.RouterTransmitACK:
+	case *proto.AgentTransmitACK:
 
 		userMsg, _, err := codec.DecodeMessage(int(incomingMsg.MsgID), incomingMsg.MsgData)
 		if err != nil {
@@ -52,7 +52,7 @@ func (AgentHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet
 func (AgentHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch outgoingMsg := inputEvent.Message().(type) {
-	case *proto.RouterTransmitACK:
+	case *proto.AgentTransmitACK:
 
 		if ulog.IsLevelEnabled(ulog.DebugLevel) {
 			writeAgentLog(inputEvent.Session(), "send", outgoingMsg)
@@ -64,7 +64,7 @@ func (AgentHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellne
 	return inputEvent
 }
 
-func writeAgentLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitACK) {
+func writeAgentLog(ses cellnet.Session, dir string, ack *proto.AgentTransmitACK) {
 
 	if !msglog.IsMsgLogValid(int(ack.MsgID)) {
 		return

@@ -19,7 +19,7 @@ type backendHooker struct {
 func (backendHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch incomingMsg := inputEvent.Message().(type) {
-	case *proto.RouterTransmitACK:
+	case *proto.AgentTransmitACK:
 
 		rawPkt := &cellnet.RawPacket{
 			MsgData: incomingMsg.MsgData,
@@ -68,7 +68,7 @@ func (backendHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent celln
 func (backendHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch outgoingMsg := inputEvent.Message().(type) {
-	case *proto.RouterTransmitACK:
+	case *proto.AgentTransmitACK:
 
 		if ulog.IsLevelEnabled(ulog.DebugLevel) {
 			writeBackendLog(inputEvent.Session(), "send", outgoingMsg)
@@ -80,7 +80,7 @@ func (backendHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cell
 	return inputEvent
 }
 
-func writeBackendLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitACK) {
+func writeBackendLog(ses cellnet.Session, dir string, ack *proto.AgentTransmitACK) {
 
 	if !msglog.IsMsgLogValid(int(ack.MsgID)) {
 		return

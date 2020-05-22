@@ -14,8 +14,8 @@ enum NodeKind
 [AutoMsgID]
 struct ServiceIdentifyACK
 {
-	SvcID   string // 服务全局唯一ID
-	SvcName string // 服务名
+	NodeID   string // 服务全局唯一ID
+	NodeName string // 服务名
 }
 
 

@@ -13,7 +13,7 @@ func CloseAllClient() {
 	for _, desc := range link.DescListByName("backend") {
 		ses := link.LinkByDesc(desc)
 		if ses != nil {
-			ses.Send(&proto.CloseClientACK{
+			ses.Send(&proto.AgentCloseClientACK{
 				All: true,
 			})
 		}
@@ -32,7 +32,7 @@ func BroadcastAll(msg interface{}) {
 	for _, desc := range link.DescListByName("backend") {
 		ses := link.LinkByDesc(desc)
 		if ses != nil {
-			ses.Send(&proto.RouterTransmitACK{
+			ses.Send(&proto.AgentTransmitACK{
 				MsgID:   uint32(meta.ID),
 				MsgData: data,
 				All:     true,
@@ -43,9 +43,9 @@ func BroadcastAll(msg interface{}) {
 }
 
 // 给客户端发消息
-func Send(cid *proto.ClientID, msg interface{}) {
+func Send(cid *proto.AgentClientID, msg interface{}) {
 
-	agentSes := link.LinkByID(cid.SvcID)
+	agentSes := link.LinkByID(cid.NodeID)
 	if agentSes != nil {
 		data, meta, err := codec.EncodeMessage(msg, nil)
 		if err != nil {
@@ -53,10 +53,10 @@ func Send(cid *proto.ClientID, msg interface{}) {
 			return
 		}
 
-		agentSes.Send(&proto.RouterTransmitACK{
+		agentSes.Send(&proto.AgentTransmitACK{
 			MsgID:    uint32(meta.ID),
 			MsgData:  data,
-			ClientID: cid.ID,
+			ClientID: cid.SessionID,
 		})
 	}
 }
@@ -66,10 +66,10 @@ type ClientList struct {
 }
 
 // 添加客户端
-func (self *ClientList) AddClient(cid *proto.ClientID) {
-	seslist := self.sesByAgentSvcID[cid.SvcID]
-	seslist = append(seslist, cid.ID)
-	self.sesByAgentSvcID[cid.SvcID] = seslist
+func (self *ClientList) AddClient(cid *proto.AgentClientID) {
+	seslist := self.sesByAgentSvcID[cid.NodeID]
+	seslist = append(seslist, cid.SessionID)
+	self.sesByAgentSvcID[cid.NodeID] = seslist
 }
 
 // 关闭列表中客户端的连接
@@ -78,7 +78,7 @@ func (self *ClientList) CloseClient() {
 
 		agentSes := link.LinkByID(agentSvcID)
 		if agentSes != nil {
-			agentSes.Send(&proto.CloseClientACK{
+			agentSes.Send(&proto.AgentCloseClientACK{
 				ID: sesList,
 			})
 		}
@@ -99,7 +99,7 @@ func (self *ClientList) Broadcast(msg interface{}) {
 		agentSes := link.LinkByID(agentSvcID)
 		if agentSes != nil {
 
-			agentSes.Send(&proto.RouterTransmitACK{
+			agentSes.Send(&proto.AgentTransmitACK{
 				MsgID:        uint32(meta.ID),
 				MsgData:      data,
 				ClientIDList: sesList,

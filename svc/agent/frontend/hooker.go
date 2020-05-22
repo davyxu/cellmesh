@@ -43,15 +43,13 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 
 			// 第一个到网关的消息
 		case *proto.LoginREQ:
-			u, err := bindClientToBackend(userMsg.SvcID, ses.ID())
+			u, err := bindClientToBackend(userMsg.NodeID, ses.ID())
 			if err == nil {
-				u.SendToBackend(userMsg.SvcID, msgID, msgData)
+				u.SendToBackend(userMsg.NodeID, msgID, msgData)
 
 			} else {
 				ses.Close()
-				ulog.WithFields(ulog.Fields{
-					"nodeid": userMsg.SvcID,
-				}).Errorf("bindClientToBackend failed, %s", err)
+				ulog.Errorf("bindClientToBackend failed, %s nodeid: %s", err, userMsg.NodeID)
 			}
 		}
 
@@ -93,10 +91,10 @@ func (FrontendEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent
 		u := model.SessionToUser(inputEvent.Session())
 		if u != nil {
 			// TODO 后端服务向网关订阅客户端断开通知, 否则不通知
-			u.BroadcastToBackends(&proto.ClientClosedACK{
-				ID: proto.ClientID{
-					ID:    inputEvent.Session().ID(),
-					SvcID: model.AgentSvcID,
+			u.BroadcastToBackends(&proto.AgentClientClosedNotifyACK{
+				ID: proto.AgentClientID{
+					SessionID: inputEvent.Session().ID(),
+					NodeID:    model.AgentNodeID,
 				},
 			})
 		}

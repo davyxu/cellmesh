@@ -7,7 +7,7 @@ import (
 
 var (
 	FrontendSessionManager peer.SessionManager
-	AgentSvcID             string // 网关id
+	AgentNodeID            string // 当前进程的网关id
 )
 
 func GetClientSession(sesid int64) cellnet.Session {

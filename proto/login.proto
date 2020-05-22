@@ -16,7 +16,7 @@ struct VerifyACK {
 	Code ResultCode
 	Server ServerInfo
 	Token string // 登录game的token
-	SvcID string // 选中的一台game服务器ID
+	NodeID string // 选中的一台game服务器ID
 }
 
 
@@ -28,7 +28,7 @@ struct PingACK {
 
 [AutoMsgID MsgDir:"client -> agent -> game"]
 struct LoginREQ {
-	SvcID string
+	NodeID string
 	Token string
 }
 

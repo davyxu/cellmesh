@@ -12,7 +12,7 @@ import (
 )
 
 // 开启服务
-func ListenNode(param *NodeParameter) cellnet.Peer {
+func ListenNode(param *NodeParameter) *redsd.NodeDesc {
 
 	p := peer.NewGenericPeer(param.PeerType, param.SvcName, param.ListenAddress, param.Queue)
 
@@ -24,9 +24,7 @@ func ListenNode(param *NodeParameter) cellnet.Peer {
 
 	p.Start()
 
-	registerPeerToDiscovery(p)
-
-	return p
+	return registerPeerToDiscovery(p)
 }
 
 type peerListener interface {
@@ -36,7 +34,7 @@ type peerListener interface {
 type ServiceMeta map[string]string
 
 // 将Acceptor注册到服务发现,IP自动取本地IP
-func registerPeerToDiscovery(p cellnet.Peer, options ...interface{}) {
+func registerPeerToDiscovery(p cellnet.Peer, options ...interface{}) *redsd.NodeDesc {
 
 	property := p.(cellnet.PeerProperty)
 
@@ -63,6 +61,7 @@ func registerPeerToDiscovery(p cellnet.Peer, options ...interface{}) {
 	}
 
 	SD.NewNodeList(sd.Name, int(proto.NodeKind_Listen)).Register(sd)
+	return sd
 }
 
 // 不侦听的服务, 单独注册

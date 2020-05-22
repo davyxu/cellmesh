@@ -18,16 +18,16 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 	switch msg := inputEvent.Message().(type) {
 	case *meshproto.ServiceIdentifyACK: // 服务方收到连接方的服务标识
 
-		pre := DescByID(msg.SvcID)
+		pre := DescByID(msg.NodeID)
 		if pre != nil {
-			ulog.Debugf("discard pre node: %s", msg.SvcID)
+			ulog.Debugf("discard pre node: %s", msg.NodeID)
 			closeNode(pre)
 			removeLink(pre)
 		}
 
 		var desc redsd.NodeDesc
-		desc.Name = msg.SvcName
-		desc.ID = msg.SvcID
+		desc.Name = msg.NodeName
+		desc.ID = msg.NodeID
 		desc.Session = inputEvent.Session()
 
 		addr, _ := util.GetRemoteAddrss(inputEvent.Session())
@@ -53,8 +53,8 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 
 		// 用Connector的名称（一般是ProcName）让远程知道自己是什么服务，用于网关等需要反向发送消息的标识
 		inputEvent.Session().Send(&meshproto.ServiceIdentifyACK{
-			SvcID:   fx.LocalSvcID,
-			SvcName: fx.ProcName,
+			NodeID:   fx.LocalSvcID,
+			NodeName: fx.ProcName,
 		})
 
 	case *cellnet.SessionClosed:

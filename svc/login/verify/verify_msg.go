@@ -33,7 +33,7 @@ func getAgentAddress() (code proto.ResultCode, host string, port int) {
 	return
 }
 
-func getGameSvcID() (code proto.ResultCode, svcID string) {
+func getGameNodeID() (code proto.ResultCode, svcID string) {
 	descList := link.DescListByName("game")
 
 	if len(descList) == 0 {
@@ -75,7 +75,7 @@ func init() {
 			return
 		}
 
-		code, svcid := getGameSvcID()
+		code, nodeid := getGameNodeID()
 		if code != 0 {
 			fx.Reply(ev, &proto.VerifyACK{
 				Code: code,
@@ -86,7 +86,7 @@ func init() {
 		var ack proto.VerifyACK
 		ack.Server.IP = host
 		ack.Server.Port = int32(port)
-		ack.SvcID = svcid
+		ack.NodeID = nodeid
 		ack.Code = code
 
 		fx.Reply(ev, &ack)

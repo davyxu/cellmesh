@@ -8,7 +8,7 @@ struct SvcStatusReportACK{
 
 // 服务状态
 struct SvcStatus{
-    SvcID       string
+    NodeID      string
 	UserCount   int32
 }
 
