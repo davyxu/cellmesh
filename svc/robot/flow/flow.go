@@ -31,12 +31,20 @@ func Verify(r *model.Robot) {
 
 func EnterGame(r *model.Robot) {
 	link.ConnectTCP(r, "agent", r.AgentAddress)
+
+	r.Send("agent", &proto.AgentBindBackendREQ{
+		NodeID: r.AgentSvcID,
+		Token:  r.LoginToken,
+	})
+	ack := r.Recv("proto.AgentBindBackendACK").(*proto.AgentBindBackendACK)
+	robotutil.CheckCode(ack.Code)
+
 	r.Send("agent", &proto.LoginREQ{
 		NodeID: r.AgentSvcID,
 		Token:  r.LoginToken,
 	})
-	ack := r.Recv("proto.LoginACK").(*proto.LoginACK)
-	robotutil.CheckCode(ack.Code)
+	ack2 := r.Recv("proto.LoginACK").(*proto.LoginACK)
+	robotutil.CheckCode(ack2.Code)
 
 }
 

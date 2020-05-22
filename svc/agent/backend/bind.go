@@ -1,9 +1,9 @@
-package frontend
+package backend
 
 import (
 	"errors"
-	"github.com/davyxu/cellmesh/link"
 	"github.com/davyxu/cellmesh/svc/agent/model"
+	"github.com/davyxu/ulog"
 )
 
 var (
@@ -12,29 +12,25 @@ var (
 )
 
 // 将客户端连接绑定到后台服务
-func bindClientToBackend(backendSvcID string, clientSesID int64) (*model.User, error) {
-
-	desc := link.DescByID(backendSvcID)
-
-	if desc == nil {
-		return nil, ErrBackendServerNotFound
-	}
-
+func bindClientToBackend(nodeID string, clientSesID int64) {
 	// 将客户端的id转为session
 	clientSes := model.GetClientSession(clientSesID)
+
+	if clientSes == nil {
+		return
+	}
 
 	// 从客户端的会话取得用户
 	u := model.SessionToUser(clientSes)
 
 	// 已经绑定
 	if u != nil {
-		return nil, ErrAlreadyBind
+		ulog.Warnf("duplicate user bind backend, nodeid: %s, sesID: %d", nodeID, clientSesID)
+		return
 	}
 
 	u = model.CreateUser(clientSes)
 
 	// 更新绑定后台服务的svcid
-	u.BindBackend(desc.Name, desc.ID)
-
-	return u, nil
+	u.BindBackend(nodeID)
 }

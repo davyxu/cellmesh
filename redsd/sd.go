@@ -98,8 +98,9 @@ func (self *RedisDiscovery) checkRegNode() {
 
 	var regNodeList []*NodeDesc
 	for _, nodeList := range self.nodeListByName {
-		if nodeList.heartBeat {
-			regNodeList = append(regNodeList, nodeList.DescList()[0])
+		descList := nodeList.DescList()
+		if nodeList.heartBeat && len(descList) > 0 {
+			regNodeList = append(regNodeList, descList[0])
 		}
 	}
 

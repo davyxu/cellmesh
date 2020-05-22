@@ -6,21 +6,21 @@ import (
 	"github.com/davyxu/cellmesh/svc/agent/model"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
+	"github.com/davyxu/ulog"
 
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/ulog"
 	"time"
 )
 
 var (
-	PingACKMsgID  = cellnet.MessageMetaByFullName("proto.PingACK").ID
-	LoginREQMsgID = cellnet.MessageMetaByFullName("proto.LoginREQ").ID
+	PingACKMsgID        = cellnet.MessageMetaByFullName("proto.PingACK").ID
+	BindBackendREQMsgID = cellnet.MessageMetaByFullName("proto.AgentBindBackendREQ").ID
 )
 
 func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg interface{}, err error) {
 	// agent自己的内部消息以及预处理消息
 	switch int(msgID) {
-	case PingACKMsgID, LoginREQMsgID:
+	case PingACKMsgID, BindBackendREQMsgID:
 
 		// 将字节数组和消息ID用户解出消息
 		msg, _, err = codec.DecodeMessage(msgID, msgData)
@@ -42,15 +42,8 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 			}
 
 			// 第一个到网关的消息
-		case *proto.LoginREQ:
-			u, err := bindClientToBackend(userMsg.NodeID, ses.ID())
-			if err == nil {
-				u.SendToBackend(userMsg.NodeID, msgID, msgData)
-
-			} else {
-				ses.Close()
-				ulog.Errorf("bindClientToBackend failed, %s nodeid: %s", err, userMsg.NodeID)
-			}
+		case *proto.AgentBindBackendREQ:
+			model.SendToBackend(userMsg.NodeID, msgID, msgData, ses.ID())
 		}
 
 	default:
@@ -64,13 +57,10 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 		u := model.SessionToUser(ses)
 
 		if u != nil {
-
 			// 透传到后台
-
 			u.SendToBackend(u.GetBackend(rule.SvcName), msgID, msgData)
-
 		} else {
-			// 这是一个未授权的用户发授权消息,可以踢掉
+			ulog.Warnf("User not bind to backend,  msgname: %s", msgID, rule.MsgName)
 		}
 	}
 

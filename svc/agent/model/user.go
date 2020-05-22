@@ -1,10 +1,10 @@
 package model
 
 import (
+	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/link"
 	"github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/ulog"
 	"time"
 )
@@ -34,51 +34,40 @@ func (self *User) BroadcastToBackends(msg interface{}) {
 	}
 }
 
-func (self *User) SendToBackend(backendSvcid string, msgID int, msgData []byte) {
+func (self *User) SendToBackend(nodeID string, msgID int, msgData []byte) {
+	SendToBackend(nodeID, msgID, msgData, self.CID.SessionID)
+}
 
-	logfields := ulog.Fields{
-		"sesid":   self.Session.ID(),
-		"nodeid":  backendSvcid,
-		"msgid":   msgID,
-		"msgsize": len(msgData),
-	}
+func SendToBackend(nodeID string, msgID int, msgData []byte, clientSesID int64) {
 
-	desc := link.DescByID(backendSvcid)
+	desc := link.DescByID(nodeID)
 
 	if desc == nil {
-		ulog.WithFields(logfields).Errorf("backend node not found")
+		ulog.Errorf("backend node not found, nodeid: %s msgid: %d", nodeID, msgID)
 		return
 	}
 
 	backendSes := link.LinkByDesc(desc)
 
 	if backendSes == nil {
-		ulog.WithFields(logfields).Errorf("backend node not ready")
+		ulog.Errorf("backend node not ready, nodeid: %s msgid: %d", nodeID, msgID)
 		return
-	}
-
-	userMsg, meta, _ := codec.DecodeMessage(int(msgID), msgData)
-
-	if meta != nil {
-		logfields["msgname"] = meta.FullName()
-		msgtostr := cellnet.MessageToString(userMsg)
-		logfields["msgtostr"] = msgtostr
-
-		//ulog.Debugf("client(%d) -> %s len:%d %s| %s", self.Session.ID(), backendSvcid, len(msgData), meta.FullName(), msgtostr)
 	}
 
 	backendSes.Send(&proto.AgentTransmitACK{
 		MsgID:    uint32(msgID),
 		MsgData:  msgData,
-		ClientID: self.CID.SessionID,
+		ClientID: clientSesID,
 	})
 }
 
 // 绑定用户后台
-func (self *User) BindBackend(svcName string, nodeid string) {
+func (self *User) BindBackend(nodeid string) {
+
+	nodeName, _, _, _ := fx.ParseSvcID(nodeid)
 
 	for _, t := range self.Targets {
-		if t.Name == svcName {
+		if t.Name == nodeName {
 			t.NodeID = nodeid
 			return
 		}
@@ -90,14 +79,11 @@ func (self *User) BindBackend(svcName string, nodeid string) {
 	}
 
 	self.Targets = append(self.Targets, &Backend{
-		Name:   svcName,
+		Name:   nodeName,
 		NodeID: nodeid,
 	})
 
-	ulog.WithFields(ulog.Fields{
-		"sesid":  self.Session.ID(),
-		"nodeid": nodeid,
-	}).Debugf("user bind backend")
+	ulog.Debugf("user bind backend, sesid: %d nodeid: %s", self.Session.ID(), nodeid)
 }
 
 func (self *User) GetBackend(svcName string) string {

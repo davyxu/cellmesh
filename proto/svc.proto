@@ -12,7 +12,7 @@ enum NodeKind
 
 // 进程间互联时，连接方发出标识自己的ID
 [AutoMsgID]
-struct ServiceIdentifyACK
+struct NodeIdentifyACK
 {
 	NodeID   string // 服务全局唯一ID
 	NodeName string // 服务名

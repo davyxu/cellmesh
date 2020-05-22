@@ -37,7 +37,6 @@ func (AgentHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet
 		})
 
 		outputEvent = nil
-
 	default:
 
 		msglog.WriteRecvLogger("tcp", inputEvent.Session(), inputEvent.Message())

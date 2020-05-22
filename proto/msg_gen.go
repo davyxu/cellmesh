@@ -867,14 +867,14 @@ func (self *PassThroughWrap) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, 
 	return proto.ErrUnknownField
 }
 
-type ServiceIdentifyACK struct {
+type NodeIdentifyACK struct {
 	NodeID   string // 服务全局唯一ID
 	NodeName string // 服务名
 }
 
-func (self *ServiceIdentifyACK) String() string { return proto.CompactTextString(self) }
+func (self *NodeIdentifyACK) String() string { return proto.CompactTextString(self) }
 
-func (self *ServiceIdentifyACK) Size() (ret int) {
+func (self *NodeIdentifyACK) Size() (ret int) {
 
 	ret += proto.SizeString(1, self.NodeID)
 
@@ -883,7 +883,7 @@ func (self *ServiceIdentifyACK) Size() (ret int) {
 	return
 }
 
-func (self *ServiceIdentifyACK) Marshal(buffer *proto.Buffer) error {
+func (self *NodeIdentifyACK) Marshal(buffer *proto.Buffer) error {
 
 	proto.MarshalString(buffer, 1, self.NodeID)
 
@@ -892,7 +892,7 @@ func (self *ServiceIdentifyACK) Marshal(buffer *proto.Buffer) error {
 	return nil
 }
 
-func (self *ServiceIdentifyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *NodeIdentifyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
 		return proto.UnmarshalString(buffer, wt, &self.NodeID)
@@ -1068,8 +1068,8 @@ func init() {
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),
-		Type:  reflect.TypeOf((*ServiceIdentifyACK)(nil)).Elem(),
-		ID:    33360,
+		Type:  reflect.TypeOf((*NodeIdentifyACK)(nil)).Elem(),
+		ID:    40229,
 	})
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
 		Codec: codec.MustGetCodec("protoplus"),

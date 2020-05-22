@@ -32,6 +32,10 @@ func (self *RedisDiscovery) GetValue(key string, valuePtr interface{}) (ret erro
 			return
 		}
 
+		if raw == nil {
+			return
+		}
+
 		switch v := raw.(type) {
 		case []byte:
 

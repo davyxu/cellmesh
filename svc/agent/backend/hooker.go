@@ -12,6 +12,10 @@ import (
 	"github.com/davyxu/ulog"
 )
 
+var (
+	BindBackendACKMsgID = cellnet.MessageMetaByFullName("proto.AgentBindBackendACK").ID
+)
+
 type backendHooker struct {
 }
 
@@ -24,6 +28,20 @@ func (backendHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent celln
 		rawPkt := &cellnet.RawPacket{
 			MsgData: incomingMsg.MsgData,
 			MsgID:   int(incomingMsg.MsgID),
+		}
+
+		// 后端服务打通路由通道
+		if int(incomingMsg.MsgID) == BindBackendACKMsgID {
+			rawMsg, _, err := codec.DecodeMessage(int(incomingMsg.MsgID), incomingMsg.MsgData)
+			if err != nil {
+				ulog.Errorf("decode BindBackendACK failed, %s", err)
+				return nil
+			}
+
+			bindMsg := rawMsg.(*proto.AgentBindBackendACK)
+			if bindMsg.Code == 0 {
+				bindClientToBackend(bindMsg.NodeID, incomingMsg.ClientID)
+			}
 		}
 
 		if ulog.IsLevelEnabled(ulog.DebugLevel) {
