@@ -34,7 +34,7 @@ func bindClientToBackend(backendSvcID string, clientSesID int64) (*model.User, e
 	u = model.CreateUser(clientSes)
 
 	// 更新绑定后台服务的svcid
-	u.SetBackend(desc.Name, desc.ID)
+	u.BindBackend(desc.Name, desc.ID)
 
 	return u, nil
 }

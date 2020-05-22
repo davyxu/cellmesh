@@ -3,6 +3,7 @@ package main
 import (
 	_ "github.com/davyxu/cellmesh/fx/proc"
 	"github.com/davyxu/cellmesh/link"
+	_ "github.com/davyxu/cellmesh/svc/agent/api"
 )
 
 import (
@@ -20,7 +21,7 @@ func main() {
 	// 服务互联
 	link.ConnectNode(&link.NodeParameter{
 		PeerType:      "tcp.Connector",
-		NetProc:       "tcp.svc",
+		NetProc:       "svc.backend",
 		SvcName:       "backend",
 		Queue:         fx.Queue,
 		EventCallback: fx.MakeIOCEventHandler(fx.MessageRegistry),

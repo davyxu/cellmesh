@@ -3,11 +3,13 @@ package enter
 import (
 	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/proto"
+	agentapi "github.com/davyxu/cellmesh/svc/agent/api"
+	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 )
 
 func init() {
-	fx.RegisterMessage(new(proto.LoginREQ), func(ioc *fx.InjectContext, ev cellnet.Event) {
+	agentapi.RegisterMessage(new(proto.LoginREQ), func(ioc *meshutil.InjectContext, ev cellnet.Event) {
 
 		fx.Reply(ev, &proto.LoginACK{})
 	})

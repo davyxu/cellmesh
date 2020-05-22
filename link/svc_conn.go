@@ -25,16 +25,12 @@ func ConnectNode(param *NodeParameter) {
 
 				nodeList.DeleteDesc(ctx.Desc.ID)
 
-				ulog.WithField("nodeid", ctx.Desc.ID).Debugf("discovery delete link")
-				if ctx.Desc.Peer != nil {
-					ctx.Desc.Peer.Stop()
-					ctx.Desc.Peer = nil
-					ctx.Desc.Session = nil
-				}
+				ulog.WithField("nodeid", ctx.Desc.ID).Debugf("discovery conn delete link")
+				closeNode(ctx.Desc)
 			}
 
 			for _, ctx := range addList {
-				ulog.WithField("nodeid", ctx.Desc.ID).Debugf("discovery add link")
+				ulog.WithField("nodeid", ctx.Desc.ID).Debugf("discovery conn add link")
 				nodeList.AddDesc(ctx)
 				connNode(ctx.Desc, param)
 			}
@@ -63,4 +59,12 @@ func connNode(desc *redsd.NodeDesc, param *NodeParameter) {
 
 	ctxSet := p.(cellnet.ContextSet)
 	ctxSet.SetContext("NodeDesc", desc)
+}
+
+func closeNode(desc *redsd.NodeDesc) {
+	if desc.Peer != nil {
+		desc.Peer.Stop()
+		desc.Peer = nil
+		desc.Session = nil
+	}
 }

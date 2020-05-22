@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellmesh/link"
 	"github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellmesh/rpc"
+	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
@@ -63,7 +64,7 @@ func init() {
 
 	})
 
-	fx.RegisterMessage(new(proto.VerifyREQ), func(ioc *fx.InjectContext, ev cellnet.Event) {
+	fx.RegisterMessage(new(proto.VerifyREQ), func(ioc *meshutil.InjectContext, ev cellnet.Event) {
 		//msg := ev.Message().(*proto.VerifyREQ)
 
 		code, host, port := getAgentAddress()

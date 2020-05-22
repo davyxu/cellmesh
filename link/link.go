@@ -5,6 +5,7 @@ import (
 	"github.com/davyxu/cellmesh/proto"
 	"github.com/davyxu/cellmesh/redsd"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/ulog"
 )
 
 // 某类节点的默认连接
@@ -15,7 +16,35 @@ func LinkByName(name string) cellnet.Session {
 		return nil
 	}
 
-	return getNodeSession(descList[0])
+	return LinkByDesc(descList[0])
+}
+
+// 根据ID获取会话
+func LinkByID(nodeid string) (ret cellnet.Session) {
+
+	desc := DescByID(nodeid)
+	if desc == nil {
+		return nil
+	}
+
+	return LinkByDesc(desc)
+}
+
+func LinkByDesc(desc *redsd.NodeDesc) cellnet.Session {
+
+	// Acceptor 连接上来的连接
+	if desc.Session != nil {
+		return desc.Session
+	}
+
+	if desc.Peer == nil {
+		return nil
+	}
+
+	return desc.Peer.(interface {
+		// 默认会话
+		Session() cellnet.Session
+	}).Session()
 }
 
 // 某类节点的list
@@ -49,17 +78,6 @@ func DescByID(nodeid string) *redsd.NodeDesc {
 	return ctx.Desc
 }
 
-// 根据ID获取会话
-func LinkByID(nodeid string) (ret cellnet.Session) {
-
-	desc := DescByID(nodeid)
-	if desc == nil {
-		return nil
-	}
-
-	return getNodeSession(desc)
-}
-
 func DescByLink(ses cellnet.Session) *redsd.NodeDesc {
 	if ses == nil {
 		return nil
@@ -72,27 +90,10 @@ func DescByLink(ses cellnet.Session) *redsd.NodeDesc {
 	return nil
 }
 
-func getNodeSession(desc *redsd.NodeDesc) cellnet.Session {
-
-	// Acceptor 连接上来的连接
-	if desc.Session != nil {
-		return desc.Session
-	}
-
-	if desc.Peer == nil {
-		return nil
-	}
-
-	return desc.Peer.(interface {
-		// 默认会话
-		Session() cellnet.Session
-	}).Session()
-}
-
 func addLink(desc *redsd.NodeDesc) {
 	nodeList := SD.NodeListByName(desc.Name)
-	if nodeList != nil && nodeList.GetDesc(desc.ID) == nil {
-		return
+	if nodeList != nil && nodeList.GetDesc(desc.ID) != nil {
+		ulog.Warnf("duplicate node: %s", desc.ID)
 	}
 
 	if nodeList == nil {

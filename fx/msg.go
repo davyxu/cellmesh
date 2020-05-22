@@ -1,6 +1,7 @@
 package fx
 
 import (
+	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"reflect"
 )
@@ -19,15 +20,15 @@ func Reply(ev cellnet.Event, msg interface{}) {
 	}
 }
 
-func MakeIOCEventHandler(parentIOC *InjectContext) cellnet.EventCallback {
+func MakeIOCEventHandler(parentIOC *meshutil.InjectContext) cellnet.EventCallback {
 
 	return func(ev cellnet.Event) {
 		// 框架层
-		ioc := NewInjectContext()
+		ioc := meshutil.NewInjectContext()
 
 		ioc.SetParent(parentIOC)
 
-		ioc.MapFunc("Event", func(ioc *InjectContext) interface{} {
+		ioc.MapFunc("Event", func(ioc *meshutil.InjectContext) interface{} {
 			return ev
 		})
 

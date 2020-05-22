@@ -12,55 +12,11 @@ import (
 	"github.com/davyxu/ulog"
 )
 
-type BackendMsgHooker struct {
-}
-
-// 后端服务器接收来自网关的消息
-func (BackendMsgHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
-
-	switch incomingMsg := inputEvent.Message().(type) {
-	case *proto.RouterTransmitACK:
-
-		userMsg, _, err := codec.DecodeMessage(int(incomingMsg.MsgID), incomingMsg.MsgData)
-		if err != nil {
-			ulog.Warnf("Backend msg decode failed, %s, msgid: %d", err.Error(), incomingMsg.MsgID)
-			return nil
-		}
-
-		ev := &RecvMsgEvent{
-			Ses:      inputEvent.Session(),
-			Msg:      userMsg,
-			ClientID: incomingMsg.ClientID,
-		}
-
-		outputEvent = ev
-
-	default:
-		outputEvent = inputEvent
-	}
-
-	return
-}
-
-// 后端服务器发送到网关的消息
-func (BackendMsgHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
-
-	switch outgoingMsg := inputEvent.Message().(type) {
-	case *proto.RouterTransmitACK:
-
-		if ulog.IsLevelEnabled(ulog.DebugLevel) {
-			writeAgentLog(inputEvent.Session(), "send", outgoingMsg)
-		}
-	}
-
-	return inputEvent
-}
-
-type broadcasterHooker struct {
+type backendHooker struct {
 }
 
 // 来自后台服务器的消息
-func (broadcasterHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+func (backendHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch incomingMsg := inputEvent.Message().(type) {
 	case *proto.RouterTransmitACK:
@@ -71,7 +27,7 @@ func (broadcasterHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent c
 		}
 
 		if ulog.IsLevelEnabled(ulog.DebugLevel) {
-			writeAgentLog(inputEvent.Session(), "recv", incomingMsg)
+			writeBackendLog(inputEvent.Session(), "recv", incomingMsg)
 		}
 
 		// 单发
@@ -107,20 +63,20 @@ func (broadcasterHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent c
 }
 
 // 发送给后台服务器
-func (broadcasterHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
+func (backendHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellnet.Event) {
 
 	switch outgoingMsg := inputEvent.Message().(type) {
 	case *proto.RouterTransmitACK:
 
 		if ulog.IsLevelEnabled(ulog.DebugLevel) {
-			writeAgentLog(inputEvent.Session(), "send", outgoingMsg)
+			writeBackendLog(inputEvent.Session(), "send", outgoingMsg)
 		}
 	}
 
 	return inputEvent
 }
 
-func writeAgentLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitACK) {
+func writeBackendLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitACK) {
 
 	if !msglog.IsMsgLogValid(int(ack.MsgID)) {
 		return
@@ -130,7 +86,7 @@ func writeAgentLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitACK
 
 	userMsg, _, err := codec.DecodeMessage(int(ack.MsgID), ack.MsgData)
 	if err == nil {
-		ulog.Debugf("#agent.%s(%s)@%d len: %d %s <%d>| %s",
+		ulog.Debugf("#backend.%s(%s)@%d len: %d %s <%d>| %s",
 			dir,
 			peerInfo.Name(),
 			ses.ID(),
@@ -141,7 +97,7 @@ func writeAgentLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitACK
 	} else {
 
 		// 网关没有相关的消息, 只能打出消息号
-		ulog.Debugf("#agent.%s(%s)@%d len: %d msgid: %d <%d>",
+		ulog.Debugf("#backend.%s(%s)@%d len: %d msgid: %d <%d>",
 			dir,
 			peerInfo.Name(),
 			ses.ID(),
@@ -157,24 +113,13 @@ func init() {
 	// 避免默认消息日志显示本条消息
 	msglog.SetMsgLogRule("proto.TransmitACK", "black")
 
-	// 适用于后端服务的处理器
-	proc.RegisterProcessor("svc.backend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
-
-		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
-		bundle.SetHooker(proc.NewMultiHooker(
-			new(link.SvcEventHooker), // 服务互联处理
-			new(BackendMsgHooker),    // 网关消息处理
-			new(tcp.MsgHooker)))      // tcp基础消息处理
-		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
-	})
-
 	// 适用于
 	proc.RegisterProcessor("agent.backend", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback, args ...interface{}) {
 
 		bundle.SetTransmitter(new(tcp.TCPMessageTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(
 			new(link.SvcEventHooker), // 服务互联处理
-			new(broadcasterHooker),   // 网关消息处理
+			new(backendHooker),       // 网关消息处理
 			new(tcp.MsgHooker)))      // tcp基础消息处理
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})

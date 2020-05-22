@@ -14,10 +14,12 @@ func (self *NodeList) Monitor(interval time.Duration) {
 			addList, delList := self.Check()
 
 			for _, ctx := range delList {
+				ulog.WithField("nodeid", ctx.Desc.ID).Debugf("discovery monitor delete link")
 				self.DeleteDesc(ctx.Desc.ID)
 			}
 
 			for _, ctx := range addList {
+				ulog.WithField("nodeid", ctx.Desc.ID).Debugf("discovery monitor add link")
 				self.AddDesc(ctx)
 			}
 

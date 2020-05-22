@@ -46,11 +46,13 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 		case *proto.LoginREQ:
 			u, err := bindClientToBackend(userMsg.SvcID, ses.ID())
 			if err == nil {
-				u.TransmitToBackend(userMsg.SvcID, msgID, msgData)
+				u.SendToBackend(userMsg.SvcID, msgID, msgData)
 
 			} else {
 				ses.Close()
-				ulog.WithField("nodeid", userMsg.SvcID).WithField("err", err).Errorln("bindClientToBackend failed")
+				ulog.WithFields(ulog.Fields{
+					"nodeid": userMsg.SvcID,
+				}).Errorf("bindClientToBackend failed, %s", err)
 			}
 		}
 
@@ -67,9 +69,8 @@ func ProcFrontendPacket(msgID int, msgData []byte, ses cellnet.Session) (msg int
 		if u != nil {
 
 			// 透传到后台
-			if err = u.TransmitToBackend(u.GetBackend(rule.SvcName), msgID, msgData); err != nil {
-				ulog.Warnf("TransmitToBackend %s, msg: '%s' svc: %s", err, rule.MsgName, rule.SvcName)
-			}
+
+			u.SendToBackend(u.GetBackend(rule.SvcName), msgID, msgData)
 
 		} else {
 			// 这是一个未授权的用户发授权消息,可以踢掉
@@ -92,6 +93,7 @@ func (FrontendEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent
 		// 通知后台客户端关闭
 		u := model.SessionToUser(inputEvent.Session())
 		if u != nil {
+			// TODO 后端服务向网关订阅客户端断开通知, 否则不通知
 			u.BroadcastToBackends(&proto.ClientClosedACK{
 				ID: proto.ClientID{
 					ID:    inputEvent.Session().ID(),

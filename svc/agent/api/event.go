@@ -1,4 +1,4 @@
-package backend
+package agentapi
 
 import (
 	"github.com/davyxu/cellmesh/proto"
@@ -7,21 +7,21 @@ import (
 	"github.com/davyxu/ulog"
 )
 
-type RecvMsgEvent struct {
+type AgentMsgEvent struct {
 	Ses      cellnet.Session
 	Msg      interface{}
 	ClientID int64
 }
 
-func (self *RecvMsgEvent) Session() cellnet.Session {
+func (self *AgentMsgEvent) Session() cellnet.Session {
 	return self.Ses
 }
 
-func (self *RecvMsgEvent) Message() interface{} {
+func (self *AgentMsgEvent) Message() interface{} {
 	return self.Msg
 }
 
-func (self *RecvMsgEvent) Reply(msg interface{}) {
+func (self *AgentMsgEvent) Reply(msg interface{}) {
 
 	data, meta, err := codec.EncodeMessage(msg, nil)
 	if err != nil {

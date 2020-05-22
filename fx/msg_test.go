@@ -2,6 +2,7 @@ package fx
 
 import (
 	"github.com/davyxu/cellmesh/proto"
+	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 
 	"testing"
@@ -9,7 +10,7 @@ import (
 
 func TestMessage(t *testing.T) {
 
-	RegisterMessage(new(proto.LoginREQ), func(ioc *InjectContext, ev cellnet.Event) {
+	RegisterMessage(new(proto.LoginREQ), func(ioc *meshutil.InjectContext, ev cellnet.Event) {
 
 		msg := ev.Message().(*proto.LoginREQ)
 

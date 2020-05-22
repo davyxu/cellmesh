@@ -18,26 +18,33 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 	switch msg := inputEvent.Message().(type) {
 	case *meshproto.ServiceIdentifyACK: // 服务方收到连接方的服务标识
 
-		if pre := LinkByID(msg.SvcID); pre == nil {
-
-			var desc redsd.NodeDesc
-			desc.Name = msg.SvcName
-			desc.ID = msg.SvcID
-			desc.Session = inputEvent.Session()
-
-			addr, _ := util.GetRemoteAddrss(inputEvent.Session())
-			addobj, err := util.ParseAddress(addr)
-			if err == nil {
-				desc.Host = addobj.Host
-				desc.Port = addobj.MinPort
-			}
-
-			ctxSet := inputEvent.Session().(cellnet.ContextSet)
-			ctxSet.SetContext("NodeDesc", &desc)
-
-			ulog.WithField("nodeid", desc.ID).Debugf("accept add link")
-			addLink(&desc)
+		pre := DescByID(msg.SvcID)
+		if pre != nil {
+			ulog.Debugf("discard pre node: %s", msg.SvcID)
+			closeNode(pre)
+			removeLink(pre)
 		}
+
+		var desc redsd.NodeDesc
+		desc.Name = msg.SvcName
+		desc.ID = msg.SvcID
+		desc.Session = inputEvent.Session()
+
+		addr, _ := util.GetRemoteAddrss(inputEvent.Session())
+		addobj, err := util.ParseAddress(addr)
+		if err == nil {
+			desc.Host = addobj.Host
+			desc.Port = addobj.MinPort
+		}
+
+		ctxSet := inputEvent.Session().(cellnet.ContextSet)
+		ctxSet.SetContext("NodeDesc", &desc)
+
+		ulog.WithField("nodeid", desc.ID).Debugf("accept add link")
+		addLink(&desc)
+
+		ulog.Debugf("%s", localNodeStatus())
+
 	case *cellnet.SessionConnected:
 
 		// 从Peer上转到Session上绑定

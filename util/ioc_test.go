@@ -1,4 +1,4 @@
-package fx
+package meshutil
 
 import (
 	"fmt"
@@ -41,16 +41,16 @@ var globalIOC *InjectContext
 func init() {
 	globalIOC = NewInjectContext()
 
-	globalIOC.MapFunc("User", func(ioc *InjectContext) interface{} {
-		msg := ioc.Invoke("Message").(*Message)
+	MapFunc("User", func(ioc *InjectContext) interface{} {
+		msg := Invoke("Message").(*Message)
 
 		return GetUser(msg.UserID)
 	})
 
-	globalIOC.MapFunc("CallHandler", func(ioc *InjectContext) interface{} {
-		msg := ioc.Invoke("Message").(*Message)
+	MapFunc("CallHandler", func(ioc *InjectContext) interface{} {
+		msg := Invoke("Message").(*Message)
 
-		u := ioc.Invoke("User").(*User)
+		u := Invoke("User").(*User)
 
 		callback := GetCallback(msg.MsgID)
 		if callback == nil {
@@ -72,9 +72,9 @@ func genIOCConext(msg *Message) *InjectContext {
 	// 框架层
 	ioc := NewInjectContext()
 
-	ioc.SetParent(globalIOC)
+	SetParent(globalIOC)
 
-	ioc.MapFunc("Message", func(ioc *InjectContext) interface{} {
+	MapFunc("Message", func(ioc *InjectContext) interface{} {
 		return msg
 	})
 
@@ -96,6 +96,6 @@ type MessageWithUserIDFunc func(ioc *InjectContext, msg *Message, useID int)
 
 func OnMessage(ioc *InjectContext) {
 
-	ioc.Invoke("CallHandler")
+	Invoke("CallHandler")
 
 }
