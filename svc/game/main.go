@@ -22,7 +22,7 @@ func main() {
 	link.ConnectNode(&link.NodeParameter{
 		PeerType:      "tcp.Connector",
 		NetProc:       "svc.backend",
-		SvcName:       "backend",
+		SvcName:       "agent",
 		Queue:         fx.Queue,
 		EventCallback: fx.MakeIOCEventHandler(fx.MessageRegistry),
 	})

@@ -57,6 +57,8 @@ func (backendHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent celln
 
 		// 本事件已经处理, 不再后传
 		return nil
+	default:
+		msglog.WriteRecvLogger("tcp", inputEvent.Session(), inputEvent.Message())
 	}
 
 	return inputEvent
@@ -71,6 +73,8 @@ func (backendHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cell
 		if ulog.IsLevelEnabled(ulog.DebugLevel) {
 			writeBackendLog(inputEvent.Session(), "send", outgoingMsg)
 		}
+	default:
+		msglog.WriteSendLogger("tcp", inputEvent.Session(), inputEvent.Message())
 	}
 
 	return inputEvent
@@ -82,14 +86,17 @@ func writeBackendLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitA
 		return
 	}
 
-	peerInfo := ses.Peer().(cellnet.PeerProperty)
+	var backendNodeID string
+	desc := link.DescByLink(ses)
+	if desc != nil {
+		backendNodeID = desc.ID
+	}
 
 	userMsg, _, err := codec.DecodeMessage(int(ack.MsgID), ack.MsgData)
 	if err == nil {
-		ulog.Debugf("#backend.%s(%s)@%d len: %d %s <%d>| %s",
+		ulog.Debugf("#%s(%s) len: %d %s cid:%d| %s",
 			dir,
-			peerInfo.Name(),
-			ses.ID(),
+			backendNodeID,
 			cellnet.MessageSize(userMsg),
 			cellnet.MessageToName(userMsg),
 			ack.ClientID,
@@ -97,10 +104,9 @@ func writeBackendLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitA
 	} else {
 
 		// 网关没有相关的消息, 只能打出消息号
-		ulog.Debugf("#backend.%s(%s)@%d len: %d msgid: %d <%d>",
+		ulog.Debugf("#%s(%s) len: %d msgid: %d cid:%d",
 			dir,
-			peerInfo.Name(),
-			ses.ID(),
+			backendNodeID,
 			len(ack.MsgData),
 			ack.MsgID,
 			ack.ClientID,
@@ -120,7 +126,7 @@ func init() {
 		bundle.SetHooker(proc.NewMultiHooker(
 			new(link.SvcEventHooker), // 服务互联处理
 			new(backendHooker),       // 网关消息处理
-			new(tcp.MsgHooker)))      // tcp基础消息处理
+		))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 }

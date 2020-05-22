@@ -34,7 +34,7 @@ func main() {
 	link.ListenNode(&link.NodeParameter{
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "agent.backend",
-		SvcName:       "backend",
+		SvcName:       "agent",
 		ListenAddress: ":0",
 		Queue:         fx.Queue,
 	})

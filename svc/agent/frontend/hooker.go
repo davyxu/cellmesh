@@ -8,7 +8,6 @@ import (
 	"github.com/davyxu/cellnet/codec"
 
 	"github.com/davyxu/cellnet/proc"
-	"github.com/davyxu/cellnet/proc/tcp"
 	"github.com/davyxu/ulog"
 	"time"
 )
@@ -119,7 +118,6 @@ func init() {
 
 		bundle.SetTransmitter(new(directTCPTransmitter))
 		bundle.SetHooker(proc.NewMultiHooker(
-			new(tcp.MsgHooker),       //  TCP基础消息及日志
 			new(FrontendEventHooker), // 内部消息处理
 		))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))

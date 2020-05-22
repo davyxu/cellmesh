@@ -26,6 +26,10 @@ func (AgentHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet
 			return nil
 		}
 
+		if ulog.IsLevelEnabled(ulog.DebugLevel) {
+			writeAgentLog(inputEvent.Session(), "recv", incomingMsg)
+		}
+
 		invokeAgentMessage(&AgentMsgEvent{
 			Ses:      inputEvent.Session(),
 			Msg:      userMsg,
@@ -35,6 +39,9 @@ func (AgentHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cellnet
 		outputEvent = nil
 
 	default:
+
+		msglog.WriteRecvLogger("tcp", inputEvent.Session(), inputEvent.Message())
+
 		outputEvent = inputEvent
 	}
 
@@ -50,6 +57,8 @@ func (AgentHooker) OnOutboundEvent(inputEvent cellnet.Event) (outputEvent cellne
 		if ulog.IsLevelEnabled(ulog.DebugLevel) {
 			writeAgentLog(inputEvent.Session(), "send", outgoingMsg)
 		}
+	default:
+		msglog.WriteSendLogger("tcp", inputEvent.Session(), inputEvent.Message())
 	}
 
 	return inputEvent
@@ -61,14 +70,17 @@ func writeAgentLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitACK
 		return
 	}
 
-	peerInfo := ses.Peer().(cellnet.PeerProperty)
+	var agentNodeID string
+	agentDesc := link.DescByLink(ses)
+	if agentDesc != nil {
+		agentNodeID = agentDesc.ID
+	}
 
 	userMsg, _, err := codec.DecodeMessage(int(ack.MsgID), ack.MsgData)
 	if err == nil {
-		ulog.Debugf("#agent.%s(%s)@%d len: %d %s <%d>| %s",
+		ulog.Debugf("#%s(%s) len: %d %s cid:%d| %s",
 			dir,
-			peerInfo.Name(),
-			ses.ID(),
+			agentNodeID,
 			cellnet.MessageSize(userMsg),
 			cellnet.MessageToName(userMsg),
 			ack.ClientID,
@@ -76,10 +88,9 @@ func writeAgentLog(ses cellnet.Session, dir string, ack *proto.RouterTransmitACK
 	} else {
 
 		// 网关没有相关的消息, 只能打出消息号
-		ulog.Debugf("#agent.%s(%s)@%d len: %d msgid: %d <%d>",
+		ulog.Debugf("#%s(%s) len: %d msgid: %d cid:%d",
 			dir,
-			peerInfo.Name(),
-			ses.ID(),
+			agentNodeID,
 			len(ack.MsgData),
 			ack.MsgID,
 			ack.ClientID,
@@ -94,7 +105,7 @@ func init() {
 		bundle.SetHooker(proc.NewMultiHooker(
 			new(link.SvcEventHooker), // 服务互联处理
 			new(AgentHooker),         // 网关消息处理
-			new(tcp.MsgHooker)))      // tcp基础消息处理
+		))
 		bundle.SetCallback(proc.NewQueuedEventCallback(userCallback))
 	})
 }

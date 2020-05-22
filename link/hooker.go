@@ -43,8 +43,6 @@ func (SvcEventHooker) OnInboundEvent(inputEvent cellnet.Event) (outputEvent cell
 		ulog.WithField("nodeid", desc.ID).Debugf("accept add link")
 		addLink(&desc)
 
-		ulog.Debugf("%s", localNodeStatus())
-
 	case *cellnet.SessionConnected:
 
 		// 从Peer上转到Session上绑定
