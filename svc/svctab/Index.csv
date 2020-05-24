@@ -1,0 +1,3 @@
+模式,表类型,表文件名
+类型表,,../../fx/zonecfg/Type.csv
+数据表,ZoneConfig,ZoneConfig_dev.csv

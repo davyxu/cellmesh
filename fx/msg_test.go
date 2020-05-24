@@ -1,7 +1,7 @@
 package fx
 
 import (
-	"github.com/davyxu/cellmesh/proto"
+	"github.com/davyxu/cellmesh/svc/proto"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 

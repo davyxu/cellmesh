@@ -1,0 +1,8 @@
+{
+	"@Tool": "github.com/davyxu/tabtoy",
+	"@Version": "2.9.3",	
+	"ZoneConfig":[ 
+		{ "Zone": "devzone", "Key": "RedisAddress", "Desc": "redis地址", "Value": "localhost:6379", "Line": 0, "NodeList": ["*"] },
+		{ "Zone": "devzone", "Key": "MaxUsers", "Desc": "最大人数", "Value": "3000", "Line": 0, "NodeList": ["game"] } 
+	]
+}

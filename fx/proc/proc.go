@@ -1,13 +1,13 @@
 package fxproc
 
 import (
-	"github.com/davyxu/cellmesh/link"
+	"github.com/davyxu/cellmesh/fx/link"
 	_ "github.com/davyxu/cellnet/codec/protoplus"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 )
 
 import (
-	"github.com/davyxu/cellmesh/rpc"
+	"github.com/davyxu/cellmesh/fx/rpc"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"

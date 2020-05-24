@@ -3,6 +3,7 @@ package fx
 import (
 	"bufio"
 	"fmt"
+	"github.com/davyxu/cellmesh/fx/zonecfg"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/util"
@@ -16,7 +17,7 @@ import (
 
 func Init(name string) {
 
-	ProcName = name
+	NodeName = name
 
 	CommandLine.Parse(os.Args[1:])
 
@@ -26,18 +27,22 @@ func Init(name string) {
 	CommandLine.Parse(os.Args[1:])
 
 	// 命令行可以设置GroupName, 否则初始化为IP串
-	if SvcGroup == "" {
+	if NodeGroup == "" {
 		initGroupName()
 	}
 
 	// 命令行可以设置GroupName, 否则初始化为进程ID
-	if SvcIndex == 0 {
-		SvcIndex = os.Getpid()
+	if NodeIndex == 0 {
+		NodeIndex = os.Getpid()
 	}
 
-	LocalSvcID = MakeSvcID(ProcName)
+	LocalNodeID = MakeNodeID(NodeName)
 
 	initLogger()
+
+	if err := zonecfg.Load(NodeName, NodeZone); err != nil {
+		ulog.Errorf("ZoneConfig load failed, %s", err)
+	}
 
 	if *flagUseConsole {
 
@@ -117,20 +122,20 @@ func initGroupName() {
 		sb.WriteString(fmt.Sprintf("%d", p))
 	}
 
-	SvcGroup = sb.String()
+	NodeGroup = sb.String()
 }
 
 func LogParameter() {
 	workdir, _ := os.Getwd()
 	ulog.Infof("Execuable: %s", os.Args[0])
 	ulog.Infof("WorkDir: %s", workdir)
-	ulog.Infof("ProcName: '%s'", ProcName)
+	ulog.Infof("NodeName: '%s'", NodeName)
 	ulog.Infof("PID: %d", os.Getpid())
 	ulog.Infof("Discovery: '%s'", DiscoveryAddress)
 	ulog.Infof("LANIP: '%s'", util.GetLocalIP())
 	ulog.Infof("WANIP: '%s'", WANIP)
-	ulog.Infof("SvcGroup: '%s'", SvcGroup)
-	ulog.Infof("SvcIndex: %d", SvcIndex)
+	ulog.Infof("NodeGroup: '%s'", NodeGroup)
+	ulog.Infof("NodeIndex: %d", NodeIndex)
 }
 
 func WaitExit() {
