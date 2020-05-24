@@ -28,7 +28,7 @@ func main() {
 		EventCallback: fx.MakeIOCEventHandler(fx.MessageRegistry),
 	})
 
-	// 服务互联
+	// 跨服通信
 	link.ConnectNode(&link.NodeParameter{
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",

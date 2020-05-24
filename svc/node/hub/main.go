@@ -15,7 +15,7 @@ func main() {
 	fx.LogParameter()
 	link.ConnectDiscovery()
 
-	// 服务互联服务
+	// 跨服通信
 	link.ListenNode(&link.NodeParameter{
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "tcp.svc",

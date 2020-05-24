@@ -29,7 +29,7 @@ func main() {
 		ListenAddress: ":8002",
 	}).Peer.(peer.SessionManager)
 
-	// 对内的服务连接
+	// 网关对其他节点
 	model.AgentNodeID = link.ListenNode(&link.NodeParameter{
 		PeerType:      "tcp.Acceptor",
 		NetProc:       "agent.backend",
@@ -37,7 +37,7 @@ func main() {
 		ListenAddress: ":0",
 	}).ID
 
-	// 服务互联
+	// 跨服通信
 	link.ConnectNode(&link.NodeParameter{
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
