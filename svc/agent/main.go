@@ -27,7 +27,6 @@ func main() {
 		NetProc:       "tcp.frontend",
 		SvcName:       "frontend",
 		ListenAddress: ":8002",
-		Queue:         fx.Queue,
 	}).Peer.(peer.SessionManager)
 
 	// 对内的服务连接
@@ -36,7 +35,6 @@ func main() {
 		NetProc:       "agent.backend",
 		SvcName:       "agent",
 		ListenAddress: ":0",
-		Queue:         fx.Queue,
 	}).ID
 
 	// 服务互联
@@ -44,7 +42,6 @@ func main() {
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
 		SvcName:  "hub",
-		Queue:    fx.Queue,
 	})
 
 	link.CheckReady()

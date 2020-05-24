@@ -21,7 +21,6 @@ func main() {
 		NetProc:       "tcp.svc",
 		SvcName:       "hub",
 		ListenAddress: ":0",
-		Queue:         fx.Queue,
 		EventCallback: fx.MakeIOCEventHandler(fx.MessageRegistry),
 	})
 

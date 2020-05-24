@@ -23,7 +23,6 @@ func main() {
 		PeerType:      "tcp.Connector",
 		NetProc:       "svc.backend",
 		SvcName:       "agent",
-		Queue:         fx.Queue,
 		EventCallback: fx.MakeIOCEventHandler(fx.MessageRegistry),
 	})
 
@@ -32,7 +31,6 @@ func main() {
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
 		SvcName:  "hub",
-		Queue:    fx.Queue,
 	})
 
 	link.CheckReady()

@@ -25,7 +25,6 @@ func main() {
 		NetProc:       "tcp.client",
 		SvcName:       "verify",
 		ListenAddress: ":8001",
-		Queue:         fx.Queue,
 		EventCallback: fx.MakeIOCEventHandler(fx.MessageRegistry),
 	})
 
@@ -34,7 +33,6 @@ func main() {
 		PeerType: "tcp.Connector",
 		NetProc:  "tcp.svc",
 		SvcName:  "hub",
-		Queue:    fx.Queue,
 	})
 
 	link.CheckReady()

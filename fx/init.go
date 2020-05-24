@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/davyxu/cellmesh/util"
-	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/msglog"
 	"github.com/davyxu/cellnet/util"
 	"github.com/davyxu/ulog"
@@ -37,10 +36,6 @@ func Init(name string) {
 	}
 
 	LocalSvcID = MakeSvcID(ProcName)
-
-	Queue = cellnet.NewEventQueue()
-
-	Queue.StartLoop()
 
 	initLogger()
 
