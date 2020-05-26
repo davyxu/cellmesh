@@ -14,7 +14,7 @@ ${ProtoPlus} -go_out=msg_gen.go -genreg -package=proto `source ./protolist.sh al
 # 生成网关路由
 echo "Compile routegen..."
 RouteGen=../bin/routegen
-go build -v -o=${RouteGen} github.com/davyxu/cellmesh/tool/routegen
+go build -v -o=${RouteGen} github.com/davyxu/cellmesh/fx/tool/routegen
 
 echo "Upload route config to discovery..."
 ${RouteGen} `source ./protolist.sh all`

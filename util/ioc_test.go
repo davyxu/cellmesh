@@ -41,16 +41,16 @@ var globalIOC *InjectContext
 func init() {
 	globalIOC = NewInjectContext()
 
-	MapFunc("User", func(ioc *InjectContext) interface{} {
-		msg := Invoke("Message").(*Message)
+	globalIOC.MapFunc("User", func(ioc *InjectContext) interface{} {
+		msg := globalIOC.Invoke("Message").(*Message)
 
 		return GetUser(msg.UserID)
 	})
 
-	MapFunc("CallHandler", func(ioc *InjectContext) interface{} {
-		msg := Invoke("Message").(*Message)
+	globalIOC.MapFunc("CallHandler", func(ioc *InjectContext) interface{} {
+		msg := globalIOC.Invoke("Message").(*Message)
 
-		u := Invoke("User").(*User)
+		u := globalIOC.Invoke("User").(*User)
 
 		callback := GetCallback(msg.MsgID)
 		if callback == nil {
@@ -72,9 +72,9 @@ func genIOCConext(msg *Message) *InjectContext {
 	// 框架层
 	ioc := NewInjectContext()
 
-	SetParent(globalIOC)
+	globalIOC.SetParent(globalIOC)
 
-	MapFunc("Message", func(ioc *InjectContext) interface{} {
+	globalIOC.MapFunc("Message", func(ioc *InjectContext) interface{} {
 		return msg
 	})
 
@@ -96,6 +96,6 @@ type MessageWithUserIDFunc func(ioc *InjectContext, msg *Message, useID int)
 
 func OnMessage(ioc *InjectContext) {
 
-	Invoke("CallHandler")
+	globalIOC.Invoke("CallHandler")
 
 }

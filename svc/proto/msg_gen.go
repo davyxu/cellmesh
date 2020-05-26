@@ -22,24 +22,27 @@ type ResultCode int32
 
 const (
 	ResultCode_NoError           ResultCode = 0
-	ResultCode_AgentNotFound     ResultCode = 101
-	ResultCode_AgentAddressError ResultCode = 102
-	ResultCode_GameNotFound      ResultCode = 103
+	ResultCode_DBAccessFailed    ResultCode = 101
+	ResultCode_AgentNotFound     ResultCode = 201
+	ResultCode_AgentAddressError ResultCode = 202
+	ResultCode_GameNotFound      ResultCode = 203
 )
 
 var (
 	ResultCodeMapperValueByName = map[string]int32{
 		"NoError":           0,
-		"AgentNotFound":     101,
-		"AgentAddressError": 102,
-		"GameNotFound":      103,
+		"DBAccessFailed":    101,
+		"AgentNotFound":     201,
+		"AgentAddressError": 202,
+		"GameNotFound":      203,
 	}
 
 	ResultCodeMapperNameByValue = map[int32]string{
 		0:   "NoError",
-		101: "AgentNotFound",
-		102: "AgentAddressError",
-		103: "GameNotFound",
+		101: "DBAccessFailed",
+		201: "AgentNotFound",
+		202: "AgentAddressError",
+		203: "GameNotFound",
 	}
 )
 
@@ -107,9 +110,13 @@ func (self *ServerInfo) Marshal(buffer *proto.Buffer) error {
 func (self *ServerInfo) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.IP)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.IP = v
+		return err
 	case 2:
-		return proto.UnmarshalInt32(buffer, wt, &self.Port)
+		v, err := proto.UnmarshalInt32(buffer, wt)
+		self.Port = v
+		return err
 
 	}
 
@@ -149,11 +156,17 @@ func (self *VerifyREQ) Marshal(buffer *proto.Buffer) error {
 func (self *VerifyREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.Version)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Version = v
+		return err
 	case 2:
-		return proto.UnmarshalString(buffer, wt, &self.Platform)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Platform = v
+		return err
 	case 3:
-		return proto.UnmarshalString(buffer, wt, &self.UID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.UID = v
+		return err
 
 	}
 
@@ -161,7 +174,7 @@ func (self *VerifyREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt pro
 }
 
 type VerifyACK struct {
-	Code   ResultCode
+	Code   int32
 	Server ServerInfo
 	Token  string // 登录game的token
 	NodeID string // 选中的一台game服务器ID
@@ -171,7 +184,7 @@ func (self *VerifyACK) String() string { return proto.CompactTextString(self) }
 
 func (self *VerifyACK) Size() (ret int) {
 
-	ret += proto.SizeInt32(1, int32(self.Code))
+	ret += proto.SizeInt32(1, self.Code)
 
 	ret += proto.SizeStruct(2, &self.Server)
 
@@ -184,7 +197,7 @@ func (self *VerifyACK) Size() (ret int) {
 
 func (self *VerifyACK) Marshal(buffer *proto.Buffer) error {
 
-	proto.MarshalInt32(buffer, 1, int32(self.Code))
+	proto.MarshalInt32(buffer, 1, self.Code)
 
 	proto.MarshalStruct(buffer, 2, &self.Server)
 
@@ -198,13 +211,19 @@ func (self *VerifyACK) Marshal(buffer *proto.Buffer) error {
 func (self *VerifyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalInt32(buffer, wt, (*int32)(&self.Code))
+		v, err := proto.UnmarshalInt32(buffer, wt)
+		self.Code = v
+		return err
 	case 2:
 		return proto.UnmarshalStruct(buffer, wt, &self.Server)
 	case 3:
-		return proto.UnmarshalString(buffer, wt, &self.Token)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Token = v
+		return err
 	case 4:
-		return proto.UnmarshalString(buffer, wt, &self.NodeID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.NodeID = v
+		return err
 
 	}
 
@@ -262,9 +281,13 @@ func (self *LoginREQ) Marshal(buffer *proto.Buffer) error {
 func (self *LoginREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.NodeID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.NodeID = v
+		return err
 	case 2:
-		return proto.UnmarshalString(buffer, wt, &self.Token)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Token = v
+		return err
 
 	}
 
@@ -272,21 +295,21 @@ func (self *LoginREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt prot
 }
 
 type LoginACK struct {
-	Code ResultCode
+	Code int32
 }
 
 func (self *LoginACK) String() string { return proto.CompactTextString(self) }
 
 func (self *LoginACK) Size() (ret int) {
 
-	ret += proto.SizeInt32(1, int32(self.Code))
+	ret += proto.SizeInt32(1, self.Code)
 
 	return
 }
 
 func (self *LoginACK) Marshal(buffer *proto.Buffer) error {
 
-	proto.MarshalInt32(buffer, 1, int32(self.Code))
+	proto.MarshalInt32(buffer, 1, self.Code)
 
 	return nil
 }
@@ -294,7 +317,9 @@ func (self *LoginACK) Marshal(buffer *proto.Buffer) error {
 func (self *LoginACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalInt32(buffer, wt, (*int32)(&self.Code))
+		v, err := proto.UnmarshalInt32(buffer, wt)
+		self.Code = v
+		return err
 
 	}
 
@@ -324,7 +349,9 @@ func (self *ChatREQ) Marshal(buffer *proto.Buffer) error {
 func (self *ChatREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.Content)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Content = v
+		return err
 
 	}
 
@@ -354,7 +381,9 @@ func (self *ChatACK) Marshal(buffer *proto.Buffer) error {
 func (self *ChatACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.Content)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Content = v
+		return err
 
 	}
 
@@ -389,9 +418,13 @@ func (self *AgentClientID) Marshal(buffer *proto.Buffer) error {
 func (self *AgentClientID) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalInt64(buffer, wt, &self.SessionID)
+		v, err := proto.UnmarshalInt64(buffer, wt)
+		self.SessionID = v
+		return err
 	case 2:
-		return proto.UnmarshalString(buffer, wt, &self.NodeID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.NodeID = v
+		return err
 
 	}
 
@@ -426,9 +459,13 @@ func (self *AgentCloseClientACK) Marshal(buffer *proto.Buffer) error {
 func (self *AgentCloseClientACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalInt64Slice(buffer, wt, &self.ID)
+		v, err := proto.UnmarshalInt64Slice(buffer, wt)
+		self.ID = append(self.ID, v...)
+		return err
 	case 2:
-		return proto.UnmarshalBool(buffer, wt, &self.All)
+		v, err := proto.UnmarshalBool(buffer, wt)
+		self.All = v
+		return err
 
 	}
 
@@ -508,15 +545,25 @@ func (self *AgentTransmitACK) Marshal(buffer *proto.Buffer) error {
 func (self *AgentTransmitACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalUInt32(buffer, wt, &self.MsgID)
+		v, err := proto.UnmarshalUInt32(buffer, wt)
+		self.MsgID = v
+		return err
 	case 2:
-		return proto.UnmarshalBytes(buffer, wt, &self.MsgData)
+		v, err := proto.UnmarshalBytes(buffer, wt)
+		self.MsgData = v
+		return err
 	case 3:
-		return proto.UnmarshalInt64(buffer, wt, &self.ClientID)
+		v, err := proto.UnmarshalInt64(buffer, wt)
+		self.ClientID = v
+		return err
 	case 4:
-		return proto.UnmarshalInt64Slice(buffer, wt, &self.ClientIDList)
+		v, err := proto.UnmarshalInt64Slice(buffer, wt)
+		self.ClientIDList = append(self.ClientIDList, v...)
+		return err
 	case 5:
-		return proto.UnmarshalBool(buffer, wt, &self.All)
+		v, err := proto.UnmarshalBool(buffer, wt)
+		self.All = v
+		return err
 
 	}
 
@@ -551,9 +598,13 @@ func (self *AgentBindBackendREQ) Marshal(buffer *proto.Buffer) error {
 func (self *AgentBindBackendREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.NodeID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.NodeID = v
+		return err
 	case 2:
-		return proto.UnmarshalString(buffer, wt, &self.Token)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Token = v
+		return err
 
 	}
 
@@ -561,7 +612,7 @@ func (self *AgentBindBackendREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint
 }
 
 type AgentBindBackendACK struct {
-	Code   ResultCode
+	Code   int32
 	NodeID string
 }
 
@@ -569,7 +620,7 @@ func (self *AgentBindBackendACK) String() string { return proto.CompactTextStrin
 
 func (self *AgentBindBackendACK) Size() (ret int) {
 
-	ret += proto.SizeInt32(1, int32(self.Code))
+	ret += proto.SizeInt32(1, self.Code)
 
 	ret += proto.SizeString(2, self.NodeID)
 
@@ -578,7 +629,7 @@ func (self *AgentBindBackendACK) Size() (ret int) {
 
 func (self *AgentBindBackendACK) Marshal(buffer *proto.Buffer) error {
 
-	proto.MarshalInt32(buffer, 1, int32(self.Code))
+	proto.MarshalInt32(buffer, 1, self.Code)
 
 	proto.MarshalString(buffer, 2, self.NodeID)
 
@@ -588,9 +639,13 @@ func (self *AgentBindBackendACK) Marshal(buffer *proto.Buffer) error {
 func (self *AgentBindBackendACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalInt32(buffer, wt, (*int32)(&self.Code))
+		v, err := proto.UnmarshalInt32(buffer, wt)
+		self.Code = v
+		return err
 	case 2:
-		return proto.UnmarshalString(buffer, wt, &self.NodeID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.NodeID = v
+		return err
 
 	}
 
@@ -656,9 +711,13 @@ func (self *SvcStatus) Marshal(buffer *proto.Buffer) error {
 func (self *SvcStatus) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.NodeID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.NodeID = v
+		return err
 	case 2:
-		return proto.UnmarshalInt32(buffer, wt, &self.UserCount)
+		v, err := proto.UnmarshalInt32(buffer, wt)
+		self.UserCount = v
+		return err
 
 	}
 
@@ -688,7 +747,9 @@ func (self *SvcStatusREQ) Marshal(buffer *proto.Buffer) error {
 func (self *SvcStatusREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.SvcName)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.SvcName = v
+		return err
 
 	}
 
@@ -795,21 +856,37 @@ func (self *HubTransmitACK) Marshal(buffer *proto.Buffer) error {
 func (self *HubTransmitACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalUInt32(buffer, wt, &self.MsgID)
+		v, err := proto.UnmarshalUInt32(buffer, wt)
+		self.MsgID = v
+		return err
 	case 2:
-		return proto.UnmarshalBytes(buffer, wt, &self.MsgData)
+		v, err := proto.UnmarshalBytes(buffer, wt)
+		self.MsgData = v
+		return err
 	case 3:
-		return proto.UnmarshalInt64(buffer, wt, &self.CallID)
+		v, err := proto.UnmarshalInt64(buffer, wt)
+		self.CallID = v
+		return err
 	case 4:
-		return proto.UnmarshalString(buffer, wt, &self.SrcSvcID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.SrcSvcID = v
+		return err
 	case 5:
-		return proto.UnmarshalString(buffer, wt, &self.TgtSvcID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.TgtSvcID = v
+		return err
 	case 6:
-		return proto.UnmarshalInt32(buffer, wt, &self.Mode)
+		v, err := proto.UnmarshalInt32(buffer, wt)
+		self.Mode = v
+		return err
 	case 7:
-		return proto.UnmarshalBytes(buffer, wt, &self.PassThroughData)
+		v, err := proto.UnmarshalBytes(buffer, wt)
+		self.PassThroughData = v
+		return err
 	case 8:
-		return proto.UnmarshalString(buffer, wt, &self.PassThroughType)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.PassThroughType = v
+		return err
 
 	}
 
@@ -854,13 +931,21 @@ func (self *PassThroughWrap) Marshal(buffer *proto.Buffer) error {
 func (self *PassThroughWrap) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalInt64(buffer, wt, &self.Int64)
+		v, err := proto.UnmarshalInt64(buffer, wt)
+		self.Int64 = v
+		return err
 	case 2:
-		return proto.UnmarshalInt32(buffer, wt, &self.Int32)
+		v, err := proto.UnmarshalInt32(buffer, wt)
+		self.Int32 = v
+		return err
 	case 3:
-		return proto.UnmarshalString(buffer, wt, &self.Str)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Str = v
+		return err
 	case 4:
-		return proto.UnmarshalFloat32(buffer, wt, &self.Float32)
+		v, err := proto.UnmarshalFloat32(buffer, wt)
+		self.Float32 = v
+		return err
 
 	}
 
@@ -895,9 +980,13 @@ func (self *NodeIdentifyACK) Marshal(buffer *proto.Buffer) error {
 func (self *NodeIdentifyACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.NodeID)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.NodeID = v
+		return err
 	case 2:
-		return proto.UnmarshalString(buffer, wt, &self.NodeName)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.NodeName = v
+		return err
 
 	}
 
@@ -927,7 +1016,9 @@ func (self *TestREQ) Marshal(buffer *proto.Buffer) error {
 func (self *TestREQ) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.Dummy)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Dummy = v
+		return err
 
 	}
 
@@ -957,7 +1048,9 @@ func (self *TestACK) Marshal(buffer *proto.Buffer) error {
 func (self *TestACK) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 1:
-		return proto.UnmarshalString(buffer, wt, &self.Dummy)
+		v, err := proto.UnmarshalString(buffer, wt)
+		self.Dummy = v
+		return err
 
 	}
 

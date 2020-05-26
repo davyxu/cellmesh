@@ -13,7 +13,7 @@ struct VerifyREQ {
 
 [AutoMsgID]
 struct VerifyACK {
-	Code ResultCode
+	Code int32
 	Server ServerInfo
 	Token string // 登录game的token
 	NodeID string // 选中的一台game服务器ID
@@ -35,5 +35,5 @@ struct LoginREQ {
 
 [AutoMsgID]
 struct LoginACK {
-	Code ResultCode
+	Code int32
 }

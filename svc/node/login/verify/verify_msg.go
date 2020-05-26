@@ -70,7 +70,7 @@ func init() {
 		code, host, port := getAgentAddress()
 		if code != 0 {
 			fx.Reply(ev, &proto.VerifyACK{
-				Code: code,
+				Code: int32(code),
 			})
 			return
 		}
@@ -78,7 +78,7 @@ func init() {
 		code, nodeid := getGameNodeID()
 		if code != 0 {
 			fx.Reply(ev, &proto.VerifyACK{
-				Code: code,
+				Code: int32(code),
 			})
 			return
 		}
@@ -87,7 +87,7 @@ func init() {
 		ack.Server.IP = host
 		ack.Server.Port = int32(port)
 		ack.NodeID = nodeid
-		ack.Code = code
+		ack.Code = int32(code)
 
 		fx.Reply(ev, &ack)
 	})

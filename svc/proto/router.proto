@@ -38,6 +38,6 @@ struct AgentBindBackendREQ {
 
 [AutoMsgID MsgDir:"*->agent->client"]
 struct AgentBindBackendACK {
-    Code ResultCode
+    Code int32
     NodeID string
 }

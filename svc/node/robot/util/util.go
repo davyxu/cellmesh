@@ -7,9 +7,9 @@ import (
 	"math/rand"
 )
 
-func CheckCode(code proto.ResultCode) {
+func CheckCode(code int32) {
 	if code != 0 {
-		panic(fmt.Errorf("ErrCode: %s  stack: %s", code.String(), util.StackToString(3)))
+		panic(fmt.Errorf("ErrCode: %s  stack: %s", proto.ResultCode(code).String(), util.StackToString(3)))
 	}
 }
 

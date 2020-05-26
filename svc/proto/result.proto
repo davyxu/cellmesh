@@ -3,7 +3,14 @@
 enum ResultCode
 {
 	NoError = 0
-	AgentNotFound = 101
+
+	DBAccessFailed = 101
+
+	AgentNotFound = 201
 	AgentAddressError
+
+
+
+
 	GameNotFound
 }

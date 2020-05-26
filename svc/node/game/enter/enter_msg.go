@@ -3,39 +3,26 @@ package enter
 import (
 	"github.com/davyxu/cellmesh/fx"
 	"github.com/davyxu/cellmesh/fx/db"
+	"github.com/davyxu/cellmesh/svc/actor"
 	agentapi "github.com/davyxu/cellmesh/svc/node/agent/api"
 	"github.com/davyxu/cellmesh/svc/proto"
 	"github.com/davyxu/cellmesh/util"
 	"github.com/davyxu/cellnet"
 	"github.com/gomodule/redigo/redis"
-	"reflect"
 )
 
-func loadModule(conn redis.Conn, moduleName string, model interface{}) {
+func loadAccount(account string) db.ResultCode {
+	return db.Redis.Operate(func(conn redis.Conn) {
 
-	vModel := reflect.TypeOf(model)
-	if vModel.Kind() != reflect.Ptr {
-		panic("require model ptr")
-	} else {
-		vModel = vModel.Elem()
-	}
+		var acc actor.Account
 
-	for i := 0; i < vModel.NumField(); i++ {
-		modelField := vModel.Field(i)
-		conn.Send("HGET", moduleName, modelField.Name)
-	}
+		ser := db.NewModelList(conn)
 
-	conn.Flush()
+		if ser.Load(&acc, account) == db.ErrModelNotExists {
+			acc.Account = account
 
-	//for i := 0; i < vModel.NumField(); i++ {
-	//	modelField := vModel.Field(i)
-	//	conn.Receive()
-	//}
-}
-
-func loadAccount(account string) {
-	db.Redis.Operate(func(conn redis.Conn) {
-
+			ser.Save(&acc, account)
+		}
 	})
 }
 
@@ -48,11 +35,11 @@ func init() {
 	})
 
 	agentapi.RegisterMessage(new(proto.LoginREQ), func(ioc *meshutil.InjectContext, ev cellnet.Event) {
-
 		msg := ev.Message().(*proto.LoginREQ)
 
-		loadAccount(msg.Token)
+		var ack proto.LoginACK
+		ack.Code = loadAccount(msg.Token)
 
-		fx.Reply(ev, &proto.LoginACK{})
+		fx.Reply(ev, &ack)
 	})
 }

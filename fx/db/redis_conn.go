@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+type ResultCode = int32
+
 type RedisConn struct {
 	pool *redis.Pool
 }
@@ -27,13 +29,27 @@ func (self *RedisConn) Connect() {
 	}
 }
 
-func (self *RedisConn) Operate(callback func(conn redis.Conn)) {
+func (self *RedisConn) Operate(callback func(conn redis.Conn)) (code ResultCode) {
 
 	conn := self.pool.Get()
 
-	defer conn.Close()
+	defer func() {
+
+		defer conn.Close()
+
+		switch err := recover().(type) {
+		case ResultCode:
+			code = err
+		case nil:
+		default:
+			panic(err)
+		}
+
+	}()
 
 	callback(conn)
+
+	return
 }
 
 func NewRedisConn() *RedisConn {
